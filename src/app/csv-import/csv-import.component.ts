@@ -12,9 +12,11 @@ export class CsvImportComponent {
 
   selectedFile: File = null;
   service;
+  categories = new Array();
 
   constructor(svc: DbService) { 
     this.service = svc;
+    svc.categoryCollection.ref.get().then(snap => snap.docs.map((d) => this.categories.push(d.data())))
   }
 
   GetFiles(e) {
@@ -29,27 +31,35 @@ export class CsvImportComponent {
       let lines: Array<string> = res.replace(/"/g, "").split('\n');
       lines.map(line => {
         let objs = line.split(',');
-        let t = this.ConvertCSVToTransaction(objs);
-        if (t.description !== undefined) {
+        if (objs.length > 1) {
+          let t = this.ConvertCSVToTransaction(objs);
           this.service.transactionCollection.add(t);
         }
       });
-    }
+  }
     fRdr.readAsText(this.selectedFile);
-    //the main page is going to pull from the actual transaction data...
-    //this should just have its own reference to the mat table and pass in this transaction list
-    //or, pass the transaction list to the service
   }
 
-ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
-  let t = {
-      "date" : stringTransaction[0],
-      "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD'),
-      "description" : stringTransaction[4],
-      "category" : "",
-      "keyword" : "" //Will want to "auto-set" this from the keyword list eventually
+  ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
+    let t = {
+        "date" : stringTransaction[0],
+        "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD'),
+        "description" : stringTransaction[4],
+        "category" : this.SetCategoryFromKeywords(stringTransaction[4])
+    }
+    return <ITransaction>t;
   }
-  return <ITransaction>t;
-}
+
+  SetCategoryFromKeywords(tDesc: string): string {
+    tDesc = tDesc.toUpperCase();
+    let ret = '';
+    this.categories.map((c) => {
+      let kw = c.keyword;
+      if (tDesc.indexOf(kw) >= 0) {
+        ret = c.category;
+      }
+    });
+    return ret;
+  }
 
 }

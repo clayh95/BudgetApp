@@ -16,6 +16,10 @@ import { CsvImportComponent } from './csv-import/csv-import.component';
 import { CoreModule } from './core/core.module';
 import { TransactionTableComponent } from './transaction-table/transaction-table.component';
 import { UserLoginComponent } from './user-login/user-login.component';
+import { FormsModule } from '../../node_modules/@angular/forms';
+import { BasePageComponent } from './base-page/base-page.component';
+import { EditCategoriesComponent } from './edit-categories/edit-categories.component';
+import { CategoryTableComponent } from './category-table/category-table.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +27,10 @@ import { UserLoginComponent } from './user-login/user-login.component';
     MainNavComponent,
     CsvImportComponent,
     TransactionTableComponent,
-    UserLoginComponent
+    UserLoginComponent,
+    BasePageComponent,
+    EditCategoriesComponent,
+    CategoryTableComponent
   ],
   imports: [
     BrowserModule,
@@ -43,7 +50,8 @@ import { UserLoginComponent } from './user-login/user-login.component';
     MatDatepickerModule,
     MatFormFieldModule,
     MatNativeDateModule,
-    MatInputModule
+    MatInputModule,
+    FormsModule
   ],
   providers: [AngularFirestore],
   bootstrap: [AppComponent]

@@ -2,10 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort } from '@angular/material';
 import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import { TransactionTableDataSource } from './transaction-table-datasource';
-import {DbService} from '../core/db.service';
-import { map } from '../../../node_modules/rxjs/operators';
-import { ITransaction } from '../core/dataTypes';
-import { access } from 'fs';
+import { DbService } from '../core/db.service';
 
 @Component({
   selector: 'app-transaction-table',
@@ -16,22 +13,31 @@ export class TransactionTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: TransactionTableDataSource;
+  firstDay;
+  lastDay;
 
-  /** Columns displayed in the table. Columns IDs can be added, removed, or reordered. */
   displayedColumns = ['date', 'amount', 'description', 'category'];
 
-  constructor(private service: DbService) {}
+  constructor(private service: DbService) {
+    var date = new Date();
+    this.firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    this.lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  }
 
   ngOnInit() {
-    this.dataSource = new TransactionTableDataSource(this.paginator, this.sort, this.service);
+    this.dataSource = new TransactionTableDataSource(this.paginator, 
+                                                      this.sort, 
+                                                      this.service.transactionCollection.valueChanges());
+    this.dataSource.updateBeginDate(this.firstDay);
+    this.dataSource.updateEndDate(this.lastDay);
   }
 
-  filterTable(event: MatDatepickerInputEvent<Date>) {
-    console.log(`${event.value}`);
+  updateBeginDate(event: MatDatepickerInputEvent<Date>) {
+    this.dataSource.updateBeginDate(`${event.value}`)
   }
 
-
-  //val.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0)
-
+  updateEndDate(event: MatDatepickerInputEvent<Date>) {
+    this.dataSource.updateEndDate(`${event.value}`)
+  }
 
 }

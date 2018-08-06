@@ -12,10 +12,10 @@ import { DbService } from './core/db.service';
 export class AppComponent implements OnInit {
   title = 'fdsf';
 
-  transactions: Observable<ITransaction[]>;
+  // transactions: Observable<ITransaction[]>;
   
   constructor(service: DbService) {
-    this.transactions = service.transactionCollection.valueChanges();
+    // this.transactions = service.transactionCollection.valueChanges();
   }
 
   ngOnInit() {

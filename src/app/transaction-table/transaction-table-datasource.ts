@@ -1,10 +1,8 @@
 import { DataSource } from '@angular/cdk/collections';
 import { MatPaginator, MatSort } from '@angular/material';
 import { map, startWith } from 'rxjs/operators';
-import { Observable, of as observableOf, merge, combineLatest } from 'rxjs';
-import {DbService} from '../core/db.service';
+import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction } from '../core/dataTypes';
-import { start } from 'repl';
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -13,12 +11,14 @@ import { start } from 'repl';
  */
 export class TransactionTableDataSource extends DataSource<ITransaction> {
 
-  transactionData: Observable<ITransaction[]> //Ideally we can set this from wherever we need to - so we could pass a list of transactions before import
   total:number;
+  private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
+  private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
-  constructor(private paginator: MatPaginator, private sort: MatSort, private service: DbService) {
+  constructor(private paginator: MatPaginator, 
+              private sort: MatSort, 
+              private transactions: Observable<ITransaction[]>) {
     super();
-    this.transactionData = this.service.transactionCollection.valueChanges();
   }
 
   /**
@@ -30,39 +30,29 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     // Combine everything that affects the rendered data into one update
     // stream for the data-table to consume.
     const dataMutations = [
-      this.transactionData,
+      this.transactions,
       this.paginator.page.pipe(startWith(1)),
-      this.sort.sortChange.pipe(startWith(0))
+      this.sort.sortChange.pipe(startWith(0)),
+      this.beginDateChange,
+      this.endDateChange
     ];
 
     return combineLatest(...dataMutations).pipe(map((d) => {
       let val = <ITransaction[]>d[0];
       this.paginator.length = val.length;
-      let ret = this.getPagedData(this.getSortedData([...val]));
+      let ret = this.getFilteredData(this.getPagedData(this.getSortedData([...val])));
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
       return ret;
     }));
   }
 
-  /**
-   *  Called when the table is being destroyed. Use this function, to clean up
-   * any open connections or free any held resources that were set up during connect.
-   */
   disconnect() {}
 
-  /**
-   * Paginate the data (client-side). If you're using server-side pagination,
-   * this would be replaced by requesting the appropriate data from the server.
-   */
   private getPagedData(data: ITransaction[]) {
     const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
     return data.splice(startIndex, this.paginator.pageSize);
   }
 
-  /**
-   * Sort the data (client-side). If you're using server-side sorting,
-   * this would be replaced by requesting the appropriate data from the server.
-   */
   private getSortedData(data: ITransaction[]) {
     if (!this.sort.active || this.sort.direction === '') {
       return data;
@@ -73,13 +63,27 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       switch (this.sort.active) {
         case 'date': return compare(a.date, b.date, isAsc);
         case 'amount': return compare(+a.amount, +b.amount, isAsc);
+        case 'description': return compare(a.description, b.description, isAsc);
         case 'category': return compare(a.category, b.category, isAsc);
-        // case 'id': return compare(+a.id, +b.id, isAsc);
         default: return 0;
       }
     });
   }
+
+  private getFilteredData(data: ITransaction[]) {
+    //This is kinda dumb...momentjs imp seems beneficial
+    return data.filter(t => new Date(t.date).valueOf() >= new Date(this.beginDateChange.getValue()).valueOf() && new Date(t.date).valueOf() <= new Date(this.endDateChange.getValue()).valueOf())
+  }
+  
+  updateBeginDate(val) {
+    this.beginDateChange.next(val);
+  }
+
+  updateEndDate(val) {
+    this.endDateChange.next(val);
+  }
 }
+
 
 /** Simple sort comparator for example ID/Name columns (for client-side sorting). */
 function compare(a, b, isAsc) {
