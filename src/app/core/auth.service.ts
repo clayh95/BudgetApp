@@ -42,6 +42,13 @@ export class AuthService {
     return this.oAuthLogin(provider);
   }
 
+  logOut() {
+    this.afAuth.auth.signOut().then(x => {
+      console.log('signed out');
+      //TODO: hide all the data...may just do it automagically
+    })
+  }
+
   private oAuthLogin(provider) {
     return this.afAuth.auth.signInWithPopup(provider)
       .then((credential) => {

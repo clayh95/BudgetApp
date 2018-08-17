@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ITransaction } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-csv-import',
@@ -11,12 +12,8 @@ import { DbService } from '../core/db.service';
 export class CsvImportComponent {
 
   selectedFile: File = null;
-  service;
-  categories = new Array();
 
-  constructor(svc: DbService) { 
-    this.service = svc;
-    svc.categoryCollection.ref.get().then(snap => snap.docs.map((d) => this.categories.push(d.data())))
+  constructor(private service: DbService) { 
   }
 
   GetFiles(e) {
@@ -53,11 +50,13 @@ export class CsvImportComponent {
   SetCategoryFromKeywords(tDesc: string): string {
     tDesc = tDesc.toUpperCase();
     let ret = '';
-    this.categories.map((c) => {
-      let kw = c.keyword;
-      if (tDesc.indexOf(kw) >= 0) {
-        ret = c.category;
-      }
+    this.service.categories.getValue().map(c => {
+      c.keywords.map(k => {
+        if (tDesc.indexOf(k.toUpperCase()) >= 0) {
+          ret = c.name;
+          return ret;
+        }
+      })
     });
     return ret;
   }

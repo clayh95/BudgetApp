@@ -1,7 +1,8 @@
 <div class="mat-elevation-z8">
+-if you remove a category that is tied to a transaction it will NOT update the transaction currently
+<br />
 
   <table mat-table #table [dataSource]="dataSource" class="categoryTable" matSort aria-label="Elements">
-
     <!-- id Column -->
     <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
@@ -12,21 +13,44 @@
     <!-- Category Column -->
     <ng-container matColumnDef="category">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-      <td mat-cell *matCellDef="let row">
+      <td mat-cell class="valueCell" *matCellDef="let row">
         <mat-form-field class="example-full-width">
-          <input matInput placeholder="Category" name="{{row.id}}" value="{{row.category}}" (blur)="categoryChanged($event)"/>
+          <input matInput placeholder="Category" value="{{row.name}}" (blur)="valueChanged($event, row.id, 'name')"/>
+        </mat-form-field>
+      </td>
+      <td mat-footer-cell *matFooterCellDef></td>
+    </ng-container>
+
+    <!-- Budgeted Column -->
+    <ng-container matColumnDef="budgeted">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Budgeted</th>
+      <td mat-cell class="valueCell" *matCellDef="let row">
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Budgeted" value="{{row.budgeted}}" (blur)="valueChanged($event, row.id, 'budgeted')"/>
         </mat-form-field>
       </td>
       <td mat-footer-cell *matFooterCellDef></td>
     </ng-container>
 
     <!-- Keyword Column -->
-    <ng-container matColumnDef="keyword">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Keyword</th>
-      <td mat-cell *matCellDef="let row">
-          <mat-form-field class="example-full-width">
-            <input matInput placeholder="Category"  name="{{row.id}}" value="{{row.keyword}}" (blur)="keywordChanged($event)"/>
+    <ng-container matColumnDef="keywords">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Keywords</th>
+      <td mat-cell class="keywordsCell" *matCellDef="let row">
+          <mat-form-field class="keyword-chip-list">
+            <mat-chip-list #chipList>
+              <mat-chip *ngFor="let keyword of row.keywords" [selectable]="selectable"
+                       [removable]="removable" (removed)="removeKeyword(keyword, row.id)">
+                {{keyword}}
+                <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+              </mat-chip>
+              <input placeholder="Keywords"
+                     [matChipInputFor]="chipList"
+                     [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                     [matChipInputAddOnBlur]="addOnBlur"
+                     (matChipInputTokenEnd)="addKeyword($event, row.id)">
+            </mat-chip-list>
           </mat-form-field>
+
         </td>
       <td mat-footer-cell *matFooterCellDef></td>
     </ng-container>

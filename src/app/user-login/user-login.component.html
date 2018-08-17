@@ -1,5 +1,8 @@
-  <button (click)="authService.googleLogin()">Login with Google</button>
 
-  <div>
-      {{user}}
-  </div>
+<span *ngIf="user">{{user.displayName}}</span>
+<img [matMenuTriggerFor]="menu" matTooltip="Login with Google" [src]="image" class="userImage" width="50" height="50">
+
+<mat-menu #menu="matMenu" yPosition="below" [overlapTrigger]="false">
+    <button mat-menu-item (click)="authService.googleLogin()">Login</button>
+    <button mat-menu-item (click)="authService.logOut()">Log Out</button>
+</mat-menu>

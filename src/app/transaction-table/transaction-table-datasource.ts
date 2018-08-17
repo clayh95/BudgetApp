@@ -3,6 +3,7 @@ import { MatPaginator, MatSort } from '@angular/material';
 import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction } from '../core/dataTypes';
+import { DbService } from '../core/db.service';
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -12,12 +13,13 @@ import { ITransaction } from '../core/dataTypes';
 export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   total:number;
-  private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
-  private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
+  // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
+  // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
   constructor(private paginator: MatPaginator, 
               private sort: MatSort, 
-              private transactions: Observable<ITransaction[]>) {
+              private transactions: Observable<ITransaction[]>,
+              private service: DbService) {
     super();
   }
 
@@ -33,8 +35,9 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.transactions,
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith(0)),
-      this.beginDateChange,
-      this.endDateChange
+      this.service.monthYear
+      // this.beginDateChange,
+      // this.endDateChange
     ];
 
     return combineLatest(...dataMutations).pipe(map((d) => {
@@ -72,16 +75,20 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   private getFilteredData(data: ITransaction[]) {
     //This is kinda dumb...momentjs imp seems beneficial
-    return data.filter(t => new Date(t.date).valueOf() >= new Date(this.beginDateChange.getValue()).valueOf() && new Date(t.date).valueOf() <= new Date(this.endDateChange.getValue()).valueOf())
+    let str = this.service.monthYear.getValue()
+    let d = new Date(`${str.split('/')[0]}/01/${str.split('/')[1]}`)
+    return data.filter(t => {
+      return new Date(t.date).valueOf() >= new Date(d.getFullYear(), d.getMonth(), 1).valueOf() && new Date(t.date).valueOf() <= new Date(d.getFullYear(), d.getMonth() + 1, 0).valueOf();
+    })
   }
   
-  updateBeginDate(val) {
-    this.beginDateChange.next(val);
-  }
+  // updateBeginDate(val) {
+  //   this.beginDateChange.next(val);
+  // }
 
-  updateEndDate(val) {
-    this.endDateChange.next(val);
-  }
+  // updateEndDate(val) {
+  //   this.endDateChange.next(val);
+  // }
 }
 
 

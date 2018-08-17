@@ -1,7 +1,13 @@
 .categoryTable {
     .mat-cell {
         padding-right:10px;
-        height:70px;
+        height:80px;
+    } 
+    .valueCell {
         width:80px;
     }
+    .keyword-chip-list {
+        width:550px
+    }
+    
 }

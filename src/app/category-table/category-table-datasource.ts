@@ -40,8 +40,8 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
     return data.sort((a, b) => {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
-        case 'category': return compare(a.category, b.category, isAsc);
-        case 'keyword': return compare(a.keyword, b.keyword, isAsc);
+        case 'category': return compare(a.name, b.name, isAsc);
+        // case 'keyword': return compare(a.keyword, b.keyword, isAsc);
         default: return 0;
       }
     });

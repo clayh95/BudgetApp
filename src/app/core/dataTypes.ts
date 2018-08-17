@@ -1,4 +1,5 @@
 export interface ITransaction {
+    id: string;
     date: string;
     amount: string;
     description: string;
@@ -13,8 +14,10 @@ export interface IUser {
 
 export interface ICategory {
     id: string;
-    category: string,
-    keyword: string
+    name: string,
+    keywords: Array<string>,
+    budgeted: number
+    // ,Spent: number //TODO: necessary?
 }
 
 

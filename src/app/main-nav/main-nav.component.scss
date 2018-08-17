@@ -4,9 +4,14 @@
 
 .sidenav {
   width: 200px;
+  padding-top:8px
 }
 
 .mat-toolbar.mat-primary {
   position: sticky;
   top: 0;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
 }

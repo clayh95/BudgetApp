@@ -1,6 +1,6 @@
-<div class="mat-elevation-z8">
+<div class="mat-elevation-z8 transactionTableComponent">
 
-    <mat-form-field>
+    <!-- <mat-form-field>
       <input matInput [matDatepicker]="beginDate" placeholder="Begin Date"
               (dateChange)="updateBeginDate($event)" [ngModel]="firstDay">
       <mat-datepicker-toggle matSuffix [for]="beginDate"></mat-datepicker-toggle>
@@ -12,7 +12,7 @@
               (dateChange)="updateEndDate($event)" [ngModel]="lastDay">
       <mat-datepicker-toggle matSuffix [for]="endDate"></mat-datepicker-toggle>
       <mat-datepicker #endDate></mat-datepicker>
-    </mat-form-field>
+    </mat-form-field> -->
 
   <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
     <!-- date Column -->
@@ -39,7 +39,15 @@
     <!-- category Column -->
     <ng-container matColumnDef="category">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-      <td mat-cell *matCellDef="let row">{{row.category}}</td>
+      <td mat-cell *matCellDef="let row">
+        <mat-form-field>
+          <mat-select placeholder="Category" [value]="row.category">
+            <mat-option *ngFor="let category of categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
+              {{category.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field> 
+      </td>
       <td mat-footer-cell *matFooterCellDef></td>
     </ng-container>
 
