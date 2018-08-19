@@ -21,6 +21,7 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
 
     return combineLatest(...dataMutations).pipe(map((d) => {
       let val = <ICategory[]>d[0];
+      this.paginator.length = val.length;
       return this.getPagedData(this.getSortedData([...val]));
     }));
   }

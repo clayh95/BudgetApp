@@ -23,14 +23,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     super();
   }
 
-  /**
-   * Connect this data source to the table. The table will only update when
-   * the returned stream emits new items.
-   * @returns A stream of the items to be rendered.
-   */
   connect(): Observable<ITransaction[]> {
-    // Combine everything that affects the rendered data into one update
-    // stream for the data-table to consume.
     const dataMutations = [
       this.transactions,
       this.paginator.page.pipe(startWith(1)),
@@ -68,6 +61,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
         case 'amount': return compare(+a.amount, +b.amount, isAsc);
         case 'description': return compare(a.description, b.description, isAsc);
         case 'category': return compare(a.category, b.category, isAsc);
+        case 'notes': return compare(a.notes, b.notes, isAsc);
         default: return 0;
       }
     });

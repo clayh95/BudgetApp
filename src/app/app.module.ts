@@ -8,7 +8,8 @@ import { MainNavComponent } from './main-nav/main-nav.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
-         MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, MatSelectModule, MAT_DATE_FORMATS, MatChipsModule } from '@angular/material';
+         MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -21,9 +22,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BasePageComponent } from './base-page/base-page.component';
 import { EditCategoriesComponent } from './edit-categories/edit-categories.component';
 import { CategoryTableComponent } from './category-table/category-table.component';
-import { MY_FORMATS } from './month-year-picker/month-year-picker.component';
+import { MMYY_FORMAT } from './month-year-picker/month-year-picker.component';
 import { MomentDateModule } from '../../node_modules/@angular/material-moment-adapter';
 import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.component';
+import { CopyCategoriesComponent } from './copy-categories/copy-categories.component';
+import { AddTransactionComponent } from './add-transaction/add-transaction.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +38,13 @@ import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.
     BasePageComponent,
     EditCategoriesComponent,
     CategoryTableComponent,
-    MonthYearPickerComponent
+    MonthYearPickerComponent,
+    CopyCategoriesComponent,
+    AddTransactionComponent
+  ],
+  entryComponents: [
+    CopyCategoriesComponent,
+    AddTransactionComponent
   ],
   imports: [
     BrowserModule,
@@ -63,11 +72,11 @@ import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.
     MatOptionModule,
     MatSelectModule,
     MomentDateModule,
-    MatChipsModule
+    MatChipsModule,
+    MatDialogModule
   ],
   providers: [
-    AngularFirestore,
-    {provide: MAT_DATE_FORMATS, useValue: MY_FORMATS}
+    AngularFirestore
   ],
   bootstrap: [AppComponent]
 })

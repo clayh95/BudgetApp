@@ -1,13 +1,14 @@
 <div class="mat-elevation-z8">
 -if you remove a category that is tied to a transaction it will NOT update the transaction currently
-<br />
+<br /><br />
+<button mat-button (click)="openCopyCategoryDialog()">Copy These Categories</button>
 
   <table mat-table #table [dataSource]="dataSource" class="categoryTable" matSort aria-label="Elements">
     <!-- id Column -->
     <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-        <td mat-cell *matCellDef="let row"><button mat-icon-button (click)="deleteRow(row.id)"><mat-icon>remove</mat-icon></button></td>
-        <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addRow()"><mat-icon>add</mat-icon></button> </td>
+        <td mat-cell *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row.id)"><mat-icon>remove</mat-icon></button></td>
+        <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addCategory()"><mat-icon>add</mat-icon></button> </td>
     </ng-container>
 
     <!-- Category Column -->

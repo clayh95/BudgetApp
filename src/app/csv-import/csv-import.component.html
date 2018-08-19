@@ -1,3 +1,10 @@
 
-<input type="file" (change)="GetFiles($event)"/>
+<input id="fileUpload" type="file" (change)="GetFiles($event)"/>
 <button mat-button (click)="ProcessFile()">Process Sheet</button>
+<br />
+<mat-list *ngIf="showSummary" role="list">
+    <h5 mat-subheader>{{importSummary.title}}</h5>
+    <mat-list-item role="listitem">{{importSummary.chargesImported}} Charges Imported</mat-list-item>
+    <mat-list-item role="listitem">{{importSummary.duplicates}} Charges Found and Not Imported</mat-list-item>
+    <mat-list-item *ngFor="let s of importSummary.summaries" role="listitem">{{s.summary}}</mat-list-item>
+</mat-list>

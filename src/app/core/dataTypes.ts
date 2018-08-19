@@ -4,6 +4,7 @@ export interface ITransaction {
     amount: string;
     description: string;
     category: string;
+    notes?: string;
 }
 
 export interface IUser { 
