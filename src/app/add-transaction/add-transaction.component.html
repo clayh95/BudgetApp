@@ -4,19 +4,20 @@
   <mat-datepicker #picker></mat-datepicker>
 </mat-form-field>
 <mat-form-field class="addTransactionField">
-  <input matInput placeholder="Amount" [(ngModel)]="t.amount"/>
+  <input matInput placeholder="Amount" [(ngModel)]="data.amount"/>
 </mat-form-field>
 <mat-form-field class="addTransactionField">
-  <input matInput placeholder="Description" [(ngModel)]="t.description"/>
+  <input matInput placeholder="Description" [(ngModel)]="data.description"/>
 </mat-form-field>
 <mat-form-field class="addTransactionField">
-  <input matInput placeholder="Notes" [(ngModel)]="t.notes"/>
+  <input matInput placeholder="Notes" [(ngModel)]="data.notes"/>
 </mat-form-field>
 <mat-form-field class="addTransactionField">
-    <mat-select placeholder="Category" [(ngModel)]="t.category">
+    <mat-select placeholder="Category" [(ngModel)]="data.category">
         <mat-option *ngFor="let category of service.categories | async" [value]="category.name">
           {{category.name}}
         </mat-option>
       </mat-select>
 </mat-form-field>
-<button mat-button (click)="Add()">Add</button>
+<button mat-button *ngIf="data.id === undefined" (click)="Add()">Add</button>
+<button mat-button *ngIf="data.id !== undefined" (click)="Update()">Update</button>

@@ -13,13 +13,15 @@ import { DbService } from '../core/db.service';
 export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   total:number;
+  chargeCount:number;
   // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
   // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
   constructor(private paginator: MatPaginator, 
               private sort: MatSort, 
               private transactions: Observable<ITransaction[]>,
-              private service: DbService) {
+              private service: DbService,
+              private filter: BehaviorSubject<string>) {
     super();
   }
 
@@ -28,16 +30,18 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.transactions,
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith(0)),
-      this.service.monthYear
+      this.service.monthYear,
+      this.filter
       // this.beginDateChange,
       // this.endDateChange
     ];
 
     return combineLatest(...dataMutations).pipe(map((d) => {
       let val = <ITransaction[]>d[0];
-      this.paginator.length = val.length;
-      let ret = this.getFilteredData(this.getPagedData(this.getSortedData([...val])));
+      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[4])
+      this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
+      ret = this.getPagedData(ret);
       return ret;
     }));
   }
@@ -67,12 +71,16 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     });
   }
 
-  private getFilteredData(data: ITransaction[]) {
+  //Might be a more effecient way to do this - 
+  private getFilteredData(data: ITransaction[], filter:string) {
     //This is kinda dumb...momentjs imp seems beneficial
     let str = this.service.monthYear.getValue()
     let d = new Date(`${str.split('/')[0]}/01/${str.split('/')[1]}`)
-    return data.filter(t => {
+    let tmp = data.filter(t => {
       return new Date(t.date).valueOf() >= new Date(d.getFullYear(), d.getMonth(), 1).valueOf() && new Date(t.date).valueOf() <= new Date(d.getFullYear(), d.getMonth() + 1, 0).valueOf();
+    })
+    return tmp.filter(t => {
+      return Object.values(t).map(v => v.toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
     })
   }
   

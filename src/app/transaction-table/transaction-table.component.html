@@ -1,24 +1,17 @@
 <div class="mat-elevation-z8 transactionTableComponent">
 
-    <!-- <mat-form-field>
-      <input matInput [matDatepicker]="beginDate" placeholder="Begin Date"
-              (dateChange)="updateBeginDate($event)" [ngModel]="firstDay">
-      <mat-datepicker-toggle matSuffix [for]="beginDate"></mat-datepicker-toggle>
-      <mat-datepicker #beginDate></mat-datepicker>
-    </mat-form-field>
-
     <mat-form-field>
-      <input matInput [matDatepicker]="endDate" placeholder="End Date"
-              (dateChange)="updateEndDate($event)" [ngModel]="lastDay">
-      <mat-datepicker-toggle matSuffix [for]="endDate"></mat-datepicker-toggle>
-      <mat-datepicker #endDate></mat-datepicker>
-    </mat-form-field> -->
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
 
   <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
     <!-- id Column -->
     <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-        <td mat-cell *matCellDef="let row"><button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>remove</mat-icon></button></td>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>remove</mat-icon></button>
+          <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
+        </td>
         <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addTransaction()"><mat-icon>add</mat-icon></button> </td>
     </ng-container>
     
@@ -33,7 +26,8 @@
     <ng-container matColumnDef="amount">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
       <td mat-cell *matCellDef="let row">{{row.amount | currency}}</td>
-      <td mat-footer-cell *matFooterCellDef> {{dataSource.total | currency}} </td>
+      <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
+      <!-- {{dataSource.total | currency}} - I don't think we need this here -->
     </ng-container>
 
     <!-- description Column -->
@@ -81,3 +75,23 @@
     [pageSizeOptions]="[10, 25, 50]">
   </mat-paginator>
 </div>
+
+
+
+
+
+
+
+    <!-- <mat-form-field>
+      <input matInput [matDatepicker]="beginDate" placeholder="Begin Date"
+              (dateChange)="updateBeginDate($event)" [ngModel]="firstDay">
+      <mat-datepicker-toggle matSuffix [for]="beginDate"></mat-datepicker-toggle>
+      <mat-datepicker #beginDate></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input matInput [matDatepicker]="endDate" placeholder="End Date"
+              (dateChange)="updateEndDate($event)" [ngModel]="lastDay">
+      <mat-datepicker-toggle matSuffix [for]="endDate"></mat-datepicker-toggle>
+      <mat-datepicker #endDate></mat-datepicker>
+    </mat-form-field> -->

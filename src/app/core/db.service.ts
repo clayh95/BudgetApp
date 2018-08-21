@@ -23,9 +23,9 @@ export class DbService {
     this.userCollection = this.afs.collection('users');
     this.monthsCollection = this.afs.collection('monthsPK');
 
-    let currentMY = `${moment().format('MM')}\/${moment().format('YYYY')}`
+    let startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`
     this.monthYear = new BehaviorSubject<string>("");
-    this.monthYear.next(currentMY);
+    this.monthYear.next(startingMY);
 
     this.monthYear.subscribe(m => {
       let monthPK = m.replace(/\//g,"")
@@ -44,11 +44,11 @@ export class DbService {
     })
   }
 
-  CreateMonthIfNotExists(PK) {
-    this.monthsCollection.ref.doc(PK).get().then(snap => {
+  CreateMonthIfNotExists(monthPK) {
+    this.monthsCollection.ref.doc(monthPK).get().then(snap => {
       if (!snap.exists) {
-        this.monthsCollection.ref.doc(PK).set({'name': PK});
-        this.monthsCollection.doc(PK).ref.collection('categories').doc().set({name: ''})
+        this.monthsCollection.ref.doc(monthPK).set({'name': monthPK});
+        this.monthsCollection.doc(monthPK).ref.collection('categories').doc().set({name: ''})
       }
     })
   }

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { ITransaction } from '../core/dataTypes'
-import { MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { DbService } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
@@ -18,28 +18,43 @@ export const MMDDYYYY_FORMAT = {
   },
 };
 
+export interface addEditTrans {
+  type: number;
+  transaction: ITransaction
+}
+
 @Component({
   selector: 'app-add-transaction',
   templateUrl: './add-transaction.component.html',
   styleUrls: ['./add-transaction.component.scss'],
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}]
 })
-export class AddTransactionComponent implements OnInit {
+export class AddTransactionComponent {
 
-  t:ITransaction;
   tmpDate:Moment
 
   constructor(private service: DbService, 
-              public dialogRef: MatDialogRef<AddTransactionComponent>) { }
+              public dialogRef: MatDialogRef<AddTransactionComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: ITransaction) {
 
-  ngOnInit() {
-    this.t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
-  }
+                if (this.data.date !== undefined) {
+                  this.tmpDate = moment(this.data.date)
+                }
+              }
 
   Add() {
     let newTransactionRef = this.service.transactionCollection.ref.doc();
-    this.t.date = this.tmpDate.format('MM/DD/YYYY')
-    newTransactionRef.set(this.t)
+    this.Commit(newTransactionRef)
+  }
+
+  Update() {
+    let transactionRef = this.service.transactionCollection.doc(this.data.id).ref
+    this.Commit(transactionRef)
+  }
+
+  Commit(doc:firebase.firestore.DocumentReference) {
+    this.data.date = this.tmpDate.format('MM/DD/YYYY')
+    doc.set(this.data)
     this.dialogRef.close();
   }
 

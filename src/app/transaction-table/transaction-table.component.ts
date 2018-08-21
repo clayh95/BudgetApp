@@ -19,6 +19,8 @@ export class TransactionTableComponent implements OnInit {
   transactions = new BehaviorSubject<ITransaction[]>([{id:"", amount: "", category: "", date: "", description: "", notes: ""}]);
   categories;
   displayedColumns = ['id', 'date', 'amount', 'description', 'notes', 'category'];
+  filter = new BehaviorSubject<string>("")
+
   // firstDay, lastDay;
 
 
@@ -31,6 +33,7 @@ export class TransactionTableComponent implements OnInit {
     // this.firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     // this.lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
+    //TODO: seems like we should just the the transactions for the selected monthYear
     this.service.transactionCollection.snapshotChanges().subscribe(actions => {
       let tmp = new Array();
        actions.map(a => {
@@ -47,7 +50,8 @@ export class TransactionTableComponent implements OnInit {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
                                                       this.sort, 
                                                       this.transactions,
-                                                      this.service);
+                                                      this.service,
+                                                      this.filter);
     // this.dataSource.updateBeginDate(this.firstDay);
     // this.dataSource.updateEndDate(this.lastDay);
   }
@@ -64,14 +68,24 @@ export class TransactionTableComponent implements OnInit {
     if (keyRef) keyRef.update(colUpdate);
   }
 
-
-  
   addTransaction() {
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'800px'})
+    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'800px', data: t})
   }
 
   deleteTransaction(id) {
     this.service.transactionCollection.doc(id).delete();
+  }
+
+  editTransaction(id) {
+    let t:ITransaction
+    this.service.transactionCollection.doc(id).ref.get().then(d => {
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1000px', data: <ITransaction>{id: d.id, ...d.data()}})
+    })
+  }
+
+  applyFilter(filterValue: string) {
+    this.filter.next(filterValue.trim().toLowerCase())
   }
 
   // updateBeginDate(event: MatDatepickerInputEvent<Date>) {

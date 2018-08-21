@@ -9,7 +9,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
          MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
-         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule } from '@angular/material';
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -76,7 +76,8 @@ import { AddTransactionComponent } from './add-transaction/add-transaction.compo
     MatDialogModule
   ],
   providers: [
-    AngularFirestore
+    AngularFirestore,
+    {provide: MAT_DIALOG_DATA, useValue: {}}
   ],
   bootstrap: [AppComponent]
 })
