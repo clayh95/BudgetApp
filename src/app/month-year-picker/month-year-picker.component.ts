@@ -20,7 +20,6 @@ export const MMYY_FORMAT = {
   },
 };
 
-
 @Component({
   selector: 'app-month-year-picker',
   templateUrl: './month-year-picker.component.html',
@@ -40,19 +39,16 @@ export class MonthYearPickerComponent {
       })
   }
 
-  chosenYearHandler(normalizedYear: Moment) {
-    // const ctrlValue = this.date.value;
-    // ctrlValue.year(normalizedYear.year());
-    // this.date.setValue(ctrlValue);
-    // this.service.monthYear.next(moment(this.date.value).format(MY_FORMATS.display.dateInput))
-  }
-
   chosenMonthHandler(normlizedMonth: Moment, datepicker: MatDatepicker<Moment>) {
     const ctrlValue = this.date.value;
     ctrlValue.month(normlizedMonth.month());
     this.date.setValue(ctrlValue);
     datepicker.close();
     this.service.monthYear.next(moment(this.date.value).format(MMYY_FORMAT.display.dateInput))
+  }
+
+  NavigateMonth(increment: number) {
+    this.service.monthYear.next(moment(this.date.value).add(increment, 'month').format(MMYY_FORMAT.display.dateInput))
   }
 
 }

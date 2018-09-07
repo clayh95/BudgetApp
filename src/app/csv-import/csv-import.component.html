@@ -1,10 +1,27 @@
 
-<input id="fileUpload" type="file" (change)="GetFiles($event)"/>
-<button mat-button (click)="ProcessFile()">Process Sheet</button>
-<br />
-<mat-list *ngIf="showSummary" role="list">
-    <h5 mat-subheader>{{importSummary.title}}</h5>
-    <mat-list-item role="listitem">{{importSummary.chargesImported}} Charges Imported</mat-list-item>
-    <mat-list-item role="listitem">{{importSummary.duplicates}} Charges Found and Not Imported</mat-list-item>
-    <mat-list-item *ngFor="let s of importSummary.summaries" role="listitem">{{s.summary}}</mat-list-item>
-</mat-list>
+<div class="mat-elevation-z8 importFromCSVDiv">
+
+    <mat-card>
+        <mat-card-title>
+            Import From CSV
+        </mat-card-title>
+        <mat-card-content>
+                <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)"/>
+                <button mat-raised-button color="primary" *ngIf="selectedFile" (click)="ProcessFile()">Process Sheet</button>
+                <mat-selection-list [hidden]="!showSummary" role="list" #notImported>
+                    <h1 mat-subheader>{{importSummary.title}}</h1>
+                    <mat-list-item role="listitem">{{importSummary.chargesImported}} Charges Imported</mat-list-item>
+                    <mat-list-item role="listitem">{{importSummary.duplicates}} Charges Found and Not Imported</mat-list-item>
+                    <mat-list-option *ngFor="let t of importSummary.summaries"  [value]="t" role="listitem">{{t.date}} - {{t.description}} - {{t.amount}}</mat-list-option>
+                </mat-selection-list>
+                <div *ngIf="notImported.selectedOptions.selected.length > 0">
+                    <p>Import {{notImported.selectedOptions.selected.length}} charge(s) anyway?</p>
+                    <button mat-raised-button color="primary" (click)="ImportSelectedAnyway(notImported.selectedOptions.selected)">Import</button>
+                </div>
+            </mat-card-content>
+    </mat-card>
+
+</div>
+
+
+

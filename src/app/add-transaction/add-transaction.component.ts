@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
-import { DbService } from '../core/db.service';
+import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
@@ -43,19 +43,21 @@ export class AddTransactionComponent {
               }
 
   Add() {
-    let newTransactionRef = this.service.transactionCollection.ref.doc();
-    this.Commit(newTransactionRef)
+    this.data.date = this.tmpDate.format('MM/DD/YYYY')
+    this.service.AddOrUpdateTransaction(this.data, tAction.add)
+    this.dialogRef.close();
   }
 
   Update() {
-    let transactionRef = this.service.transactionCollection.doc(this.data.id).ref
-    this.Commit(transactionRef)
-  }
-
-  Commit(doc:firebase.firestore.DocumentReference) {
     this.data.date = this.tmpDate.format('MM/DD/YYYY')
-    doc.set(this.data)
+    this.service.AddOrUpdateTransaction(this.data, tAction.update)
     this.dialogRef.close();
   }
+
+  // Commit(doc:firebase.firestore.DocumentReference) {
+  //   this.data.date = this.tmpDate.format('MM/DD/YYYY')
+  //   doc.set({date: this.data.date, description: this.data.description, amount: this.data.amount, notes:this.data.notes, category: this.data.category}) //Doing this so as not to add the ID property
+  //   this.dialogRef.close();
+  // }
 
 }

@@ -1,44 +1,48 @@
 <div class="mat-elevation-z8 transactionTableComponent">
 
-    <mat-form-field>
-      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
-    </mat-form-field>
 
-  <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
-    <!-- id Column -->
-    <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-        <td mat-cell *matCellDef="let row">
-          <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>remove</mat-icon></button>
-          <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
-        </td>
-        <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addTransaction()"><mat-icon>add</mat-icon></button> </td>
-    </ng-container>
-    
-    <!-- date Column -->
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-      <td mat-cell *matCellDef="let row">{{row.date}}</td>
-      <td mat-footer-cell *matFooterCellDef></td>
-    </ng-container>
+<mat-card>
+  <mat-card-title class="tableTitle">
+      <mat-form-field>
+          <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+        </mat-form-field>
+  </mat-card-title>
+  <mat-card-content>
+      
+    <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
+      <!-- id Column -->
+      <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+          <td mat-cell class="actions" *matCellDef="let row">
+            <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
+          </td>
+          <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addTransaction()"><mat-icon>add</mat-icon></button> </td>
+      </ng-container>
+      
+      <!-- date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+        <td mat-cell *matCellDef="let row">{{row.date}}</td>
+        <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
 
-    <!-- amount Column -->
-    <ng-container matColumnDef="amount">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-      <td mat-cell *matCellDef="let row">{{row.amount | currency}}</td>
-      <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
-      <!-- {{dataSource.total | currency}} - I don't think we need this here -->
-    </ng-container>
+      <!-- amount Column -->
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+        <td mat-cell *matCellDef="let row">{{row.amount | currency}}</td>
+        <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
+      </ng-container>
 
-    <!-- description Column -->
-    <ng-container matColumnDef="description">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
-      <td mat-cell *matCellDef="let row">{{row.description}}</td>
-      <td mat-footer-cell *matFooterCellDef></td>
-    </ng-container>
+      <!-- description Column -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+        <td mat-cell *matCellDef="let row">{{row.description}}</td>
+        <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
 
-    <!-- notes Column -->
-    <ng-container matColumnDef="notes">
+      <!-- notes Column -->
+      <ng-container matColumnDef="notes">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Notes</th>
         <td mat-cell *matCellDef="let row">
           <mat-form-field class="example-full-width">
@@ -48,32 +52,35 @@
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
 
-    <!-- category Column -->
-    <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-      <td mat-cell *matCellDef="let row">
-        <mat-form-field>
-          <mat-select placeholder="Category" [value]="row.category">
-            <mat-option *ngFor="let category of categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
-              {{category.name}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field> 
-      </td>
-      <td mat-footer-cell *matFooterCellDef></td>
-    </ng-container>
+      <!-- category Column -->
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-form-field>
+            <mat-select placeholder="Category" [value]="row.category">
+              <mat-option *ngFor="let category of categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
+                {{category.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field> 
+        </td>
+        <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
-  </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+    </table>
 
   <mat-paginator #paginator
-    [length]="dataSource.transactions.length"
+    [length]="service.transactions.length"
     [pageIndex]="0"
     [pageSize]="10"
     [pageSizeOptions]="[10, 25, 50]">
   </mat-paginator>
+  
+  </mat-card-content>
+</mat-card>
 </div>
 
 

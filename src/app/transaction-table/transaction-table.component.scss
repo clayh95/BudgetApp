@@ -3,11 +3,27 @@
     .mat-cell {
         padding-right:50px
     }
+    .actions {
+        display: inline-flex;
+        height: inherit;
+    }
+    /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+        padding-bottom: 0em;
+        /deep/ .mat-form-field-underline {
+            position: unset;
+        }
+    }
 }
 
 .transactionTableComponent {
-    padding:5px;
+    padding:10px;
     mat-form-field {
         padding-right:10px;
+    }
+}
+
+.tableTitle { 
+    mat-form-field {
+        width:40%;
     }
 }

@@ -3,8 +3,8 @@
 }
 
 .sidenav {
-  width: 200px;
-  padding-top:8px
+  width: 80px;
+  // padding-top:8px
 }
 
 .mat-toolbar.mat-primary {
@@ -12,6 +12,11 @@
   top: 0;
 }
 
-.example-spacer {
+.spacer {
   flex: 1 1 auto;
 }
+
+.mat-toolbar-row, .mat-toolbar-single-row {
+  height:75px
+}
+

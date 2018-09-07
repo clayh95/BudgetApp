@@ -9,7 +9,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
          MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
-         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material';
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -27,6 +27,8 @@ import { MomentDateModule } from '../../node_modules/@angular/material-moment-ad
 import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.component';
 import { CopyCategoriesComponent } from './copy-categories/copy-categories.component';
 import { AddTransactionComponent } from './add-transaction/add-transaction.component';
+import { ReportsComponent } from './reports/reports.component';
+
 
 @NgModule({
   declarations: [
@@ -40,7 +42,8 @@ import { AddTransactionComponent } from './add-transaction/add-transaction.compo
     CategoryTableComponent,
     MonthYearPickerComponent,
     CopyCategoriesComponent,
-    AddTransactionComponent
+    AddTransactionComponent,
+    ReportsComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,
@@ -73,7 +76,8 @@ import { AddTransactionComponent } from './add-transaction/add-transaction.compo
     MatSelectModule,
     MomentDateModule,
     MatChipsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatCardModule
   ],
   providers: [
     AngularFirestore,

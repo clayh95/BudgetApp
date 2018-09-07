@@ -15,10 +15,10 @@ export interface IUser {
 
 export interface ICategory {
     id: string;
-    name: string,
-    keywords: Array<string>,
-    budgeted: number
-    // ,Spent: number //TODO: necessary?
+    name: string;
+    keywords: Array<string>;
+    budgeted: number;
+    spent: number;
 }
 
 

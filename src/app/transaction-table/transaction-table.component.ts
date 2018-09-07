@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, Inject } from '@angular/core';
-import { MatPaginator, MatSort, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatPaginator, MatSort, MatDialog, MatDialogRef, MAT_DIALOG_DATA, Sort } from '@angular/material';
 // import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
@@ -16,13 +16,11 @@ export class TransactionTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: TransactionTableDataSource;
-  transactions = new BehaviorSubject<ITransaction[]>([{id:"", amount: "", category: "", date: "", description: "", notes: ""}]);
   categories;
   displayedColumns = ['id', 'date', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("")
 
   // firstDay, lastDay;
-
 
   constructor(private service: DbService,
               public dialog: MatDialog) {
@@ -33,27 +31,18 @@ export class TransactionTableComponent implements OnInit {
     // this.firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     // this.lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-    //TODO: seems like we should just the the transactions for the selected monthYear
-    this.service.transactionCollection.snapshotChanges().subscribe(actions => {
-      let tmp = new Array();
-       actions.map(a => {
-        let data = <ITransaction>a.payload.doc.data();
-        let id = a.payload.doc.id;
-        tmp.push({ id, ...data })
-      })
-      this.transactions.next( tmp );
-    })
-
   }
 
   ngOnInit() {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
                                                       this.sort, 
-                                                      this.transactions,
+                                                      // this.transactions,
                                                       this.service,
                                                       this.filter);
     // this.dataSource.updateBeginDate(this.firstDay);
     // this.dataSource.updateEndDate(this.lastDay);
+    this.sort.direction = "asc";
+    this.sort.active = "date";
   }
 
   TransactionCategoryChanged(id, value) {
@@ -70,7 +59,7 @@ export class TransactionTableComponent implements OnInit {
 
   addTransaction() {
     let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'800px', data: t})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: t})
   }
 
   deleteTransaction(id) {
@@ -80,7 +69,7 @@ export class TransactionTableComponent implements OnInit {
   editTransaction(id) {
     let t:ITransaction
     this.service.transactionCollection.doc(id).ref.get().then(d => {
-      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1000px', data: <ITransaction>{id: d.id, ...d.data()}})
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: <ITransaction>{id: d.id, ...d.data()}})
     })
   }
 

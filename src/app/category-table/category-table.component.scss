@@ -1,13 +1,28 @@
 .categoryTable {
     .mat-cell {
-        padding-right:10px;
-        height:80px;
+        padding:8px;
     } 
-    .valueCell {
-        width:80px;
+    /deep/ td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
+        padding:8px;
+    }
+    .valueCategory {
+        width:15vw;
+    }
+    .valueAmount {
+        width:10vw;
     }
     .keyword-chip-list {
-        width:550px
+        width:50vw
+    }
+    /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+        padding-bottom: 0em;
+        /deep/ .mat-form-field-underline {
+            position: unset;
+        }
     }
     
+}
+
+.categoryTableDiv {
+    padding:10px;
 }

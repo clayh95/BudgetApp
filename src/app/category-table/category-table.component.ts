@@ -7,9 +7,6 @@ import {MatChipInputEvent} from '@angular/material';
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
 
-// import { BehaviorSubject } from 'rxjs';
-// import { map } from 'rxjs/operators';
-// import { ICategory } from '../core/dataTypes';
 import * as firebase from 'firebase/app';
 
 @Component({
@@ -38,6 +35,8 @@ export class CategoryTableComponent implements OnInit {
     this.dataSource = new CategoryTableDataSource(this.paginator, 
                                                   this.sort, 
                                                   this.service.categories);
+    this.sort.direction = "asc";
+    this.sort.active = "category";
   }
 
   addCategory() {
@@ -45,10 +44,18 @@ export class CategoryTableComponent implements OnInit {
     newCategoryRef.set({name: "", keywords: [], budgeted: null});
   }
 
-  deleteCategory(id) {
+  deleteCategory(id, name) {
     //TODO: Prompt here...
-    //TODO: Clear categories for any transactions that had this category
     this.service.categoriesCollection.doc(id).delete();
+    this.service.transactionCollection.ref.where("category","==",name)
+      .get()
+      .then(d => {
+        if (d.docs.length > 0) {
+          d.docs.forEach(doc =>{
+            this.service.transactionCollection.ref.doc(doc.id).update({category: ''})
+          })
+        }
+      })
   }
 
   valueChanged(event, id, colName) {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef  } from '@angular/core';
 import { ITransaction } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
@@ -14,6 +14,12 @@ export class CsvImportComponent {
   selectedFile: File = null;
   importSummary = {'title':'',summaries:[], chargesImported: 0, duplicates: 0};
   showSummary: boolean = false;
+
+  @ViewChild('fileUpload')
+  myFileInput: ElementRef;
+  
+  @ViewChild('notImported')
+  notImportedList: ElementRef;
 
   constructor(private service: DbService) {}
 
@@ -36,12 +42,13 @@ export class CsvImportComponent {
         let objs = line.split(',');
         if (objs.length > 1) {
           let t = this.ConvertCSVToTransaction(objs);
+          //this should automatially put it in the right month PK :(
           this.service.transactionCollection.ref
-            .where('date','==',t.date)
+            // .where('date','==',t.date) Let's not do date since we may move it around
             .where('amount','==',t.amount)
             .where('description','==',t.description).get().then(d => {
               if (d.docs.length > 0){
-                this.importSummary.summaries.push({'summary':`${t.date} - ${t.description} - ${t.amount}`});
+                this.importSummary.summaries.push(t);
                 this.importSummary.duplicates ++;
                 //TODO: (maybe) override capibility?
               }
@@ -53,8 +60,9 @@ export class CsvImportComponent {
           }
       });
       this.showSummary = true;
-      //TODO: Clear file input
-    }
+      this.selectedFile = null;
+      this.myFileInput.nativeElement.value = "";
+  }
 
     fRdr.readAsText(this.selectedFile);
   }
@@ -62,7 +70,7 @@ export class CsvImportComponent {
   ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
     let t = {
         "date" : stringTransaction[0],
-        "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD'),
+        "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD').replace(/,/g,""),
         "description" : stringTransaction[4],
         "category" : this.SetCategoryFromKeywords(stringTransaction[4]),
         "notes" : ""
@@ -82,6 +90,18 @@ export class CsvImportComponent {
       })
     });
     return ret;
+  }
+
+
+  ImportSelectedAnyway(selectedList) {
+    selectedList.map(t => {
+      this.service.transactionCollection.add(t.value).then(() => {
+        this.importSummary.chargesImported ++;
+        this.importSummary.duplicates --;
+        this.importSummary.summaries.splice(this.importSummary.summaries.indexOf(t), 1)
+        // t.selected = false;
+      });
+    });
   }
 
 }

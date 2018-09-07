@@ -1,3 +1,5 @@
+<div class="copyCatsDiv">
+  
 <mat-form-field>
   <input matInput [matDatepicker]="dp_copy" placeholder="Copy to Month/Year" [formControl]="dp_copyForm">
   <mat-datepicker-toggle matSuffix [for]="dp_copy"></mat-datepicker-toggle>
@@ -9,4 +11,6 @@
   </mat-datepicker>
 </mat-form-field>
 
-<button mat-button (click)="copyCategories()">Go for it!</button>
+<button mat-raised-button color="primary" (click)="copyCategories()">Go for it!</button>
+
+</div>

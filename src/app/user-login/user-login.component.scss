@@ -5,5 +5,9 @@
 }
 
 .loginControls {
-    align-items: center;
+    display: flex;
+    .name {
+        padding-top: 10px;
+        padding-right: 20px;
+    }
 }
