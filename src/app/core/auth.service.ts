@@ -44,8 +44,7 @@ export class AuthService {
 
   logOut() {
     this.afAuth.auth.signOut().then(x => {
-      console.log('signed out');
-      //TODO: hide all the data...may just do it automagically
+      this.dbService.signOut();
     })
   }
 
@@ -61,15 +60,12 @@ export class AuthService {
       .get()
       .then(querySnapshot => {
         if (querySnapshot.docs.length == 0) {
-          console.log(this.afAuth.auth.currentUser);
-          this.afAuth.auth.signOut().then(x => {
-            console.log("You are not authorized!");
-            //shut it all down...perhaps
-          });
+          this.logOut();
         }
         else {
           console.log('welcome ' +  user.displayName);
-          //go to all the things
+          //reinitialize subscriptions?
+          //let's add a logged out route
         }
       })
   }

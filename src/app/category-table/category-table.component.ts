@@ -3,6 +3,7 @@ import { MatPaginator, MatSort, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from 
 import { CategoryTableDataSource } from './category-table-datasource';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatChipInputEvent} from '@angular/material';
+import { BehaviorSubject } from 'rxjs';
 
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
@@ -20,6 +21,7 @@ export class CategoryTableComponent implements OnInit {
   dataSource: CategoryTableDataSource;
 
   displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
+  filter = new BehaviorSubject<string>("")
 
   //CHIPS - TODO - Colorful chips?
   visible = true;
@@ -34,7 +36,8 @@ export class CategoryTableComponent implements OnInit {
   ngOnInit() {
     this.dataSource = new CategoryTableDataSource(this.paginator, 
                                                   this.sort, 
-                                                  this.service.categories);
+                                                  this.service.categories,
+                                                  this.filter);
     this.sort.direction = "asc";
     this.sort.active = "category";
   }
@@ -86,6 +89,10 @@ export class CategoryTableComponent implements OnInit {
 
   openCopyCategoryDialog() {
     const dialogRef = this.dialog.open(CopyCategoriesComponent, {width: '400px'})
+  }
+
+  applyFilter(filterValue: string) {
+    this.filter.next(filterValue.trim().toLowerCase())
   }
 
 }

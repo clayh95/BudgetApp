@@ -1,8 +1,16 @@
 <div class="mat-elevation-z8 categoryTableDiv">
 
 <mat-card>
-  <mat-card-title>
-    Categories
+  <mat-card-title class="tableTitle">
+    <mat-form-field>
+        <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Categories">
+      </mat-form-field>
+      <button mat-icon-button color="primary" 
+              matTooltip="Copy These Categories" 
+              [matTooltipPosition]="'below'" 
+              (click)="openCopyCategoryDialog()">
+              <mat-icon>fast_forward</mat-icon>
+      </button>
   </mat-card-title>
   <mat-card-content>
 
@@ -70,8 +78,6 @@
         [pageSize]="10"
         [pageSizeOptions]="[10, 25, 50]">
       </mat-paginator>
-
-    <button mat-raised-button color="primary" (click)="openCopyCategoryDialog()">Copy These Categories</button>
 
   </mat-card-content>
 </mat-card>

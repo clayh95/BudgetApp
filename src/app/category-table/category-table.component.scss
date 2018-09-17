@@ -26,3 +26,19 @@
 .categoryTableDiv {
     padding:10px;
 }
+
+
+.tableTitle { 
+    mat-form-field {
+        width:40%;
+    }
+    .material-icons {
+        font-size: 36px
+    }
+}
+
+mat-card-title {
+    button {
+        float:right;
+    }
+}

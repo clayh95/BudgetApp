@@ -26,21 +26,13 @@ export class TransactionTableComponent implements OnInit {
               public dialog: MatDialog) {
 
     this.categories = this.service.categories;
-
-    // var date = new Date();
-    // this.firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    // this.lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
   }
 
   ngOnInit() {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
                                                       this.sort, 
-                                                      // this.transactions,
                                                       this.service,
                                                       this.filter);
-    // this.dataSource.updateBeginDate(this.firstDay);
-    // this.dataSource.updateEndDate(this.lastDay);
     this.sort.direction = "asc";
     this.sort.active = "date";
   }
@@ -63,25 +55,19 @@ export class TransactionTableComponent implements OnInit {
   }
 
   deleteTransaction(id) {
-    this.service.transactionCollection.doc(id).delete();
+    if (confirm('Are you sure you want to delete this transaction?')) {
+      this.service.transactionCollection.doc(id).delete();
+    }
   }
 
   editTransaction(id) {
     let t:ITransaction
     this.service.transactionCollection.doc(id).ref.get().then(d => {
-      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: <ITransaction>{id: d.id, ...d.data()}})
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: <ITransaction>{id: d.id, ...d.data()}})
     })
   }
 
   applyFilter(filterValue: string) {
     this.filter.next(filterValue.trim().toLowerCase())
   }
-
-  // updateBeginDate(event: MatDatepickerInputEvent<Date>) {
-  //   this.dataSource.updateBeginDate(`${event.value}`)
-  // }
-
-  // updateEndDate(event: MatDatepickerInputEvent<Date>) {
-  //   this.dataSource.updateEndDate(`${event.value}`)
-  // }
 }

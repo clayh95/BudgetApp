@@ -5,4 +5,13 @@
 .chart-container {
     margin:10px;
     height:80vh; 
+    mat-card-title {
+        button {
+            float:right;
+        }
+    }
+}
+
+.material-icons {
+    font-size: 36px
 }
