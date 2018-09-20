@@ -3,9 +3,10 @@ import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/fires
 import { ITransaction, IUser, ICategory } from './dataTypes';
 import { ObserveOnSubscriber } from '../../../node_modules/rxjs/internal/operators/observeOn';
 import { Observable, BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
-import { map, tap } from '../../../node_modules/rxjs/operators';
+import { map, tap, subscribeOn } from '../../../node_modules/rxjs/operators';
 import {default as _rollupMoment, Moment} from 'moment';
 import { COMMON_DIRECTIVES } from '../../../node_modules/@angular/common/src/directives';
+import { initChangeDetectorIfExisting } from '../../../node_modules/@angular/core/src/render3/instructions';
 const moment = _rollupMoment
 
 export enum tAction {
@@ -24,41 +25,36 @@ export class DbService {
   categoriesCollection: AngularFirestoreCollection;
   monthYear: BehaviorSubject<string>
   transactions = new BehaviorSubject<ITransaction[]>([])
-  tranSub: Subscription;
   categories = new BehaviorSubject<ICategory[]>([])
 
+  monthYearSub: Subscription;
+  tranSub: Subscription;
+  catSub: Subscription;
+
   constructor(private afs: AngularFirestore) {
-    this.userCollection = this.afs.collection('users');
-    this.monthsCollection = this.afs.collection('monthsPK');
-
-    let startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`
-    this.monthYear = new BehaviorSubject<string>("");
-    this.monthYear.next(startingMY);
-
-    this.monthYear.subscribe(m => {
-
-      let monthPK = m.replace(/\//g,"")
-      this.CreateMonthIfNotExists(monthPK) //TODO: do we need await?
-
-      this.categoriesCollection = this.afs.collection(`monthsPK/${monthPK}/categories`)
-      this.categoriesCollection.snapshotChanges().subscribe(ref => {
-        console.log(`Categories - read ${ref.length} docs`)
-        let tmp = new Array();
-        if (ref.length == 0) this.categories.next([])
-        ref.forEach(a => {
-          let data = a.payload.doc.data(); //TODO: should this be ICategory or are we past that?
-          let id = a.payload.doc.id;
-          tmp.push({ id, ...data })
-      })
-        this.categories.next( tmp.sort((a, b) => {if (a.name > b.name) { return 1} else {return -1}}) ); //The reason we do snapshot is to get the doc id...valueChanges() does not do that, sadly
-      })
-
-      //not sure if i'm doing this quite right...if you change the monthyear it doesn't fire this until a value is changed
-      this.transactionCollection = this.afs.collection(`monthsPK/${monthPK}/transactions`)
-      this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
-    })
+    this.init()
   }
 
+  init() {
+      this.userCollection = this.afs.collection('users');
+      this.monthsCollection = this.afs.collection('monthsPK');
+
+      let startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`
+      this.monthYear = new BehaviorSubject<string>("");
+      this.monthYear.next(startingMY);
+
+      this.monthYearSub = this.monthYear.subscribe(m => {
+        let monthPK = m.replace(/\//g,"")
+        this.CreateMonthIfNotExists(monthPK)
+
+        this.categoriesCollection = this.afs.collection(`monthsPK/${monthPK}/categories`)
+        this.catSub = this.categoriesCollection.snapshotChanges().subscribe(ref => this.processCategories(ref))
+
+        this.transactionCollection = this.afs.collection(`monthsPK/${monthPK}/transactions`)
+        this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
+    })
+  }
+  
   processTransactions(actions) {
     console.log(`Transactions - read ${actions.length} docs`)
     let tmp = new Array();
@@ -68,6 +64,18 @@ export class DbService {
         tmp.push({ id, ...data })
     })
     this.transactions.next( tmp );
+  }
+
+  processCategories(ref) {
+    console.log(`Categories - read ${ref.length} docs`)
+    let tmp = new Array();
+    if (ref.length == 0) this.categories.next([])
+    ref.forEach(a => {
+      let data = a.payload.doc.data(); //TODO: should this be ICategory or are we past that?
+      let id = a.payload.doc.id;
+      tmp.push({ id, ...data })
+    })
+    this.categories.next( tmp.sort((a, b) => {if (a.name > b.name) { return 1} else {return -1}}) ); //The reason we do snapshot is to get the doc id...valueChanges() does not do that, sadly
   }
 
   CreateMonthIfNotExists(monthPK) {
@@ -83,12 +91,12 @@ export class DbService {
     let copyColl = this.categoriesCollection.ref;
     let numCopied: number = 0;
     copyColl.get().then(docs => {
-    console.log(`Copy Categories - read ${docs.docs.length} docs`)
-    docs.forEach(doc => {
-      let newCat = this.monthsCollection.doc(copyToPK).ref.collection('categories').doc();
-      newCat.set(doc.data())
-      numCopied ++;
-    })
+      console.log(`Copy Categories - read ${docs.docs.length} docs`)
+      docs.forEach(doc => {
+        let newCat = this.monthsCollection.doc(copyToPK).ref.collection('categories').doc();
+        newCat.set(doc.data())
+        numCopied ++;
+      })
     })
   }
 
@@ -119,9 +127,15 @@ export class DbService {
 
   signOut() {
     this.monthYear.unsubscribe();
+    this.tranSub.unsubscribe();
+    this.catSub.unsubscribe();
     this.transactions.next([]);
     this.categories.next([]);
-    console.log('signed out');
+    console.log('Signed out');
+  }
+
+  signIn() {
+    this.init()
   }
 
 

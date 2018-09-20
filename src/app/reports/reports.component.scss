@@ -1,10 +1,10 @@
 .reportCards {
-    display:inline-flex
+    display:inline-flex;
+    width:100%;
 }
 
 .chart-container {
     margin:10px;
-    height:80vh; 
     mat-card-title {
         button {
             float:right;

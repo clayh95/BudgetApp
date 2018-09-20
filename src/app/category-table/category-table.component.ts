@@ -50,12 +50,16 @@ export class CategoryTableComponent implements OnInit {
   deleteCategory(id, name) {
     //TODO: Prompt here...
     this.service.categoriesCollection.doc(id).delete();
-    this.service.transactionCollection.ref.where("category","==",name)
+    this.updateRelatedTransactions(name, '')
+  }
+
+  updateRelatedTransactions(catName, value) {
+    this.service.transactionCollection.ref.where("category","==",catName)
       .get()
       .then(d => {
         if (d.docs.length > 0) {
           d.docs.forEach(doc =>{
-            this.service.transactionCollection.ref.doc(doc.id).update({category: ''})
+            this.service.transactionCollection.ref.doc(doc.id).update({category: value})
           })
         }
       })
@@ -65,7 +69,15 @@ export class CategoryTableComponent implements OnInit {
     let keyRef =  this.service.categoriesCollection.doc(id);
     let colUpdate = {};
     colUpdate[`${colName}`] = event.target.value;
-    if (keyRef) keyRef.update(colUpdate);
+    if (colName.toLowerCase() == 'name') {
+      keyRef.ref.get().then(d => {
+        this.updateRelatedTransactions(d.data().name, event.target.value) //We have to do this after the get promise returns here to make sure we get the oldvalue
+        if (keyRef) keyRef.update(colUpdate)
+      })
+    }
+    else {
+      if (keyRef) keyRef.update(colUpdate)
+    }
   }
 
   addKeyword(event: MatChipInputEvent, id): void {

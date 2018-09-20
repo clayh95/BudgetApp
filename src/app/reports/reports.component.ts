@@ -47,7 +47,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
             }
         }]
     },
-    responsive: true
+    responsive: true,
+    maintainAspectRatio: false
   }
   
   IncomeConfigOptions = {
@@ -79,12 +80,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.ExpensesConfig.type = this.chartType;
     this.ExpensesConfig.options = this.ExpensesConfigOptions
     this.ExpensesChart = new Chart('canvasExpenses', this.ExpensesConfig)
+    this.ExpensesChart.canvas.parentElement.style.height = '700px'
 
     if (this.IncomeChart) {this.IncomeChart.destroy()}
     this.IncomeConfig.type = this.chartType;
     this.IncomeConfig.options = this.IncomeConfigOptions
     if (!this.IncomeChart) {this.IncomeChart = new Chart('canvasIncome', this.IncomeConfig)}
-    this.IncomeChart.canvas.parentElement.style.height = '676px'
+    this.IncomeChart.canvas.parentElement.style.height = '700px'
     this.IncomeChart.data.labels = ["Income"]
 
     this.catsTrans = combineLatest(this.service.categories, this.service.transactions).subscribe(([cats, trans]) => {
@@ -139,6 +141,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
           this.reportCats.splice(this.reportCats.indexOf(this.incomeData), 1)
 
           this.spent = this.reportCats.map(c => c.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
+          this.spent = +this.spent.toFixed(2)
 
           this.totalBudgeted = this.reportCats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
 

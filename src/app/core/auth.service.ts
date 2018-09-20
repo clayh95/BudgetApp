@@ -60,12 +60,12 @@ export class AuthService {
       .get()
       .then(querySnapshot => {
         if (querySnapshot.docs.length == 0) {
+          console.log(`${user.displayName}, you are not a valid user.`)
           this.logOut();
         }
         else {
-          console.log('welcome ' +  user.displayName);
-          //reinitialize subscriptions?
-          //let's add a logged out route
+          console.log('Welcome ' +  user.displayName);
+          this.dbService.signIn()
         }
       })
   }

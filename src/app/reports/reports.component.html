@@ -1,6 +1,6 @@
 <div class="reportCards">
 
-    <mat-card class="chart-container" style="position: relative; width:77vw">
+    <mat-card class="chart-container" style="width:83%">
       <mat-card-title>
         <span>Expenses</span>
         <button mat-icon-button color="primary" *ngIf="totalBudgeted == income" matTooltip="Carry Balances to Next Month" [matTooltipPosition]="'below'" (click)="carryAmounts()"><mat-icon>fast_forward</mat-icon></button>
@@ -10,7 +10,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="chart-container" style="position: relative; width:11vw">
+    <mat-card class="chart-container" style="width:10%">
       <mat-card-title>Income</mat-card-title>
       <mat-card-content>
             <canvas id="canvasIncome">{{ IncomeChart }}</canvas>
