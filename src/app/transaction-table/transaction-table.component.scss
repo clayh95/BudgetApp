@@ -1,12 +1,40 @@
 
 .transactionTable {
+    width:100%;
+
     .mat-cell {
         padding-right:50px
     }
+
     .actions {
         display: inline-flex;
         height: inherit;
+        width:10%
     }
+
+    .date {
+        width:7%
+    }
+
+    .amount {
+        width:7%
+    }
+
+    .description {
+        width:50%
+    }
+
+    .notes {
+        width:25%;
+        mat-form-field {
+            width: 100%
+        }
+    }
+
+    .category {
+        width:15%;
+    }
+
     /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
         padding-bottom: 0em;
         /deep/ .mat-form-field-underline {
@@ -26,4 +54,8 @@
     mat-form-field {
         width:40%;
     }
+}
+
+.raisedTable {
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
 }

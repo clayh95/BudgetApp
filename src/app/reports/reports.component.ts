@@ -9,11 +9,27 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 
 
-enum colors {
-  gray = "#C5B7BA",
-  lightBlue = "#99b7e8",
-  red = "#E31437",
-  green = "#43C158"
+export enum colors {
+  GRAY = "#C5B7BA",
+  LIGHTBLUE = "#99b7e8",
+  RED = "#E31437",
+  GREEN = "#43C158",
+  BLACK = "#000000",
+  MAROON = "#800000",
+  YELLOW = "#FFFF00",
+  OLIVE = "#808000",
+  LIME = "#00FF00",
+  AQUA = "#00FFFF",
+  TEAL = "#008080",
+  BLUE = "#0000FF",
+  NAVY = "#000080",
+  FUCHSIA = "#FF00FF",
+  PURPLE = "#800080",
+  PALEVIOLETRED = "#DB7093",
+  SLATEBLUE = "#473C8B",
+  MIDNIGHTBLUE = "#191970",
+  LIGHTSKYBLUE1 = "#B0E2FF",
+  LIGHTSKYBLUE2 = "#A4D3EE"
 }
 
 @Component({
@@ -118,21 +134,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
               tmp += +t.amount;
               this.income = +tmp.toFixed(2);
             }
-            //  else {
-            //   let tmp:number = this.spent;
-            //   tmp += Math.abs(+t.amount)
-            //   this.spent = +tmp.toFixed(2);
-            // }
-
-            // if (+t.amount <= 0) {
-            //   let tmp:number = this.spent;
-            //   tmp += Math.abs(+t.amount)
-            //   this.spent = +tmp.toFixed(2);
-            // } else {
-            //   let tmp:number = this.income;
-            //   tmp += +t.amount;
-            //   this.income = +tmp.toFixed(2);
-            // }
 
           });
           
@@ -149,7 +150,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
           this.ExpensesChart.data.datasets.push({
             label:'Budgeted', 
             data:this.reportCats.map(x => x.budgeted),
-            backgroundColor: colors.lightBlue
+            backgroundColor: colors.LIGHTBLUE
           })
           this.ExpensesChart.data.datasets.push({
             label:'Spent', 
@@ -172,9 +173,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
           
           this.IncomeChart.data.datasets = []
           if (this.incomeData) {
-            this.IncomeChart.data.datasets.push({label: 'Expected', data:[this.incomeData.budgeted], backgroundColor: colors.gray})
+            this.IncomeChart.data.datasets.push({label: 'Expected', data:[this.incomeData.budgeted], backgroundColor: colors.GRAY})
           }
-          this.IncomeChart.data.datasets.push({label: 'Total Budgeted', data:[this.totalBudgeted],  backgroundColor: colors.lightBlue})
+          this.IncomeChart.data.datasets.push({label: 'Total Budgeted', data:[this.totalBudgeted],  backgroundColor: colors.LIGHTBLUE})
           this.IncomeChart.data.datasets.push({label: 'Actual', data:[this.income],  backgroundColor: this.getBarColor(this.totalBudgeted, this.income)})
           this.IncomeChart.data.datasets.push({label: 'Spent', data:[this.spent],  backgroundColor: this.getBarColor(this.spent, this.income)})
           this.IncomeChart.config.options.tooltips.callbacks =  {
@@ -203,9 +204,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   getBarColor(spent, budgeted) {
     if (spent <= budgeted) {
-      return colors.green
+      return colors.GREEN
     } else {
-      return colors.red
+      return colors.RED
     }
   }
 

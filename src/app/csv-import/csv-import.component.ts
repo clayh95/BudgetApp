@@ -3,6 +3,9 @@ import { ITransaction } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
 import { map } from 'rxjs/operators';
+import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
+import {default as _rollupMoment, Moment} from 'moment';
+const moment = _rollupMoment
 
 @Component({
   selector: 'app-csv-import',
@@ -42,21 +45,21 @@ export class CsvImportComponent {
         let objs = line.split(',');
         if (objs.length > 1) {
           let t = this.ConvertCSVToTransaction(objs);
-          //this should automatially put it in the right month PK :(
-          this.service.transactionCollection.ref
-            // .where('date','==',t.date) Let's not do date since we may move it around
-            .where('amount','==',t.amount)
-            .where('description','==',t.description).get().then(d => {
-              if (d.docs.length > 0){
-                this.importSummary.summaries.push(t);
-                this.importSummary.duplicates ++;
-                //TODO: (maybe) override capibility?
-              }
-              else {
-                this.service.transactionCollection.add(t);
-                this.importSummary.chargesImported ++;
-              }
-            });
+
+           this.checkTransaction(t)
+          // this.service.transactionCollection.ref
+          //   // .where('date','==',t.date) Let's not do date since we may move it around
+          //   // .where('amount','==',t.amount) Leave this out since we may break a charge up
+          //   .where('description','==',t.description).get().then(d => {
+          //     if (d.docs.length > 0){
+          //       this.importSummary.summaries.push(t);
+          //       this.importSummary.duplicates ++;
+          //     }
+          //     else {
+          //       this.service.transactionCollection.add(t);
+          //       this.importSummary.chargesImported ++;
+          //     }
+          //   });
           }
       });
       this.showSummary = true;
@@ -66,6 +69,38 @@ export class CsvImportComponent {
 
     fRdr.readAsText(this.selectedFile);
   }
+
+  async checkTransaction(t) {
+    let transactionsToAdd = [];
+    let promiseArray:Array<Promise<any>> = []
+    let d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
+    let pks = [this.service.monthYear.getValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
+    pks.forEach(p => promiseArray.push(this.service.CheckIfTransactionExists(p, t.description)));
+    await Promise.all(promiseArray).then(res => {
+      let b = false;
+      for (let r of res) {
+        if (r.docs.length > 0){
+          this.importSummary.summaries.push(t);
+          this.importSummary.duplicates ++;
+          b = true;
+          break;
+        }
+        if (res.indexOf(r) == res.length - 1) {
+          transactionsToAdd.push(t);
+        }
+      }
+    })
+
+    transactionsToAdd.forEach(t => {
+      this.service.transactionCollection.add(t);
+      this.importSummary.chargesImported ++;
+    })
+  }
+  
+
+  //Check current month and previous 2
+  //Break if value returned
+  //Might should put this in the service
 
   ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
     let t = {

@@ -6,13 +6,16 @@
         padding:8px;
     }
     .valueCategory {
-        width:15vw;
+        width:15%;
     }
     .valueAmount {
-        width:10vw;
+        width:5%;
     }
     .keyword-chip-list {
-        width:50vw
+        width:75%;
+        mat-form-field {
+            width:100%
+        }
     }
     /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
         padding-bottom: 0em;
@@ -25,8 +28,12 @@
 
 .categoryTableDiv {
     padding:10px;
+    display: inline-flex;
+    width:98%;
+    mat-card {
+        margin-right:10px
+    }
 }
-
 
 .tableTitle { 
     mat-form-field {
@@ -42,3 +49,20 @@ mat-card-title {
         float:right;
     }
 }
+
+.tableCard {
+    width:58%
+}
+
+.reportCard {
+    width:55%;
+    height:60%;
+}
+
+.raisedTable {
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+
+.BudgetChart {
+}
+

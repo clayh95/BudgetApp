@@ -138,6 +138,11 @@ export class DbService {
     this.init()
   }
 
+   CheckIfTransactionExists(monthYear, desc): Promise<any> {
+    let tmpColl = this.afs.collection(`monthsPK/${monthYear}/transactions`);
+    return tmpColl.ref.where('description','==',desc).get()
+  }
+
 
   //we'll want to bring the all the CRUD functions here so we validate them
   //perhaps create a pseudokey for the transactions
