@@ -17,7 +17,7 @@
 </mat-form-field>
 <mat-form-field class="addTransactionField">
     <mat-select placeholder="Category" [(ngModel)]="data.category">
-        <mat-option *ngFor="let category of service.categories | async" [value]="category.name">
+        <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
           {{category.name}}
         </mat-option>
       </mat-select>

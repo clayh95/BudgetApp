@@ -24,7 +24,7 @@ export class CategoryTableComponent implements OnInit {
   dataSource: CategoryTableDataSource;
 
   displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
-  filter = new BehaviorSubject<string>("")
+  filter = new BehaviorSubject<string>("");
 
   totalBudgeted: number
 
@@ -39,17 +39,17 @@ export class CategoryTableComponent implements OnInit {
   BudgetChart: Chart;
   BudgetConfig: Chart.ChartConfiguration = {};
 
-  constructor(private service: DbService, public dialog: MatDialog) {}
+  constructor(public CATsvc: DbService, public dialog: MatDialog) {}
 
   ngOnInit() {
     this.dataSource = new CategoryTableDataSource(this.paginator, 
                                                   this.sort, 
-                                                  this.service.categories,
+                                                  this.CATsvc.categories,
                                                   this.filter);
     this.sort.direction = "asc";
     this.sort.active = "category";
 
-    this.service.categories.subscribe(cats => {
+    this.CATsvc.categories.subscribe(cats => {
       if (this.BudgetChart) {this.BudgetChart.destroy()}
       cats = cats.filter(c => c.name.toLowerCase() != 'income')
       this.BudgetChart = new Chart('canvasBudget', {type: 'doughnut', options: {legend: {display: true}}})
@@ -67,30 +67,30 @@ export class CategoryTableComponent implements OnInit {
   }
 
   addCategory() {
-    let newCategoryRef = this.service.categoriesCollection.ref.doc();
+    let newCategoryRef = this.CATsvc.categoriesCollection.ref.doc();
     newCategoryRef.set({name: "", keywords: [], budgeted: null});
   }
 
   deleteCategory(id, name) {
     //TODO: Prompt here...
-    this.service.categoriesCollection.doc(id).delete();
+    this.CATsvc.categoriesCollection.doc(id).delete();
     this.updateRelatedTransactions(name, '')
   }
 
   updateRelatedTransactions(catName, value) {
-    this.service.transactionCollection.ref.where("category","==",catName)
+    this.CATsvc.transactionCollection.ref.where("category","==",catName)
       .get()
       .then(d => {
         if (d.docs.length > 0) {
           d.docs.forEach(doc =>{
-            this.service.transactionCollection.ref.doc(doc.id).update({category: value})
+            this.CATsvc.transactionCollection.ref.doc(doc.id).update({category: value})
           })
         }
       })
   }
 
   valueChanged(event, id, colName) {
-    let keyRef =  this.service.categoriesCollection.doc(id);
+    let keyRef =  this.CATsvc.categoriesCollection.doc(id);
     let colUpdate = {};
     colUpdate[`${colName}`] = event.target.value;
     if (colName.toLowerCase() == 'name') {
@@ -109,7 +109,7 @@ export class CategoryTableComponent implements OnInit {
     const value = event.value;
 
     if ((value || '').trim()) {
-      let keyRef =  this.service.categoriesCollection.doc(id);
+      let keyRef =  this.CATsvc.categoriesCollection.doc(id);
       if (keyRef) keyRef.update({keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())})
     }
 
@@ -119,7 +119,7 @@ export class CategoryTableComponent implements OnInit {
   }
 
   removeKeyword(kw: string, id): void {
-    let keyRef =  this.service.categoriesCollection.doc(id);
+    let keyRef =  this.CATsvc.categoriesCollection.doc(id);
     if (keyRef) keyRef.update({keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())})
   }
 

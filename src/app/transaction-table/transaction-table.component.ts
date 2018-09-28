@@ -16,34 +16,32 @@ export class TransactionTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: TransactionTableDataSource;
-  categories;
   displayedColumns = ['id', 'date', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("")
 
   // firstDay, lastDay;
 
-  constructor(private service: DbService,
+  constructor(public Tsvc: DbService,
               public dialog: MatDialog) {
 
-    this.categories = this.service.categories;
   }
 
   ngOnInit() {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
                                                       this.sort, 
-                                                      this.service,
+                                                      this.Tsvc,
                                                       this.filter);
     this.sort.direction = "asc";
     this.sort.active = "date";
   }
 
   TransactionCategoryChanged(id, value) {
-    let tRef =  this.service.transactionCollection.doc(id);
+    let tRef =  this.Tsvc.transactionCollection.doc(id);
     if (tRef) tRef.update({category: value});
   }
 
   valueChanged(event, id, colName) {
-    let keyRef =  this.service.transactionCollection.doc(id);
+    let keyRef =  this.Tsvc.transactionCollection.doc(id);
     let colUpdate = {};
     colUpdate[`${colName}`] = event.target.value;
     if (keyRef) keyRef.update(colUpdate);
@@ -56,13 +54,13 @@ export class TransactionTableComponent implements OnInit {
 
   deleteTransaction(id) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-      this.service.transactionCollection.doc(id).delete();
+      this.Tsvc.transactionCollection.doc(id).delete();
     }
   }
 
   editTransaction(id) {
     let t:ITransaction
-    this.service.transactionCollection.doc(id).ref.get().then(d => {
+    this.Tsvc.transactionCollection.doc(id).ref.get().then(d => {
       const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: <ITransaction>{id: d.id, ...d.data()}})
     })
   }

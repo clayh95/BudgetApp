@@ -33,7 +33,7 @@ export class AddTransactionComponent {
 
   tmpDate:Moment
 
-  constructor(private service: DbService, 
+  constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: ITransaction) {
 
@@ -44,13 +44,13 @@ export class AddTransactionComponent {
 
   Add() {
     this.data.date = this.tmpDate.format('MM/DD/YYYY')
-    this.service.AddOrUpdateTransaction(this.data, tAction.add)
+    this.ATsvc.AddOrUpdateTransaction(this.data, tAction.add)
     this.dialogRef.close();
   }
 
   Update() {
     this.data.date = this.tmpDate.format('MM/DD/YYYY')
-    this.service.AddOrUpdateTransaction(this.data, tAction.update)
+    this.ATsvc.AddOrUpdateTransaction(this.data, tAction.update)
     this.dialogRef.close();
   }
 

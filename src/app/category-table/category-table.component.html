@@ -74,7 +74,7 @@
           </table>
 
           <mat-paginator #paginator
-            [length]="dataSource.categories.length"
+            [length]="CATsvc.categories.getValue().length"
             [pageIndex]="0"
             [pageSize]="5"
             [pageSizeOptions]="[5, 10, 25]">

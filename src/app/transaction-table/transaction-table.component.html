@@ -58,7 +58,7 @@
         <td mat-cell class="category" *matCellDef="let row">
           <mat-form-field>
             <mat-select placeholder="Category" [value]="row.category">
-              <mat-option *ngFor="let category of categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
+              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
                 {{category.name}}
               </mat-option>
             </mat-select>
@@ -73,7 +73,7 @@
     </table>
 
   <mat-paginator #paginator
-    [length]="service.transactions.length"
+    [length]="Tsvc.transactions.getValue().length"
     [pageIndex]="0"
     [pageSize]="10"
     [pageSizeOptions]="[10, 25, 50]">
