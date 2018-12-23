@@ -31,28 +31,41 @@ export interface addEditTrans {
 })
 export class AddTransactionComponent {
 
-  tmpDate:Moment
+  tmpDate:Moment[]
 
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction) {
+              @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
 
-                if (this.data.date !== undefined) {
-                  this.tmpDate = moment(this.data.date)
+                //IInitial date should always be the first one
+                if (this.data[0].date !== undefined) {
+                  this.tmpDate = [moment(this.data[0].date)];
                 }
               }
 
   Add() {
-    this.data.date = this.tmpDate.format('MM/DD/YYYY')
-    this.ATsvc.AddOrUpdateTransaction(this.data, tAction.add)
+    this.data.map((tr, index) => {
+      tr.date = this.tmpDate[index].format('MM/DD/YYYY')
+      this.ATsvc.AddOrUpdateTransaction(tr, tAction.add)
+    })
     this.dialogRef.close();
   }
 
   Update() {
-    this.data.date = this.tmpDate.format('MM/DD/YYYY')
-    this.ATsvc.AddOrUpdateTransaction(this.data, tAction.update)
+    this.data.map((tr, index) => {
+      tr.date = this.tmpDate[index].format('MM/DD/YYYY')
+      this.ATsvc.AddOrUpdateTransaction(tr, tAction.update)
+    })
     this.dialogRef.close();
   }
+
+  Split() {
+    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
+    this.data.push(t);
+    //data should be a list of iTransaction. Each split adds an object. On save, you update the original and add each new one
+    //Show the total on split. Don't show a Submit Split button until the totals match
+  }
+
 
   // Commit(doc:firebase.firestore.DocumentReference) {
   //   this.data.date = this.tmpDate.format('MM/DD/YYYY')

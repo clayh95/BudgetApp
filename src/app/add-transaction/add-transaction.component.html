@@ -1,24 +1,27 @@
 
-<button mat-raised-button color="primary" *ngIf="data.id === undefined" (click)="Add()">Add</button>
-<button mat-raised-button color="primary" *ngIf="data.id !== undefined" (click)="Update()">Update</button>
-<mat-form-field class="addTransactionFieldShort">
-  <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate">
-  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-  <mat-datepicker #picker></mat-datepicker>
-</mat-form-field>
-<mat-form-field class="addTransactionFieldShort">
-  <input matInput placeholder="Amount" [(ngModel)]="data.amount"/>
-</mat-form-field>
-<mat-form-field class="addTransactionField">
-  <input matInput placeholder="Description" [(ngModel)]="data.description"/>
-</mat-form-field>
-<mat-form-field class="addTransactionField">
-  <input matInput placeholder="Notes" [(ngModel)]="data.notes"/>
-</mat-form-field>
-<mat-form-field class="addTransactionField">
-    <mat-select placeholder="Category" [(ngModel)]="data.category">
-        <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
-          {{category.name}}
-        </mat-option>
-      </mat-select>
-</mat-form-field>
+<button mat-raised-button color="primary" *ngIf="data[0].id === undefined" (click)="Add()">Add</button>
+<button mat-raised-button color="primary" *ngIf="data[0].id !== undefined" (click)="Update()">Update</button>
+<button mat-raised-button color="primary" *ngIf="data[0].id !== undefined" (click)="Split()">Split</button>
+<div *ngFor="let t of data; index as i">
+  <mat-form-field class="addTransactionFieldShort">
+    <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+  <mat-form-field class="addTransactionFieldShort">
+    <input matInput placeholder="Amount" [(ngModel)]="t.amount"/>
+  </mat-form-field>
+  <mat-form-field class="addTransactionField">
+    <input matInput placeholder="Description" [(ngModel)]="t.description"/>
+  </mat-form-field>
+  <mat-form-field class="addTransactionField">
+    <input matInput placeholder="Notes" [(ngModel)]="t.notes"/>
+  </mat-form-field>
+  <mat-form-field class="addTransactionField">
+      <mat-select placeholder="Category" [(ngModel)]="t.category">
+          <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
+            {{category.name}}
+          </mat-option>
+        </mat-select>
+  </mat-form-field>
+</div>

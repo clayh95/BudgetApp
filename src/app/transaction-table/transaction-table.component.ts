@@ -31,7 +31,7 @@ export class TransactionTableComponent implements OnInit {
                                                       this.sort, 
                                                       this.Tsvc,
                                                       this.filter);
-    this.sort.direction = "asc";
+    this.sort.direction = "desc";
     this.sort.active = "date";
   }
 
@@ -49,7 +49,7 @@ export class TransactionTableComponent implements OnInit {
 
   addTransaction() {
     let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: t})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: [t]})
   }
 
   deleteTransaction(id) {
@@ -61,7 +61,7 @@ export class TransactionTableComponent implements OnInit {
   editTransaction(id) {
     let t:ITransaction
     this.Tsvc.transactionCollection.doc(id).ref.get().then(d => {
-      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: <ITransaction>{id: d.id, ...d.data()}})
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [<ITransaction>{id: d.id, ...d.data()}]})
     })
   }
 

@@ -29,7 +29,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     const dataMutations = [
       this.service.transactions,
       this.paginator.page.pipe(startWith(1)),
-      this.sort.sortChange.pipe(startWith(0)),
+      this.sort.sortChange.pipe(startWith('0')),
       this.filter
       // this.beginDateChange,
       // this.endDateChange
