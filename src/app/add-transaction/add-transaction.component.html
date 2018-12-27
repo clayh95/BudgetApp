@@ -1,27 +1,50 @@
 
-<button mat-raised-button color="primary" *ngIf="data[0].id === undefined" (click)="Add()">Add</button>
-<button mat-raised-button color="primary" *ngIf="data[0].id !== undefined" (click)="Update()">Update</button>
-<button mat-raised-button color="primary" *ngIf="data[0].id !== undefined" (click)="Split()">Split</button>
-<div *ngFor="let t of data; index as i">
-  <mat-form-field class="addTransactionFieldShort">
-    <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
-  <mat-form-field class="addTransactionFieldShort">
-    <input matInput placeholder="Amount" [(ngModel)]="t.amount"/>
-  </mat-form-field>
-  <mat-form-field class="addTransactionField">
-    <input matInput placeholder="Description" [(ngModel)]="t.description"/>
-  </mat-form-field>
-  <mat-form-field class="addTransactionField">
-    <input matInput placeholder="Notes" [(ngModel)]="t.notes"/>
-  </mat-form-field>
-  <mat-form-field class="addTransactionField">
-      <mat-select placeholder="Category" [(ngModel)]="t.category">
-          <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
-            {{category.name}}
-          </mat-option>
-        </mat-select>
-  </mat-form-field>
-</div>
+<button mat-icon-button *ngIf="data[0].id === undefined" (click)="Add()"><mat-icon>save</mat-icon></button>
+<button mat-icon-button *ngIf="data[0].id !== undefined && origTotal == newTotal" (click)="Update()"><mat-icon>save</mat-icon></button>
+<button mat-icon-button class="rotateIcon" *ngIf="data[0].id !== undefined" (click)="Split()"><mat-icon>call_split</mat-icon></button>
+  <div *ngFor="let t of dummyCopy">
+      <mat-form-field class="addTransactionFieldShort">
+          <input disabled matInput [matDatepicker]="picker" placeholder="Date" [value]="tmpDate[0]">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field class="addTransactionFieldShort">
+          <input disabled matInput placeholder="Amount" [value]="t.amount"/>
+        </mat-form-field>
+        <mat-form-field class="addTransactionField">
+          <input disabled matInput placeholder="Description" [value]="t.description"/>
+        </mat-form-field>
+        <mat-form-field class="addTransactionField">
+          <input disabled matInput placeholder="Notes" [value]="t.notes"/>
+        </mat-form-field>
+        <mat-form-field class="addTransactionField">
+          <input disabled matInput placeholder="Category" [value]="t.category"/>
+        </mat-form-field>
+  </div>
+  <div *ngFor="let t of data; index as i">
+    <mat-form-field class="addTransactionFieldShort">
+      <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field class="addTransactionFieldShort">
+      <input matInput placeholder="Amount" (blur)="UpdateTotal()" [(ngModel)]="t.amount"/>
+    </mat-form-field>
+    <mat-form-field class="addTransactionField">
+      <input matInput placeholder="Description" [(ngModel)]="t.description"/>
+    </mat-form-field>
+    <mat-form-field class="addTransactionField">
+      <input matInput placeholder="Notes" [(ngModel)]="t.notes"/>
+    </mat-form-field>
+    <mat-form-field class="addTransactionField">
+        <mat-select placeholder="Category" [(ngModel)]="t.category">
+            <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
+              {{category.name}}
+            </mat-option>
+          </mat-select>
+    </mat-form-field>
+  </div>
+  <mat-card class="info-card" *ngIf="origTotal != newTotal">
+    <mat-icon>error</mat-icon>
+    Totals do not match!
+  </mat-card>
