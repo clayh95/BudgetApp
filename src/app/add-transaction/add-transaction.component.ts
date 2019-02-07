@@ -86,15 +86,8 @@ export class AddTransactionComponent {
 
   UpdateTotal() {
     if (this.data.length > 1) {
-      this.newTotal = this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
+      this.newTotal = parseFloat(this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
     }
   }
-
-
-  // Commit(doc:firebase.firestore.DocumentReference) {
-  //   this.data.date = this.tmpDate.format('MM/DD/YYYY')
-  //   doc.set({date: this.data.date, description: this.data.description, amount: this.data.amount, notes:this.data.notes, category: this.data.category}) //Doing this so as not to add the ID property
-  //   this.dialogRef.close();
-  // }
 
 }

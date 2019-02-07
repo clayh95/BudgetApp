@@ -117,12 +117,14 @@ export class CsvImportComponent {
     tDesc = tDesc.toUpperCase();
     let ret = '';
     this.service.categories.getValue().map(c => {
-      c.keywords.map(k => {
-        if (tDesc.indexOf(k.toUpperCase()) >= 0) {
-          ret = c.name;
-          return ret;
-        }
-      })
+      if (c.keywords) {
+        c.keywords.map(k => {
+          if (tDesc.indexOf(k.toUpperCase()) >= 0) {
+            ret = c.name;
+            return ret;
+          }
+        })
+      }
     });
     return ret;
   }
