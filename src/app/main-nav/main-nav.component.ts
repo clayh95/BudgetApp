@@ -10,6 +10,7 @@ import { map } from 'rxjs/operators';
 })
 export class MainNavComponent {
 
+  //can this be put into a service?
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches)
