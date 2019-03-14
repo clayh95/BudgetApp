@@ -9,3 +9,14 @@ mat-form-field {
         font-size:34px;
     }
 }
+
+@media(max-width: 600px) {
+    .pickerDiv {
+        /deep/ .mat-form-field-infix {
+            width:4em !important;
+        }
+        /deep/ .mat-form-field-label-wrapper {
+            display:none !important;
+        }
+    }
+}

@@ -3,7 +3,7 @@
     width:100%;
 
     .mat-cell, .mat-header-cell {
-        padding:1em;
+        padding: 8px;
     }
 
     .actions {
@@ -51,7 +51,7 @@
 
 .tableTitle { 
     mat-form-field {
-        width:20em;
+        width:100%;
     }
 }
 
@@ -69,43 +69,47 @@
 }
 
 @media(max-width: 1000px) {
-    .mat-header-row {
-      display: none;
-    }
-  
-    .mat-row { 
-      display: flex;
-      flex-direction: column;
-      align-items: start;
-      padding: 8px 24px;
-      width:100%;
-      border-bottom-width: 1px;
-      border-bottom-style: solid;
-    }
+    .transactionTable{
 
-    .mat-cell {
-        width: 100% !important;
-        border-bottom: none;
-        padding-bottom: 5px;
-    }
-
-    .mat-form-field {
-        width: 100%;
-    }
-
-    .mobile {
-        display:flex ;
-        float: right;
-    }
-
-    .actions{
-        .mat-icon-button {
+        .mat-header-row {
+            display: none;
+          }
+        
+          .mat-row { 
             display: flex;
-            float: right;
-        }
+            flex-direction: column;
+            align-items: start;
+            padding: 15px;
+            width:100%;
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+          }
+      
+          .mat-cell {
+              width: 100% !important;
+              border-bottom: none;
+              padding: 0px 0px 5px 0px;
+          }
+      
+          .mat-form-field {
+              width: 100%;
+          }
+      
+          .mobile {
+              display:flex ;
+              float: right;
+          }
+      
+          .actions{
+              .mat-icon-button {
+                  display: flex;
+                  float: right;
+              }
+          }
+      
+          .nonMobile {
+              display: none;
+          }
     }
 
-    .nonMobile {
-        display: none;
-    }
   }

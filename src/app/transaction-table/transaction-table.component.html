@@ -7,7 +7,7 @@
           <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Transactions">
         </mat-form-field>
   </mat-card-title>
-  <mat-card-content class="raisedTable">
+  <mat-card-content>
       
     <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
       <!-- id Column -->
