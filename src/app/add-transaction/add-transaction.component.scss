@@ -19,3 +19,20 @@ button {
 .info-card {
     width:25%;
 }
+.transactionFields {
+    display: flex;
+    flex-direction: row;
+}
+
+@media(max-width: 1000px) {
+    
+    .transactionFields {
+       flex-direction: column;
+    }
+
+    .transactionFields {
+        .addTransactionField, .addTransactionFieldShort {
+            width: 100% !important;
+        }
+    }
+}

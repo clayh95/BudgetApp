@@ -13,7 +13,7 @@
       <!-- id Column -->
       <ng-container matColumnDef="id">
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
-          <td mat-cell class="actions" *matCellDef="let row">
+          <td mat-cell class="actions desktop" *matCellDef="let row">
               <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
               <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
           </td>
@@ -21,29 +21,30 @@
       </ng-container>
       
       <div>
-      <!-- date Column -->
-      <ng-container matColumnDef="date">
-        <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
-        <td mat-cell class="date" *matCellDef="let row">
-          {{row.date}}
-          <span class="mobile">{{row.amount | currency}}</span>
-        </td>
-        <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
+        <!-- date Column -->
+        <ng-container matColumnDef="date">
+          <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
+          <td mat-cell class="date" *matCellDef="let row">
+            {{row.date}}
+            <span class="mobile">{{row.amount | currency}}</span>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
 
-      <!-- amount Column -->
-      <ng-container matColumnDef="amount">
-        <th mat-header-cell class="amount" *matHeaderCellDef mat-sort-header>Amount</th>
-        <td mat-cell class="amount nonMobile" *matCellDef="let row">
-          {{row.amount | currency}}
-        </td>
-        <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
-      </ng-container>
-    </div>
+        <!-- amount Column -->
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell class="amount" *matHeaderCellDef mat-sort-header>Amount</th>
+          <td mat-cell class="amount desktop" *matCellDef="let row">
+            {{row.amount | currency}}
+          </td>
+          <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
+        </ng-container>
+      </div>
+
       <!-- description Column -->
       <ng-container matColumnDef="description">
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
-        <td mat-cell class="description" *matCellDef="let row">
+        <td mat-cell class="description" (click)="editTransaction(row.id)" *matCellDef="let row">
           {{row.description}}
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
@@ -52,7 +53,7 @@
       <!-- notes Column -->
       <ng-container matColumnDef="notes">
         <th mat-header-cell class="notes" *matHeaderCellDef mat-sort-header>Notes</th>
-        <td mat-cell class="notes" *matCellDef="let row">
+        <td mat-cell class="notes desktop" *matCellDef="let row">
           <mat-form-field class="example-full-width">
             <input matInput placeholder="Notes" value="{{row.notes}}" (blur)="valueChanged($event, row.id, 'notes')"/>
           </mat-form-field>

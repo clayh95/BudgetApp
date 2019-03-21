@@ -90,4 +90,11 @@ export class AddTransactionComponent {
     }
   }
 
+  deleteTransaction(id) {
+    if (confirm('Are you sure you want to delete this transaction?')) {
+      this.ATsvc.transactionCollection.doc(id).delete();
+      this.dialogRef.close();
+    }
+  }
+
 }

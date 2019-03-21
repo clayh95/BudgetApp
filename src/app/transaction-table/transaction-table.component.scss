@@ -75,20 +75,29 @@
             display: none;
           }
         
-          .mat-row { 
+          tr { 
             display: flex;
             flex-direction: column;
             align-items: start;
-            padding: 15px;
-            width:100%;
-            border-bottom-width: 1px;
-            border-bottom-style: solid;
+            padding: 10px;
+            width:93%;
+            .date {
+                font-weight: bold;
+            }
+            .description {
+              overflow: hidden;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              /* autoprefixer: off */
+             -webkit-box-orient: vertical;
+             /* autoprefixer: on */
+            }
           }
       
           .mat-cell {
               width: 100% !important;
               border-bottom: none;
-              padding: 0px 0px 5px 0px;
+              padding: 0px;
           }
       
           .mat-form-field {
@@ -107,7 +116,7 @@
               }
           }
       
-          .nonMobile {
+          .desktop {
               display: none;
           }
     }

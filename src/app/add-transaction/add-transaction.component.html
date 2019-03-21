@@ -2,6 +2,7 @@
 <button mat-icon-button *ngIf="data[0].id === undefined" (click)="Add()"><mat-icon>save</mat-icon></button>
 <button mat-icon-button *ngIf="data[0].id !== undefined && origTotal == newTotal" (click)="Update()"><mat-icon>save</mat-icon></button>
 <button mat-icon-button class="rotateIcon" *ngIf="data[0].id !== undefined" (click)="Split()"><mat-icon>call_split</mat-icon></button>
+<button mat-icon-button *ngIf="data[0].id !== undefined" (click)="deleteTransaction(data[0].id)"><mat-icon>delete</mat-icon></button>
   <div *ngFor="let t of dummyCopy">
       <mat-form-field class="addTransactionFieldShort">
           <input disabled matInput [matDatepicker]="picker" placeholder="Date" [value]="tmpDate[0]">
@@ -21,7 +22,7 @@
           <input disabled matInput placeholder="Category" [value]="t.category"/>
         </mat-form-field>
   </div>
-  <div *ngFor="let t of data; index as i">
+  <div class="transactionFields" *ngFor="let t of data; index as i">
     <mat-form-field class="addTransactionFieldShort">
       <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
