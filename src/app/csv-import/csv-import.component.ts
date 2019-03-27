@@ -39,7 +39,7 @@ export class CsvImportComponent {
     this.importSummary.duplicates = 0;
 
     fRdr.onload = (e) => {
-      let res: string = fRdr.result;
+      let res: string = fRdr.result.toString();
       let lines: Array<string> = res.replace(/"/g, "").split('\n');
       lines.map(line => {
         let objs = line.split(',');
@@ -47,19 +47,6 @@ export class CsvImportComponent {
           let t = this.ConvertCSVToTransaction(objs);
 
            this.checkTransaction(t)
-          // this.service.transactionCollection.ref
-          //   // .where('date','==',t.date) Let's not do date since we may move it around
-          //   // .where('amount','==',t.amount) Leave this out since we may break a charge up
-          //   .where('description','==',t.description).get().then(d => {
-          //     if (d.docs.length > 0){
-          //       this.importSummary.summaries.push(t);
-          //       this.importSummary.duplicates ++;
-          //     }
-          //     else {
-          //       this.service.transactionCollection.add(t);
-          //       this.importSummary.chargesImported ++;
-          //     }
-          //   });
           }
       });
       this.showSummary = true;

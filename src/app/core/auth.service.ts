@@ -2,9 +2,7 @@ import { Injectable } from '@angular/core';
 import { IUser } from './dataTypes';
 import {Router} from '@angular/router';
 
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/switchMap';
-import { of } from 'rxjs';
+import { Observable ,  of } from 'rxjs';
 import * as firebase from 'firebase/app';
 import { AngularFireAuth } from '../../../node_modules/angularfire2/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '../../../node_modules/angularfire2/firestore';
