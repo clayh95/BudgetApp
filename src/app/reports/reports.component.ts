@@ -144,7 +144,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
           this.spent = this.reportCats.map(c => c.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
           this.spent = +this.spent.toFixed(2)
 
-          this.totalBudgeted = this.reportCats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
+          let tmp: number = this.reportCats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
+          this.totalBudgeted = +tmp.toFixed(2);
 
           this.ExpensesChart.data.labels = this.reportCats.map(x => [x.name, (x.budgeted-x.spent).toFixed(2)])
           this.ExpensesChart.data.datasets.push({

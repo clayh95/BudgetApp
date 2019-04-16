@@ -16,6 +16,8 @@
           <td mat-cell class="actions desktop" *matCellDef="let row">
               <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
               <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
+              <button *ngIf="row.status == 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:orange">warning</mat-icon></button>
+              <button *ngIf="row.status != 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:green">check_circle_outline</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addTransaction()"><mat-icon>add</mat-icon></button> </td>
       </ng-container>
@@ -26,7 +28,11 @@
           <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
           <td mat-cell class="date" *matCellDef="let row">
             {{row.date}}
-            <span class="mobile">{{row.amount | currency}}</span>
+            <span class="mobile">
+              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
+              <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
+              {{row.amount | currency}}
+            </span>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>

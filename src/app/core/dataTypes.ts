@@ -5,9 +5,15 @@ export interface ITransaction {
     description: string;
     category: string;
     notes?: string;
+    status?: string;
 }
 
-export interface IUser { 
+export enum ITransactionStatus {
+    pending = 'Pending',
+    posted = 'Posted'
+}
+
+export interface IUser {
     uid: string;
     email: string;
     displayName: string;

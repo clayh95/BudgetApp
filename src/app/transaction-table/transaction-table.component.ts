@@ -48,7 +48,7 @@ export class TransactionTableComponent implements OnInit {
   }
 
   addTransaction() {
-    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: ""}
+    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:""}
     const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: [t]})
   }
 

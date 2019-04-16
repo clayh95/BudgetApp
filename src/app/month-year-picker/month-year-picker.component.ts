@@ -34,7 +34,7 @@ export class MonthYearPickerComponent {
   constructor(private service: DbService) {
     this.service.monthYear.subscribe(my => {
         if (moment(this.date.value).format(MMYY_FORMAT.display.dateInput) != this.service.monthYear.getValue()) {
-          let d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
+          const d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
           this.date.setValue(moment(d))
         }
       })

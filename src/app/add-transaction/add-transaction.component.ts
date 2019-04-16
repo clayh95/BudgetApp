@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { ITransaction } from '../core/dataTypes'
+import { ITransaction, ITransactionStatus } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
@@ -78,7 +78,7 @@ export class AddTransactionComponent {
       this.dummyCopy.push({...this.data[0]});
     }
     this.tmpDate.push(this.tmpDate[0]); //set the date to the orig date
-    let t = <ITransaction>{date:this.data[0].date, description:this.data[0].description, amount:"0", category:"", notes: `[${this.data.length} of ${this.data.length}]`}
+    let t = <ITransaction>{date:this.data[0].date, description:this.data[0].description, amount:"0", category:"", notes: `[${this.data.length} of ${this.data.length}]`, status: this.data[0].status}
     this.data.push(t);
     this.data.map((tr, index) => {tr.notes = tr.notes.replace(/\[[0-9] of [0-9]\]$/gi, `[${index+1} of ${this.data.length}]`)});
     this.UpdateTotal();

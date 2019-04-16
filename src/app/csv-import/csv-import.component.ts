@@ -5,7 +5,7 @@ import { DbService } from '../core/db.service';
 import { map } from 'rxjs/operators';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
 import {default as _rollupMoment, Moment} from 'moment';
-const moment = _rollupMoment
+const moment = _rollupMoment;
 
 @Component({
   selector: 'app-csv-import',
@@ -45,8 +45,7 @@ export class CsvImportComponent {
         let objs = line.split(',');
         if (objs.length > 1) {
           let t = this.ConvertCSVToTransaction(objs);
-
-           this.checkTransaction(t)
+          this.checkTransaction(t)
           }
       });
       this.showSummary = true;
@@ -57,19 +56,17 @@ export class CsvImportComponent {
     fRdr.readAsText(this.selectedFile);
   }
 
-  async checkTransaction(t) {
+  async checkTransaction(t:ITransaction) {
     let transactionsToAdd = [];
     let promiseArray:Array<Promise<any>> = []
     let d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
     let pks = [this.service.monthYear.getValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
     pks.forEach(p => promiseArray.push(this.service.CheckIfTransactionExists(p, t.description)));
     await Promise.all(promiseArray).then(res => {
-      let b = false;
       for (let r of res) {
         if (r.docs.length > 0){
           this.importSummary.summaries.push(t);
           this.importSummary.duplicates ++;
-          b = true;
           break;
         }
         if (res.indexOf(r) == res.length - 1) {
