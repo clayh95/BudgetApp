@@ -4,11 +4,23 @@ import * as CryptoJS from 'crypto-js';
 import * as dataTypes from '../../src/app/core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import moment = require('moment');
-import { MMYY_FORMAT } from '../../src/app/month-year-picker/month-year-picker.component';
 import { environment } from './environments/environments.prod';
 import * as appEnviroment from '../../src/environments/environment.prod';
 
 admin.initializeApp(functions.config().firebase);
+
+const MMYY_FORMAT = {
+    parse: {
+      dateInput: 'MM/YYYY',
+    },
+    display: {
+      dateInput: 'MM/YYYY',
+      monthYearLabel: 'MMM YYYY',
+      dateA11yLabel: 'LL',
+      monthYearA11yLabel: 'MMMM YYYY',
+      noSlash: 'MMYYYY'
+    },
+  };
 
 export const autoImport = functions.https.onRequest(async (request, response) => {
 
@@ -58,12 +70,15 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
             querySnapshot.forEach(doc => {
                 doc.ref.delete().then(() => {
                     retVal += `Deleted doc ${doc.ref.id}\n`;
+                }).catch(e => {
+                    retVal += e.toString();
                 });
             });
         }).then(function() {
             retVal += 'Delete complete\n';
         }).catch(e => {
             retVal += e.toString();
+            return retVal;
         }); 
 
 
@@ -71,6 +86,9 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     pendTrans.map(t => {
         transactionCollection.add(t).then(() => {
             retVal += 'Add pending: ' + JSON.stringify(t) + '\n';
+        }).catch(e => {
+            retVal += e.toString();
+            return retVal;
         });
     })
 
@@ -82,6 +100,9 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
         .map(t => {
             transactionCollection.add(t).then(r => {
                 retVal += 'Add Posted: ' + JSON.stringify(t) + '\n';
+            }).catch(e => {
+                retVal += e.toString();
+                return retVal;
             });
         });
 
@@ -109,8 +130,8 @@ function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransact
 }
 
 function Currency(val:string, sign:string) {
-    val = val.replace(/\$/g,"");
-    let nVal = +val;
+    let tmp = val.replace(/\$/g,"");
+    let nVal = +tmp;
     if (sign === "-")
         nVal = -nVal;
     return formatCurrency(nVal, getLocaleId('en-US'), '','USD').replace(/,/g,"");
