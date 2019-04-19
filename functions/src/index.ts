@@ -6,6 +6,7 @@ import { formatCurrency, getLocaleId } from '@angular/common';
 import moment = require('moment');
 import { environment } from './environments/environments.prod';
 import * as appEnviroment from '../../src/environments/environment.prod';
+import { QueryDocumentSnapshot } from '@google-cloud/firestore';
 
 admin.initializeApp(functions.config().firebase);
 
@@ -29,32 +30,35 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     if (fireID !== appEnviroment.environment.firebase.apiKey)
         return response.send('App not authorized!');
 
-    let encPend:string = request.body["pendingTransactions"];
-    let encPost:string = request.body["postedTransactions"];
+    const encPend:string = request.body["pendingTransactions"];
+    const encPost:string = request.body["postedTransactions"];
 
-    let pendIn = JSON.parse(decrypt(encPend));
-    let postIn = JSON.parse(decrypt(encPost));
-
-    let pendTrans = Object.keys(pendIn).reduce((obj, key, idx) => {
-        obj[idx] = ConvertScrapeToTransaction(pendIn[key], dataTypes.ITransactionStatus.pending);
-        return obj;
-    }, []);
-
-    let postTrans = Object.keys(postIn).reduce((obj, key, idx) => {
-        obj[idx] = ConvertScrapeToTransaction(postIn[key], dataTypes.ITransactionStatus.posted);
-        return obj;
-    }, []);
+    const pendIn = JSON.parse(decrypt(encPend));
+    const postIn = JSON.parse(decrypt(encPost));
 
     //Get Latest date
     let currDate:moment.Moment;
     currDate = moment();
-    let monthPK:string = currDate.format(MMYY_FORMAT.display.noSlash); 
+    const monthPK:string = currDate.format(MMYY_FORMAT.display.noSlash); 
     const transactionCollection = admin.firestore().collection(`monthsPK/${monthPK}/transactions`);
+    const categoryCollection = admin.firestore().collection(`monthsPK/${monthPK}/categories`);
+    const cats = await categoryCollection.get().then(qs => {return qs.docs})
     let latestDate:string
+
+    const pendTrans = Object.keys(pendIn).reduce((obj, key, idx) => {
+        obj[idx] = ConvertScrapeToTransaction(pendIn[key], dataTypes.ITransactionStatus.pending, cats);
+        return obj;
+    }, []);
+
+    const postTrans = Object.keys(postIn).reduce((obj, key, idx) => {
+        obj[idx] = ConvertScrapeToTransaction(postIn[key], dataTypes.ITransactionStatus.posted, cats);
+        return obj;
+    }, []);
+
     await transactionCollection.where("status", "==", "Posted").get().then(querySnapshot => {
-        let arr = querySnapshot.docs
+        const arr = querySnapshot.docs
         arr.sort((a, b) => {
-            return +moment(a.data().date) - +moment(b.data().date)
+            return +moment(b.data().date, "MM/DD/YYYY") - +moment(a.data().date, "MM/DD/YYYY")
         })
         latestDate = arr[0].data().date;
     });
@@ -117,20 +121,37 @@ function decrypt(encString) {
     return testBytes.toString(CryptoJS.enc.Utf8);
 }
 
-function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransactionStatus): dataTypes.ITransaction {
+function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransactionStatus, cats: QueryDocumentSnapshot[]): dataTypes.ITransaction {
+    const desc:string = strTrans[2].replace(/\s\s+/g, ' ');
     const t = {
         "date" : moment(strTrans[1], "MM/DD/YYYY").format("MM/DD/YYYY"),
         "amount" : strTrans[4].trim() === "" ? Currency(strTrans[3], "+") : Currency(strTrans[4], "-"),
-        "description" : strTrans[2].replace(/\s\s+/g, ' '),
-        "category" : "", //Not a great way to do this right now...SetCategoryFromKeywords(strTrans[2]),
+        "description" : desc,
+        "category" : SetCategoryFromKeywords(desc, cats), //Not a great way to do this right now...SetCategoryFromKeywords(strTrans[2]),
         "notes" : "",
         "status": status
     }
     return <dataTypes.ITransaction>t;
 }
 
+function SetCategoryFromKeywords(tDesc: string, cats: QueryDocumentSnapshot[]): string {
+    const desc = tDesc.toUpperCase();
+    let ret = '';
+    cats.map(qds => {
+        if (qds.data().keywords) {
+            qds.data().keywords.map(k => {
+                if (desc.indexOf(k.toUpperCase()) >= 0) {
+                    ret = qds.data().name;
+                    return;
+                }
+            });
+        }
+    });
+    return ret;
+  }
+
 function Currency(val:string, sign:string) {
-    let tmp = val.replace(/\$/g,"");
+    const tmp = val.replace(/\$/g,"");
     let nVal = +tmp;
     if (sign === "-")
         nVal = -nVal;

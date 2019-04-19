@@ -102,7 +102,7 @@ export class DbService {
   }
 
   AddOrUpdateTransaction(data, action) {
-    const mPK = moment(data.date).format('MMYYYY');
+    const mPK = moment(data.date, "MM/DD/YYYY").format('MMYYYY');
     this.tmpColl = this.afs.collection(`monthsPK/${mPK}/transactions`);
     let toDelete: firebase.firestore.DocumentReference;
     if (mPK !== this.monthYear.getValue().replace(/\//g, '')) {

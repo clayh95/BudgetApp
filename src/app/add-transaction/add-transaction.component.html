@@ -32,10 +32,10 @@
       <input matInput placeholder="Amount" (blur)="UpdateTotal()" [(ngModel)]="t.amount"/>
     </mat-form-field>
     <mat-form-field class="addTransactionField">
-      <input matInput placeholder="Description" [(ngModel)]="t.description"/>
+      <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>
     </mat-form-field>
     <mat-form-field class="addTransactionField">
-      <input matInput placeholder="Notes" [(ngModel)]="t.notes"/>
+      <textarea matInput placeholder="Notes" [(ngModel)]="t.notes"></textarea>
     </mat-form-field>
     <mat-form-field class="addTransactionField">
         <mat-select placeholder="Category" [(ngModel)]="t.category">

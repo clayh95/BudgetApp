@@ -68,6 +68,19 @@
     height:auto;
 }
 
+.tableControls {
+    position: fixed;
+    bottom: 10px;
+    right: 25px;
+    display: flex;
+    padding: 5px;
+    mat-card-content {
+        display: flex;
+        align-items: center;
+        padding-right:10px;
+    }
+}
+
 @media(max-width: 1000px) {
     .transactionTable{
 
@@ -120,5 +133,27 @@
               display: none;
           }
     }
+
+    
+
+    .tableControls {
+        position: fixed;
+        bottom: 0px;
+        right: 5px;
+        display: flex;
+        padding: 5px;
+        width: auto;
+        height: auto;
+        transform: scale(.75);
+        .total {
+            display: none;
+        }
+        /deep/ .mat-paginator-page-size {
+            display: none !important;
+        }
+        /deep/ .mat-paginator-range-label {
+            display: none !important;
+        }
+      }
 
   }

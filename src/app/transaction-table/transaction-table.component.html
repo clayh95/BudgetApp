@@ -9,7 +9,7 @@
   </mat-card-title>
   <mat-card-content>
       
-    <table mat-table #table [dataSource]="dataSource" class="transactionTable" matSort aria-label="Elements">
+    <table mat-table #table [dataSource]="dataSource" [trackBy]="trackById" class="transactionTable" matSort aria-label="Elements">
       <!-- id Column -->
       <ng-container matColumnDef="id">
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
@@ -19,7 +19,7 @@
               <button *ngIf="row.status == 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:orange">warning</mat-icon></button>
               <button *ngIf="row.status != 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:green">check_circle_outline</mat-icon></button>
           </td>
-          <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addTransaction()"><mat-icon>add</mat-icon></button> </td>
+          <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
       
       <div>
@@ -43,7 +43,7 @@
           <td mat-cell class="amount desktop" *matCellDef="let row">
             {{row.amount | currency}}
           </td>
-          <td mat-footer-cell *matFooterCellDef>{{dataSource.total | currency}}</td> 
+          <td mat-footer-cell *matFooterCellDef></td> 
         </ng-container>
       </div>
 
@@ -85,21 +85,28 @@
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+      <!-- <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr> -->
     </table>
 
-  <mat-paginator #paginator
-    [length]="Tsvc.transactions.getValue().length"
-    [pageIndex]="0"
-    [pageSize]="10"
-    [pageSizeOptions]="[10, 25, 50]">
-  </mat-paginator>
+
+  
   
   </mat-card-content>
 </mat-card>
 </div>
 
-
+<mat-card class="tableControls">
+  <mat-card-content>
+    <span class="total">{{dataSource.total | currency}}</span>
+    <mat-paginator #paginator
+      [length]="Tsvc.transactions.getValue().length"
+      [pageIndex]="0"
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 25, 50]">
+    </mat-paginator>
+    <button class="add-fab" mat-mini-fab color="primary" (click)="addTransaction()"><mat-icon>add</mat-icon></button>
+  </mat-card-content>
+</mat-card>
 
 
 

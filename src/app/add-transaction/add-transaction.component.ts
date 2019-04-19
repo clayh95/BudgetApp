@@ -44,7 +44,7 @@ export class AddTransactionComponent {
 
                 //IInitial date should always be the first one
                 if (this.data[0].date !== undefined) {
-                  this.tmpDate = [moment(this.data[0].date)];
+                  this.tmpDate = [moment(this.data[0].date, "MM/DD/YYYY")];
                 }
                 this.origTotal = +data[0].amount;
                 this.newTotal = +data[0].amount;

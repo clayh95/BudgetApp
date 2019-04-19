@@ -68,4 +68,9 @@ export class TransactionTableComponent implements OnInit {
   applyFilter(filterValue: string) {
     this.filter.next(filterValue.trim().toLowerCase())
   }
+
+  trackById(index, item) {
+    return item.id;
+  }
+
 }
