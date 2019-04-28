@@ -151,7 +151,7 @@ function SetCategoryFromKeywords(tDesc: string, cats: QueryDocumentSnapshot[]): 
   }
 
 function Currency(val:string, sign:string) {
-    const tmp = val.replace(/\$/g,"");
+    const tmp = val.replace(/\$/g,"").replace(/,/g,"");
     let nVal = +tmp;
     if (sign === "-")
         nVal = -nVal;
