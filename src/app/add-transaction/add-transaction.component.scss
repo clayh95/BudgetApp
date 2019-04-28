@@ -22,12 +22,23 @@ button {
 .transactionFields {
     display: flex;
     flex-direction: row;
+    textarea {
+        resize: none;
+        height: 18px;
+        overflow: hidden;
+    }
 }
 
 @media(max-width: 1000px) {
     
     .transactionFields {
        flex-direction: column;
+       overflow: auto;
+       textarea {
+           resize: unset;
+           height: auto;
+           overflow: auto;
+       }
     }
 
     .transactionFields {
