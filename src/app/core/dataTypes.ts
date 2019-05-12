@@ -6,6 +6,7 @@ export interface ITransaction {
     category: string;
     notes?: string;
     status?: string;
+    changeAction?: string;
 }
 
 export enum ITransactionStatus {

@@ -122,7 +122,8 @@ export class DbService {
     }
     newDocRef.set({date: data.date, description: data.description, amount: data.amount, notes: data.notes, category: data.category, status: data.status}) //Enumerating all the fields to add the ID property
     //if not subscribed...
-    this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
+    //this seemed so wrong...there is probably some reason i will find
+    // this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
   }
 
   signOut() {

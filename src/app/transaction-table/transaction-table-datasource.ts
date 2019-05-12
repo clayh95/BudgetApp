@@ -4,6 +4,7 @@ import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
+import { isEqual } from '../../../node_modules/lodash';
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -14,6 +15,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   total:number;
   chargeCount:number;
+  lastIDs:ITransaction[] = [];
   // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
   // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
@@ -37,6 +39,8 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
     return combineLatest(...dataMutations).pipe(map((d) => {
       let val = <ITransaction[]>d[0];
+      if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
+      this.lastIDs = val;
       let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3])
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
@@ -46,6 +50,21 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   }
 
   disconnect() {}
+
+  private highlightUpserts(ret: ITransaction[]): ITransaction[] {
+    //start with just checking if exists
+    return ret.map(t => {
+      const compT = this.lastIDs.find(x => x.id === t.id);
+      if (compT === undefined) {
+        t.changeAction = 'added'
+      // } else if ( !isEqual(compT, t) ) { //Have some problems with isEqual
+      //   t.changeAction = 'modified';
+      } else { 
+        t.changeAction = '';
+      }
+      return t;
+    })
+  }
 
   private getPagedData(data: ITransaction[]) {
     const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
