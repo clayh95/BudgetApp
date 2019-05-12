@@ -223,7 +223,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
             amount: (c.budgeted-c.spent).toFixed(2), 
             category: c.name, 
             date: moment(dPlus).format('MM/DD/YYYY'),
-            notes: ""
+            notes: "",
+            status: ""
           }
         tmp += +t.amount;
         this.service.AddOrUpdateTransaction(t, tAction.add);
