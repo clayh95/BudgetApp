@@ -75,4 +75,10 @@ export class TransactionTableComponent implements OnInit {
     return item.id;
   }
 
+  rowsAnimationDone(row) {
+    if (row.changeAction) {
+      row.changeAction = '';
+    }
+  }
+
 }

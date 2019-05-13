@@ -4,7 +4,7 @@ import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
-import { isEqual } from '../../../node_modules/lodash';
+import * as _ from "lodash";
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -57,10 +57,8 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       const compT = this.lastIDs.find(x => x.id === t.id);
       if (compT === undefined) {
         t.changeAction = 'added'
-      // } else if ( !isEqual(compT, t) ) { //Have some problems with isEqual
-      //   t.changeAction = 'modified';
-      } else { 
-        t.changeAction = '';
+      } else if ( !_.isEqual( _.omit(compT, ['changeAction']), t) ) {
+        t.changeAction = 'modified';
       }
       return t;
     })
