@@ -9,7 +9,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
          MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
-         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule } from '@angular/material';
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule, MatExpansionModule, MatAccordion } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -28,6 +28,7 @@ import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.
 import { CopyCategoriesComponent } from './copy-categories/copy-categories.component';
 import { AddTransactionComponent } from './add-transaction/add-transaction.component';
 import { ReportsComponent } from './reports/reports.component';
+import { SummaryComponent } from './summary/summary.component';
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import { ReportsComponent } from './reports/reports.component';
     MonthYearPickerComponent,
     CopyCategoriesComponent,
     AddTransactionComponent,
-    ReportsComponent
+    ReportsComponent,
+    SummaryComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,
@@ -77,7 +79,8 @@ import { ReportsComponent } from './reports/reports.component';
     MomentDateModule,
     MatChipsModule,
     MatDialogModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   providers: [
     AngularFirestore,

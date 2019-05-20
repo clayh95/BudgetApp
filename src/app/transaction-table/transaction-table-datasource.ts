@@ -57,7 +57,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       const compT = this.lastIDs.find(x => x.id === t.id);
       if (compT === undefined) {
         t.changeAction = 'added'
-      } else if ( !_.isEqual( _.omit(compT, ['changeAction']), t) ) {
+      } else if ( !_.isEqual( _.omit(compT, ['changeAction']), _.omit(t, ['changeAction'])) ) {
         t.changeAction = 'modified';
       }
       return t;

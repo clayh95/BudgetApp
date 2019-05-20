@@ -1,0 +1,31 @@
+
+<!-- <div class="cardList">
+  <mat-card class="catCard" *ngFor="let cat of reportCats">
+    <mat-card-header>
+      <mat-card-title>{{cat.name}}</mat-card-title>
+      <mat-card-subtitle>{{cat.budgeted | currency}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="catAmounts">
+      <h2 [ngClass]="{'red': cat.budgeted - cat.spent < 0, 'green': cat.budgeted - cat.spent >= 0}">
+        Remaining: {{cat.budgeted - cat.spent | currency}}
+      </h2>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button (click)="showCharges=true">CHARGES</button>
+    </mat-card-actions>
+  </mat-card>
+</div> -->
+
+<mat-accordion>
+  <mat-expansion-panel *ngFor="let cat of reportCats">
+    <mat-expansion-panel-header>
+      <mat-panel-title>{{cat.name}} <br /> ({{cat.budgeted | currency}})</mat-panel-title>
+      <mat-panel-description [ngClass]="{'red': cat.budgeted - cat.spent < 0, 'green': cat.budgeted - cat.spent >= 0}">
+        {{cat.budgeted - cat.spent | currency}}
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    list transactions here...
+  </mat-expansion-panel>
+</mat-accordion>
+
+      <!-- <h3>{{cat.spent | currency}}</h3> -->
