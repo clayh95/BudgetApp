@@ -1,31 +1,30 @@
 
-<!-- <div class="cardList">
-  <mat-card class="catCard" *ngFor="let cat of reportCats">
-    <mat-card-header>
-      <mat-card-title>{{cat.name}}</mat-card-title>
-      <mat-card-subtitle>{{cat.budgeted | currency}}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content class="catAmounts">
-      <h2 [ngClass]="{'red': cat.budgeted - cat.spent < 0, 'green': cat.budgeted - cat.spent >= 0}">
-        Remaining: {{cat.budgeted - cat.spent | currency}}
-      </h2>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button (click)="showCharges=true">CHARGES</button>
-    </mat-card-actions>
-  </mat-card>
-</div> -->
+<mat-card class="margin">
+  <h4>Expected: {{this.incomeData.category.budgeted | currency}}</h4>
+  <h4>Total Budgeted: {{totalBudgeted | currency}}</h4>
+  <h4>Actual: {{income | currency}}</h4>
+  <h4>Spent: {{spent | currency}}</h4>
+</mat-card>
 
-<mat-accordion>
-  <mat-expansion-panel *ngFor="let cat of reportCats">
-    <mat-expansion-panel-header>
-      <mat-panel-title>{{cat.name}} <br /> ({{cat.budgeted | currency}})</mat-panel-title>
-      <mat-panel-description [ngClass]="{'red': cat.budgeted - cat.spent < 0, 'green': cat.budgeted - cat.spent >= 0}">
-        {{cat.budgeted - cat.spent | currency}}
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    list transactions here...
-  </mat-expansion-panel>
-</mat-accordion>
-
-      <!-- <h3>{{cat.spent | currency}}</h3> -->
+<div class="margin">
+  <mat-accordion>
+    <mat-expansion-panel *ngFor="let item of reportCats">
+      <mat-expansion-panel-header>
+        <mat-panel-title><span style="padding-top: 5px;">{{item.category.name}} <br /> ({{item.category.budgeted | currency}})</span></mat-panel-title>
+        <mat-panel-description [ngClass]="{'red': item.category.budgeted - item.category.spent < 0, 'green': item.category.budgeted - item.category.spent >= 0}">
+          <p style="font-weight: bold">{{item.category.budgeted - item.category.spent | currency}}</p>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-list dense>
+        <mat-list-item *ngFor="let trans of item.transactions">
+          <p matLine>
+            <span>{{trans.date}}</span>
+            <span style="float:right;font-weight: bold;">{{trans.amount | currency}}</span>
+          </p>
+          <p matLine>{{trans.description}} &nbsp;</p>
+          <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
+        </mat-list-item>
+      </mat-list>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
