@@ -1,22 +1,48 @@
 .margin {
-    margin: 10px;
+    margin: 10px 30% 10px 30%;
 }
 
 .red {
-    color: red;
+    color: orangered;
 }
 
 .green {
-    color: green;
+    color: darkseagreen;
 }
 
+.mat-expansion-panel-header {
+    padding: 5px 24px 5px 5px;
+}
 .mat-expansion-panel-header-description {
     text-align: right;
     display: inline-block;
     vertical-align: middle;
 }
 
+.mat-expansion-panel-header-title {
+    font-weight: 500;
+}
+
 /deep/ .mat-list-text {
-    border-left: 2px solid blue;
+    border-left: 2px solid rgba(0, 0, 255, .5);
     padding-left: 5px !important;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/deep/ .mat-list-text:hover {
+    border-left: 2px solid rgba(0, 0, 255, 1);
+    margin-left: 5px !important;
+}
+
+mat-list-item {
+    mat-icon {
+        transform: translateY(3px);
+    }
+}
+
+@media(max-width: 1000px) {
+    .margin {
+        margin: 10px;
+    }
 }

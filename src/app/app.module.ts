@@ -9,7 +9,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
          MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
-         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule, MatExpansionModule, MatAccordion } from '@angular/material';
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule, MatExpansionModule, MatGridListModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -80,7 +80,8 @@ import { SummaryComponent } from './summary/summary.component';
     MatChipsModule,
     MatDialogModule,
     MatCardModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatGridListModule
   ],
   providers: [
     AngularFirestore,

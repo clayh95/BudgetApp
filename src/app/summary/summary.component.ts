@@ -3,6 +3,8 @@ import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
+import { MatDialog } from '@angular/material';
+import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 const moment = _rollupMoment
 
 interface reportCat {
@@ -17,10 +19,10 @@ interface reportCat {
 })
 export class SummaryComponent implements OnInit, OnDestroy {
 
-  constructor(private service: DbService) { }
+  constructor(private service: DbService, public dialog: MatDialog) { }
 
   catsTrans: Subscription;
-  income: number;
+  actualIncome: number;
   spent: number;
   totalBudgeted: number;
   reportCats: reportCat[];
@@ -32,39 +34,23 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           if (cats.length === 0 || trans.length === 0) return;
 
-          this.income = 0;
+          this.actualIncome = 0;
           this.spent = 0;
 
           this.reportCats = new Array();
 
           cats.map(c => {
-            c.spent = 0;
-            let cat: ICategory = c;
-            let t: ITransaction[] = trans
-                                      .filter(t => t.category === c.name)
-                                      .map(t => {
-                                        if (c.name === 'INCOME') {
-                                          c.spent += (1 * +t.amount);
-                                        }
-                                        else {
-                                          c.spent += (-1 * +t.amount);
-                                        }
-                                        return t;
-                                      })
-                                      .sort((a, b) => {
-                                        return a.date > b.date ? 1 : -1;
-                                      })
-            cat.spent = +cat.spent.toFixed(2)
-            this.reportCats.push({
-              category: cat, 
-              transactions: t
-            });
+            this.createReportCat(c, trans);
           });
+
+          const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: []}
+
+          this.createReportCat(uncategorized, trans);
 
           //Pull out the income category
           this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
           let tmpIncome = this.incomeData.transactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
-          this.income = +tmpIncome.toFixed(2);
+          this.actualIncome = +tmpIncome.toFixed(2);
           this.reportCats.splice(this.reportCats.indexOf(this.incomeData), 1);
 
           this.spent = this.reportCats.map(c => c.category.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
@@ -77,13 +63,73 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   }
 
-  // getBarColor(spent, budgeted) {
-  //   if (spent <= budgeted) {
-  //     return colors.GREEN
-  //   } else {
-  //     return colors.RED
+  private createReportCat(c: ICategory, trans: ITransaction[]) {
+    c.spent = 0;
+    let cat: ICategory = c;
+    let t: ITransaction[] = this.getTransactionsForCategory(trans, c);
+    cat.spent = +cat.spent.toFixed(2);
+    if (cat.name === '') { cat.name = 'Uncategorized'; }
+    this.reportCats.push({
+      category: cat,
+      transactions: t
+    });
+  }
+
+  private getTransactionsForCategory(trans: ITransaction[], c: ICategory): ITransaction[] {
+    return trans
+      .filter(t => t.category === c.name)
+      .map(t => {
+        if (c.name === 'INCOME') {
+          c.spent += (1 * +t.amount);
+        }
+        else {
+          c.spent += (-1 * +t.amount);
+        }
+        return t;
+      })
+      .sort((a, b) => {
+        return a.date > b.date ? 1 : -1;
+      });
+  }
+
+  getColor(item) {
+    if (item.category.budgeted - item.category.spent < 0) {
+      return 'red'
+    } else {
+      return 'green'
+    }
+  }
+
+  getIncomeColor() {
+    if (this.actualIncome - this.incomeData.category.budgeted < 0) {
+      return 'red'
+    } else {
+      return 'green'
+    }
+  }
+
+  // getEmoji():string {
+  //   if (this.actualIncome === this.totalBudgeted) {
+  //     return 🙌;
+  //   } else if (this.actualIncome > this.totalBudgeted) {
+  //     return 😃;
+  //   } else if (this.actualIncome < this.totalBudgeted){
+  //     return 😬;
   //   }
   // }
+
+  editTransaction(t) {
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [t]})
+  }
+
+  editCategory(event, c) {
+    event.stopPropagation();
+    alert(`edit category ${c}`);
+  }
+  
+  trackById(index, item) {
+    return item.category.id;
+  }
 
   carryAmounts() {
     if (confirm("Are you sure?")) {
