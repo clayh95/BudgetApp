@@ -5,6 +5,7 @@ import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
 import { MatDialog } from '@angular/material';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
+import { formatCurrency, getLocaleId } from '@angular/common';
 const moment = _rollupMoment
 
 interface reportCat {
@@ -27,6 +28,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   totalBudgeted: number;
   reportCats: reportCat[];
   incomeData: reportCat;
+  expandedPanel: string;
 
   ngOnInit() {
     
@@ -108,18 +110,22 @@ export class SummaryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // getEmoji():string {
-  //   if (this.actualIncome === this.totalBudgeted) {
-  //     return 🙌;
-  //   } else if (this.actualIncome > this.totalBudgeted) {
-  //     return 😃;
-  //   } else if (this.actualIncome < this.totalBudgeted){
-  //     return 😬;
-  //   }
-  // }
+  getEmoji():string[] {
+    if (this.actualIncome === this.totalBudgeted) {
+      return ['Everything is balanced!','🙌'];
+    } else if (this.actualIncome > this.totalBudgeted) {
+      return [`We have ${formatCurrency(this.actualIncome - this.totalBudgeted, getLocaleId('en-US'), '','USD')}  we can still budget!`,'😃'];
+    } else if (this.actualIncome < this.totalBudgeted){
+      return [`We are overbudgeted by ${formatCurrency(this.totalBudgeted - this.actualIncome, getLocaleId('en-US'), '','USD')}`,'😬'];
+    }
+  }
 
+  SetExpandedPanel(id: string) {
+    this.expandedPanel = id;
+  }
+  
   editTransaction(t) {
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [t]})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [Object.assign({}, t)]})
   }
 
   editCategory(event, c) {

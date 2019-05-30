@@ -16,6 +16,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   total:number;
   chargeCount:number;
   lastIDs:ITransaction[] = [];
+  lastMY:string = '';
   // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
   // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
@@ -33,14 +34,13 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith('0')),
       this.filter
-      // this.beginDateChange,
-      // this.endDateChange
     ];
 
     return combineLatest(...dataMutations).pipe(map((d) => {
       let val = <ITransaction[]>d[0];
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
+      this.lastMY = this.service.monthYear.getValue();
       let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3])
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
@@ -53,6 +53,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   private highlightUpserts(ret: ITransaction[]): ITransaction[] {
     //start with just checking if exists
+    if (this.lastMY !== this.service.monthYear.getValue()) { return ret; }
     return ret.map(t => {
       const compT = this.lastIDs.find(x => x.id === t.id);
       if (compT === undefined) {

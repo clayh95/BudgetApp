@@ -6,13 +6,13 @@ import { DbService } from '../core/db.service';
 import { Observable, BehaviorSubject } from '../../../node_modules/rxjs';
 import { ICategory, ITransaction } from '../core/dataTypes';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
-import { rowsAnimation } from '../animations/template.animations';
+import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
 
 @Component({
   selector: 'app-transaction-table',
   templateUrl: './transaction-table.component.html',
   styleUrls: ['./transaction-table.component.scss'],
-  animations: [rowsAnimation]
+  animations: [rowsEnterLeave, rowsColor]
 })
 export class TransactionTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -20,8 +20,6 @@ export class TransactionTableComponent implements OnInit {
   dataSource: TransactionTableDataSource;
   displayedColumns = ['id', 'date', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
-
-  // firstDay, lastDay;
 
   constructor(public Tsvc: DbService,
               public dialog: MatDialog) {
@@ -75,7 +73,7 @@ export class TransactionTableComponent implements OnInit {
     return item.id;
   }
 
-  rowsAnimationDone(row) {
+  rowsColorDone(row) {
     if (row.changeAction) {
       row.changeAction = '';
     }

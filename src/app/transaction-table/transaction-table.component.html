@@ -84,7 +84,12 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row [@rowsAnimation]="row.changeAction" (@rowsAnimation.done)="rowsAnimationDone(row)" *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row 
+        [@rowsEnterLeave] 
+        [@rowsColor]="row.changeAction" 
+        (@rowsColor.done)="rowsColorDone(row)" 
+        *matRowDef="let row; columns: displayedColumns;">
+      </tr>
     </table>
 
 
@@ -108,19 +113,3 @@
 </mat-card>
 
 
-
-
-
-    <!-- <mat-form-field>
-      <input matInput [matDatepicker]="beginDate" placeholder="Begin Date"
-              (dateChange)="updateBeginDate($event)" [ngModel]="firstDay">
-      <mat-datepicker-toggle matSuffix [for]="beginDate"></mat-datepicker-toggle>
-      <mat-datepicker #beginDate></mat-datepicker>
-    </mat-form-field>
-
-    <mat-form-field>
-      <input matInput [matDatepicker]="endDate" placeholder="End Date"
-              (dateChange)="updateEndDate($event)" [ngModel]="lastDay">
-      <mat-datepicker-toggle matSuffix [for]="endDate"></mat-datepicker-toggle>
-      <mat-datepicker #endDate></mat-datepicker>
-    </mat-form-field> -->

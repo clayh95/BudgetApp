@@ -48,9 +48,11 @@ export class DbService {
         this.CreateMonthIfNotExists(monthPK);
 
         this.categoriesCollection = this.afs.collection(`monthsPK/${monthPK}/categories`);
+        if (this.catSub) { this.catSub.unsubscribe(); }
         this.catSub = this.categoriesCollection.snapshotChanges().subscribe(ref => this.processCategories(ref));
 
         this.transactionCollection = this.afs.collection(`monthsPK/${monthPK}/transactions`);
+        if (this.tranSub) { this.tranSub.unsubscribe(); }
         this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions));
     });
   }

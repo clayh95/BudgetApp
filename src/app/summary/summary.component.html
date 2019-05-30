@@ -4,9 +4,7 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
               <button mat-icon-button>
-                <span *ngIf="totalBudgeted === actualIncome">🙌</span>
-                <span *ngIf="totalBudgeted < actualIncome">😀</span>
-                <span *ngIf="totalBudgeted > actualIncome">😬</span>
+                <span>{{getEmoji()[1]}}</span>
               </button>
               <span style="padding-top: 5px;">Total Budgeted <br /> {{totalBudgeted | currency}}</span>
             </mat-panel-title>
@@ -14,17 +12,16 @@
             <p style="font-weight: bold">{{actualIncome | currency}}</p>
           </mat-panel-description>
         </mat-expansion-panel-header>
-        <div *ngIf="totalBudgeted === actualIncome" >
-          <p>Everything is balanced! 🙌</p>
+        <div>
+          <p>{{getEmoji()[0]}} {{getEmoji()[1]}}</p>
           <button mat-stroked-button 
+            *ngIf="totalBudgeted === actualIncome"
             color="warn"
             (click)="carryAmounts()">
             <mat-icon>fast_forward</mat-icon>
             Carry Balances to Next Month
           </button>
         </div>
-        <p *ngIf="totalBudgeted > actualIncome">We are overbudgeted by {{ totalBudgeted - actualIncome | currency}} 😬</p>
-        <p *ngIf="actualIncome > totalBudgeted">We have {{ actualIncome - totalBudgeted | currency}} we can still budget! 😀</p>
     </mat-expansion-panel>
   </mat-accordion>
 </div>
@@ -62,7 +59,7 @@
 
 <div *ngIf="reportCats" class="margin">
   <mat-accordion>
-    <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID">
+    <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID" [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)">
       <mat-expansion-panel-header>
         <mat-panel-title>
             <button mat-icon-button (click)="editCategory($event, item.category);"><mat-icon>edit</mat-icon></button>
