@@ -62,7 +62,7 @@
     <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID" [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)">
       <mat-expansion-panel-header>
         <mat-panel-title>
-            <button mat-icon-button (click)="editCategory($event, item.category);"><mat-icon>edit</mat-icon></button>
+            <button [disabled]="item.category.name === 'Uncategorized'" mat-icon-button (click)="editCategory($event, item.category);"><mat-icon>edit</mat-icon></button>
             <span style="padding-top: 5px;">{{item.category.name}} <br /> {{item.category.budgeted | currency}}</span>
         </mat-panel-title>
         <mat-panel-description>

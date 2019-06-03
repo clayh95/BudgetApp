@@ -1,0 +1,24 @@
+.categoryModalField {
+    padding: 10px;
+}
+
+.categoryModalChips {
+    width: 50%
+}
+
+
+.categoryFields {
+    display: flex;
+    flex-direction: row;
+}
+
+@media(max-width: 1000px) {
+    
+    .categoryFields {
+       flex-direction: column;
+       overflow: auto;
+       mat-form-field {
+           width: 100% !important;
+       }
+    }
+}

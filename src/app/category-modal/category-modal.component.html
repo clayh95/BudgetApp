@@ -1,0 +1,32 @@
+<h1 mat-dialog-title>
+  {{data.name}}
+</h1>
+<mat-dialog-actions>
+  <button mat-icon-button *ngIf="data.id === undefined" (click)="Add()"><mat-icon>save</mat-icon></button>
+  <button mat-icon-button *ngIf="data.id !== undefined" (click)="Update()"><mat-icon>save</mat-icon></button>
+  <button mat-icon-button *ngIf="data.id !== undefined" (click)="Delete(data.id)"><mat-icon>delete</mat-icon></button>
+</mat-dialog-actions>
+<mat-dialog-content>
+  <div class="categoryFields">
+    <mat-form-field class="categoryModalField">
+      <input matInput placeholder="Name" [(ngModel)]="data.name"/>
+    </mat-form-field>
+    <mat-form-field class="categoryModalField">
+      <input matInput placeholder="Budgeted" [(ngModel)]="data.budgeted" />
+    </mat-form-field>
+    <mat-form-field class="categoryModalChips">
+      <mat-chip-list #chipList>
+        <mat-chip *ngFor="let keyword of data.keywords" [selectable]="selectable"
+                [removable]="removable" (removed)="removeKeyword(keyword)">
+          {{keyword}}
+          <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+        </mat-chip>
+        <input #chipInput placeholder="Keywords"
+              [matChipInputFor]="chipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="addOnBlur"
+              (matChipInputTokenEnd)="addKeyword($event)" />
+      </mat-chip-list>
+  </mat-form-field>
+  </div>
+</mat-dialog-content>

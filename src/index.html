@@ -9,8 +9,51 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/ico" href="./assets/images/budget.png">
+  <style>
+    .loadingDiv {
+      display: flex;
+      flex-direction: column;
+      margin-top: 200px;
+      width: 100%;
+      align-items: center;
+      font-family: roboto;
+      font-weight: bold;
+      color: #4fba6f;
+    }
+    .loadingSpinner {
+      animation: spin 1s ease-in-out infinite; /*, bounce 1s ease-in-out infinite alternate;*/
+      -webkit-animation: spin 1s ease-in-out infinite; /*, bounce 1s ease-in-out infinite alternate;*/
+      height: 100px;
+      width: 100px;
+    }
+    .bouncingDiv {
+      animation: bounce .5s ease-in-out infinite alternate;
+      -webkit-animation: bounce .5s ease-in-out infinite alternate;
+    }
+    @keyframes spin {
+      to { -webkit-transform: rotate(720deg); }
+    }
+    @-webkit-keyframes spin {
+      to { -webkit-transform: rotate(720deg); }
+    }
+    @keyframes bounce {
+      from { -webkit-transform: translateY(0); }
+      to { -webkit-transform: translateY(-20px); }
+    }
+    @-webkit-keyframes bounce {
+      from { -webkit-transform: translateY(0); }
+      to { -webkit-transform: translateY(-20px); }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="loadingDiv">
+        <div class="bouncingDiv">
+            <img src="assets/images/budget.png" class="loadingSpinner">
+        </div>
+        <p>Loading...</p>
+    </div>
+  </app-root>
 </body>
 </html>

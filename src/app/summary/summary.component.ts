@@ -6,6 +6,7 @@ import {default as _rollupMoment, Moment} from 'moment';
 import { MatDialog } from '@angular/material';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
+import { CategoryModalComponent } from '../category-modal/category-modal.component';
 const moment = _rollupMoment
 
 interface reportCat {
@@ -51,9 +52,11 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           //Pull out the income category
           this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
-          let tmpIncome = this.incomeData.transactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
-          this.actualIncome = +tmpIncome.toFixed(2);
-          this.reportCats.splice(this.reportCats.indexOf(this.incomeData), 1);
+          if (this.incomeData) {
+            let tmpIncome = this.incomeData.transactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
+            this.actualIncome = +tmpIncome.toFixed(2);
+            this.reportCats.splice(this.reportCats.indexOf(this.incomeData), 1);
+          }
 
           this.spent = this.reportCats.map(c => c.category.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
           this.spent = +this.spent.toFixed(2);
@@ -117,6 +120,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
       return [`We have ${formatCurrency(this.actualIncome - this.totalBudgeted, getLocaleId('en-US'), '','USD')}  we can still budget!`,'😃'];
     } else if (this.actualIncome < this.totalBudgeted){
       return [`We are overbudgeted by ${formatCurrency(this.totalBudgeted - this.actualIncome, getLocaleId('en-US'), '','USD')}`,'😬'];
+    } else {
+      return ['', ''];
     }
   }
 
@@ -130,7 +135,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   editCategory(event, c) {
     event.stopPropagation();
-    alert(`edit category ${c}`);
+    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', data: Object.assign({}, c)})
   }
   
   trackById(index, item) {
@@ -150,20 +155,16 @@ export class SummaryComponent implements OnInit, OnDestroy {
             category: c.category.name, 
             date: moment(dPlus).format('MM/DD/YYYY'),
             notes: "",
-            status: ""
+            status: "Posted"
           }
         tmp += +t.amount;
         this.service.AddOrUpdateTransaction(t, tAction.add);
       })
     }
   }
-
   
   ngOnDestroy() {
     this.catsTrans.unsubscribe();
   }
-
-
-
 
 }

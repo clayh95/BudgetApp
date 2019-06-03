@@ -1,11 +1,9 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { ITransaction, ITransactionStatus } from '../core/dataTypes'
+import { Component,  Inject } from '@angular/core';
+import { ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
-import { database } from 'firebase';
-import { AngularFireAuth } from 'angularfire2/auth';
 const moment = _rollupMoment
 
 export const MMDDYYYY_FORMAT = {

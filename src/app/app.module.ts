@@ -9,7 +9,8 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, 
          MatTableModule, MatPaginatorModule, MatSortModule, MatDatepickerModule, MatFormFieldModule, 
          MatNativeDateModule, MatInputModule, MatTooltipModule, MatMenuModule, MatOptionModule, 
-         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule, MatExpansionModule, MatGridListModule } from '@angular/material';
+         MatSelectModule, MAT_DATE_FORMATS, MatChipsModule, MatDialogModule, MAT_DIALOG_DATA, MatCardModule, 
+         MatExpansionModule, MatGridListModule, MatProgressBarModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { AngularFireModule } from 'angularfire2';
@@ -29,6 +30,7 @@ import { CopyCategoriesComponent } from './copy-categories/copy-categories.compo
 import { AddTransactionComponent } from './add-transaction/add-transaction.component';
 import { ReportsComponent } from './reports/reports.component';
 import { SummaryComponent } from './summary/summary.component';
+import { CategoryModalComponent } from './category-modal/category-modal.component';
 
 
 @NgModule({
@@ -45,11 +47,13 @@ import { SummaryComponent } from './summary/summary.component';
     CopyCategoriesComponent,
     AddTransactionComponent,
     ReportsComponent,
-    SummaryComponent
+    SummaryComponent,
+    CategoryModalComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,
-    AddTransactionComponent
+    AddTransactionComponent,
+    CategoryModalComponent
   ],
   imports: [
     BrowserModule,
@@ -81,7 +85,8 @@ import { SummaryComponent } from './summary/summary.component';
     MatDialogModule,
     MatCardModule,
     MatExpansionModule,
-    MatGridListModule
+    MatGridListModule,
+    MatProgressBarModule
   ],
   providers: [
     AngularFirestore,
