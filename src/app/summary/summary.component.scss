@@ -41,6 +41,10 @@ mat-list-item {
     }
 }
 
+.editIcon {
+    transform: scale(.8);
+}
+
 @media(max-width: 1000px) {
     .margin {
         margin: 10px;

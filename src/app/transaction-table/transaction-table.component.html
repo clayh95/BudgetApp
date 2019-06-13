@@ -1,6 +1,6 @@
-<div class="mat-elevation-z8 transactionTableComponent">
+<div class="transactionTableComponent">
 
-<mat-card>
+<mat-card class="transactionTableCard">
   <mat-card-title class="tableTitle">
       <mat-form-field>
           <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Transactions">
@@ -10,12 +10,20 @@
     <table mat-table #table [dataSource]="dataSource" [trackBy]="trackById" class="transactionTable" matSort aria-label="Elements">
       <!-- id Column -->
       <ng-container matColumnDef="id">
-          <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
+          <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header>Actions</th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
               <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
               <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
-              <button *ngIf="row.status == 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:orange">warning</mat-icon></button>
-              <button *ngIf="row.status != 'Pending'" mat-icon-button (click)="alert('blah')"><mat-icon style="color:green">check_circle_outline</mat-icon></button>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
+
+      <!-- status Column -->
+      <ng-container matColumnDef="status">
+          <th mat-header-cell class="status" *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell class="status desktop" *matCellDef="let row">
+              <button *ngIf="row.status == 'Pending'" mat-icon-button><mat-icon style="color:orange">warning</mat-icon></button>
+              <button *ngIf="row.status != 'Pending'" mat-icon-button><mat-icon style="color:green">check_circle_outline</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>

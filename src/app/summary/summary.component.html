@@ -1,6 +1,6 @@
 <div *ngIf="totalBudgeted !== 0" class="margin">
   <mat-accordion>
-    <mat-expansion-panel>
+    <mat-expansion-panel class="expansion-panel-round-all">
         <mat-expansion-panel-header>
           <mat-panel-title>
               <button mat-icon-button>
@@ -28,10 +28,10 @@
 
 <div *ngIf="incomeData" class="margin">
   <mat-accordion>
-    <mat-expansion-panel>
+    <mat-expansion-panel class="expansion-panel-round-all">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <button mat-icon-button (click)="editCategory($event, incomeData.category);"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="editCategory($event, incomeData.category);"><mat-icon class="editIcon">edit</mat-icon></button>
             <span style="padding-top: 5px;">Income <br /> {{incomeData.category.budgeted | currency}}</span>
           </mat-panel-title>
           <mat-panel-description>
@@ -59,10 +59,19 @@
 
 <div *ngIf="reportCats" class="margin">
   <mat-accordion>
-    <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID" [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)">
+    <mat-expansion-panel 
+      *ngFor="let item of reportCats; trackBy: trackByID" 
+      [expanded]="expandedPanel === item.category.id" 
+      (opened)="SetExpandedPanel(item.category.id)"
+      class="expansion-panel-round-ends">
       <mat-expansion-panel-header>
         <mat-panel-title>
-            <button [disabled]="item.category.name === 'Uncategorized'" mat-icon-button (click)="editCategory($event, item.category);"><mat-icon>edit</mat-icon></button>
+            <button 
+              [disabled]="item.category.name === 'Uncategorized'" 
+              mat-icon-button 
+              (click)="editCategory($event, item.category);">
+                <mat-icon class="editIcon">edit</mat-icon>
+            </button>
             <span style="padding-top: 5px;">{{item.category.name}} <br /> {{item.category.budgeted | currency}}</span>
         </mat-panel-title>
         <mat-panel-description>

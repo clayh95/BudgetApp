@@ -18,7 +18,7 @@ export class TransactionTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
   dataSource: TransactionTableDataSource;
-  displayedColumns = ['id', 'date', 'amount', 'description', 'notes', 'category'];
+  displayedColumns = ['id', 'status', 'date', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
 
   constructor(public Tsvc: DbService,

@@ -49,20 +49,20 @@ export class CategoryTableComponent implements OnInit {
     this.sort.direction = "asc";
     this.sort.active = "category";
 
-    this.CATsvc.categories.subscribe(cats => {
-      if (this.BudgetChart) {this.BudgetChart.destroy()}
-      cats = cats.filter(c => c.name.toLowerCase() != 'income')
-      this.BudgetChart = new Chart('canvasBudget', {type: 'doughnut', options: {legend: {display: true}}})
-      this.BudgetChart.data = {
-        datasets: [{
-          data: cats.map(c => c.budgeted),
-          backgroundColor: cats.map((c, index) => colors[Object.keys(colors)[index]])
-        }],
-        labels: cats.map(c => c.name)
-      };
-      this.totalBudgeted = cats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
-      this.BudgetChart.update()
-    })
+    // this.CATsvc.categories.subscribe(cats => {
+    //   if (this.BudgetChart) {this.BudgetChart.destroy()}
+    //   cats = cats.filter(c => c.name.toLowerCase() != 'income')
+    //   this.BudgetChart = new Chart('canvasBudget', {type: 'doughnut', options: {legend: {display: true}}})
+    //   this.BudgetChart.data = {
+    //     datasets: [{
+    //       data: cats.map(c => c.budgeted),
+    //       backgroundColor: cats.map((c, index) => colors[Object.keys(colors)[index]])
+    //     }],
+    //     labels: cats.map(c => c.name)
+    //   };
+    //   this.totalBudgeted = cats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
+    //   this.BudgetChart.update()
+    // })
 
   }
 

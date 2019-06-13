@@ -5,11 +5,13 @@
         <mat-form-field>
             <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Categories">
           </mat-form-field>
-          <button mat-icon-button color="primary" 
+          <button  mat-stroked-button 
+                  color="warn" 
                   matTooltip="Copy These Categories" 
                   [matTooltipPosition]="'below'" 
                   (click)="openCopyCategoryDialog()">
                   <mat-icon>fast_forward</mat-icon>
+                  Copy these Categories
           </button>
       </mat-card-title>
 
@@ -22,7 +24,7 @@
                 <td mat-cell *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row.id, row.name)"><mat-icon>remove</mat-icon></button></td>
                 <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addCategory()"><mat-icon>add</mat-icon></button> </td>
             </ng-container>
-        
+            
             <!-- Category Column -->
             <ng-container matColumnDef="category">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
@@ -84,7 +86,7 @@
 
 </mat-card>
 
-<mat-card class="reportCard">
+<!-- <mat-card class="reportCard">
     <mat-card-title class="tableTitle">
         Total Budgeted: {{totalBudgeted | currency}}
       </mat-card-title>
@@ -92,6 +94,6 @@
     <mat-card-content class="BudgetChart">
         <canvas id="canvasBudget">{{ BudgetChart }}</canvas>
     </mat-card-content>
-</mat-card>
+</mat-card> -->
   
 </div>
