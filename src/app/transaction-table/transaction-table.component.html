@@ -3,7 +3,7 @@
 <mat-card class="transactionTableCard">
   <mat-card-title class="tableTitle">
       <mat-form-field>
-          <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Transactions">
+          <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
         </mat-form-field>
   </mat-card-title>
   <mat-card-content>
@@ -107,6 +107,9 @@
 
 <mat-card class="tableControls">
   <mat-card-content>
+    <mat-form-field class="controlsFilter">
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
     <span class="total">{{dataSource.total | currency}}</span>
     <mat-paginator #paginator
       [length]="Tsvc.transactions.getValue().length"

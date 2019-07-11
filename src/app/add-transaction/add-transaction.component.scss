@@ -47,4 +47,17 @@ button {
             width: 100% !important;
         }
     }
+
+    .dummyFields {
+        display: none;
+    }
+
+    .splitTotal {
+        width: 25%;
+        mat-form-field {
+            width: 100%
+        }
+    }
+
+
 }

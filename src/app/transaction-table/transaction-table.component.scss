@@ -97,9 +97,17 @@
         align-items: center;
         padding-right:10px;
     }
+    .controlsFilter {
+        display: none;
+    }
 }
 
 @media(max-width: 1000px) {
+
+    .tableTitle {
+        display: none;
+    }
+
     .transactionTable{
 
         .mat-header-row {
@@ -151,26 +159,33 @@
           }
     }
 
-    
-
     .tableControls {
         position: fixed;
-        bottom: 2px;
-        right: 5px;
+        bottom: 0px;
+        left: 0px;
         display: flex;
         padding-top: 5px;
         padding-bottom: 5px;
         padding-right: 15px;
         padding-left: 15px;
-        width: auto;
+        width: 100%;
         height: auto;
-        transform: scale(.85);
+        // transform: scale(.85);
         /deep/ .mat-paginator-page-size {
             display: none !important;
         }
         /deep/ .mat-paginator-range-label {
             display: none !important;
         }
+        border-top: 1px solid #3f51b5;
+      }
+      .controlsFilter {
+          display: flex !important;
+          width: 30%;
+          margin-right:5px;
+          /deep/ .mat-form-field-wrapper {
+              width: 100% !important;
+          }
       }
 
   }
