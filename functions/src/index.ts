@@ -56,11 +56,15 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     }, []);
 
     await transactionCollection.where("status", "==", "Posted").get().then(querySnapshot => {
-        const arr = querySnapshot.docs
-        arr.sort((a, b) => {
-            return +moment(b.data().date, "MM/DD/YYYY") - +moment(a.data().date, "MM/DD/YYYY")
-        })
-        latestDate = arr[0].data().date;
+        if (querySnapshot.docs.length > 0) {
+            const arr = querySnapshot.docs
+            arr.sort((a, b) => {
+                return +moment(b.data().date, "MM/DD/YYYY") - +moment(a.data().date, "MM/DD/YYYY")
+            })
+            latestDate = arr[0].data().date;
+        } else {
+            latestDate = moment().subtract(1, "days").format("MM/DD/YYYY");
+        }
     });
 
     let retVal:String = 'LatestDate: ' + latestDate + '\n';
