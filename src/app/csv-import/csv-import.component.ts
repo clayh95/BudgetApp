@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef  } from '@angular/core';
-import { ITransaction } from '../core/dataTypes';
+import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
 import { map } from 'rxjs/operators';
@@ -92,7 +92,8 @@ export class CsvImportComponent {
         "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD').replace(/,/g,""),
         "description" : stringTransaction[4],
         "category" : this.SetCategoryFromKeywords(stringTransaction[4]),
-        "notes" : ""
+        "notes" : "",
+        "status": ITransactionStatus.posted //WF manual import is only posted
     }
     return <ITransaction>t;
   }
