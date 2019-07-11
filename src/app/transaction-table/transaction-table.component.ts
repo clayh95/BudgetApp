@@ -4,7 +4,7 @@ import { MatPaginator, MatSort, MatDialog, MatDialogRef, MAT_DIALOG_DATA, Sort }
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
 import { Observable, BehaviorSubject } from '../../../node_modules/rxjs';
-import { ICategory, ITransaction } from '../core/dataTypes';
+import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
 import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
 
@@ -48,8 +48,8 @@ export class TransactionTableComponent implements OnInit {
   }
 
   addTransaction() {
-    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:""}
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1200px', data: [t]})
+    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:ITransactionStatus.posted}
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t]})
   }
 
   deleteTransaction(id) {
@@ -61,7 +61,7 @@ export class TransactionTableComponent implements OnInit {
   editTransaction(id) {
     let t:ITransaction
     this.Tsvc.transactionCollection.doc(id).ref.get().then(d => {
-      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [<ITransaction>{id: d.id, ...d.data()}]})
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [<ITransaction>{id: d.id, ...d.data()}]})
     })
   }
 
