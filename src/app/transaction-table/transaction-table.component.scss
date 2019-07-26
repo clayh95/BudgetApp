@@ -53,23 +53,25 @@
     mat-form-field {
         padding-right:1em;
     }
+    height:100vh;
 }
 
 .transactionTableCard {
     height: 80vh;
-    height: calc(100vh - 230px);
+    height: calc(100vh - 250px);
     overflow-y: scroll;
 }
+
 ::-webkit-scrollbar {
     width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background-color: lightgray;
+    background-color: transparent;
     border-radius: 25px;
   }
   ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background-color: #3f51b5;
+    background-color: #3f51b53b;
 }
 
 .tableTitle { 
@@ -177,7 +179,8 @@
         /deep/ .mat-paginator-range-label {
             display: none !important;
         }
-        border-top: 1px solid #3f51b5;
+        border-top: 1px solid #3f51b53b;
+        border-radius: 0px;
       }
       .controlsFilter {
           display: flex !important;
