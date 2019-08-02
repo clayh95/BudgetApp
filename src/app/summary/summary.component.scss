@@ -1,5 +1,11 @@
+
 .app-summary-component {
-    height:100vh;
+    display: flex;
+}
+
+.app-summary-categories {
+    min-height: 100vh;
+    height:auto;
 }
 
 .expense-card {
@@ -72,5 +78,8 @@ mat-list-item {
 @media(max-width: 1000px) {
     .expense-card {
         margin: 10px;
+    }
+    .app-summary-component {
+        flex-direction: column
     }
 }
