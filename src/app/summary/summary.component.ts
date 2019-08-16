@@ -130,12 +130,12 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
   
   editTransaction(t) {
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [Object.assign({}, t)]})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [Object.assign({}, t)], autoFocus: false})
   }
 
   editCategory(event, c) {
     event.stopPropagation();
-    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', data: Object.assign({}, c)})
+    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', data: Object.assign({}, c), autoFocus: false})
   }
   
   trackById(index, item) {

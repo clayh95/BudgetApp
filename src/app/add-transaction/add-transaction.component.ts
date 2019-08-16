@@ -46,6 +46,8 @@ export class AddTransactionComponent {
                 }
                 this.origTotal = +data[0].amount;
                 this.newTotal = +data[0].amount;
+
+                history.pushState(null, null, location.href);
               }
 
   Add() {

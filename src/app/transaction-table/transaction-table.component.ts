@@ -49,7 +49,7 @@ export class TransactionTableComponent implements OnInit {
 
   addTransaction() {
     let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:ITransactionStatus.posted}
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t]})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
   }
 
   deleteTransaction(id) {
@@ -61,7 +61,7 @@ export class TransactionTableComponent implements OnInit {
   editTransaction(id) {
     let t:ITransaction
     this.Tsvc.transactionCollection.doc(id).ref.get().then(d => {
-      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [<ITransaction>{id: d.id, ...d.data()}]})
+      const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [<ITransaction>{id: d.id, ...d.data()}], autoFocus: false})
     })
   }
 

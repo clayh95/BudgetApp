@@ -30,7 +30,8 @@ export class CategoryModalComponent {
               @Inject(MAT_DIALOG_DATA) public data: ICategory) {
 
                 this.origName = this.data.name;
-
+                
+                history.pushState(null, null, location.href);
                }
 
   Add() {
