@@ -1,7 +1,7 @@
 <div class="app-summary-component">
   
   <div class="app-summary-categories">
-    <mat-card class="expense-card">
+    <mat-card class="summary-card">
 
       <div *ngIf="totalBudgeted !== 0" class="margin">
         <mat-accordion>
@@ -104,12 +104,17 @@
     </mat-card>
   </div>
 
-  <!-- <div class="app-summary-notes">
-    <mat-card class="expense-card">
-        <mat-form-field class="addTransactionField">
-            <textarea matInput [(ngModel)]="t.description"></textarea>
+  <div class="app-summary-notes">
+    <mat-card class="summary-card">
+        <mat-card-title>Notes</mat-card-title>
+        <mat-form-field class="summaryField">
+            <textarea 
+            matInput 
+            cdkTextareaAutosize
+            value="{{service.monthSummary | async}}" 
+            (change)="updateSummaryNotes($event)"></textarea>
           </mat-form-field>
     </mat-card>
-  </div> -->
+  </div>
 
 </div>

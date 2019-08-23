@@ -3,13 +3,15 @@
 }
 
 .categoryModalChips {
-    width: 50%
+    width: 50%;
+    padding: 10px;
 }
 
 
 .categoryFields {
     display: flex;
     flex-direction: row;
+    width: 90%;
 }
 
 @media(max-width: 1000px) {
@@ -18,7 +20,7 @@
        flex-direction: column;
        overflow: auto;
        mat-form-field {
-           width: 100% !important;
+           width: 90% !important;
        }
     }
 }

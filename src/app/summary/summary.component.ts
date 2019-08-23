@@ -35,7 +35,11 @@ export class SummaryComponent implements OnInit, OnDestroy {
     
     this.catsTrans = combineLatest(this.service.categories, this.service.transactions).subscribe(([cats, trans]) => {
 
-          if (cats.length === 0 || trans.length === 0) return;
+          if (cats.length === 0 || trans.length === 0) {
+            this.reportCats = [];
+            this.incomeData = undefined;
+            return;
+          }
 
           this.actualIncome = 0;
           this.spent = 0;
@@ -51,7 +55,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
           this.createReportCat(uncategorized, trans);
 
           //Pull out the income category
-          this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
+          if (cats.length > 1) this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
           if (this.incomeData) {
             let tmpIncome = this.incomeData.transactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
             this.actualIncome = +tmpIncome.toFixed(2);
@@ -130,12 +134,17 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
   
   editTransaction(t) {
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', data: [Object.assign({}, t)], autoFocus: false})
+    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [Object.assign({}, t)], autoFocus: false})
   }
 
   editCategory(event, c) {
     event.stopPropagation();
-    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', data: Object.assign({}, c), autoFocus: false})
+    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
+  }
+
+  updateSummaryNotes(event) {
+    let summaryRef = this.service.monthsCollection.doc(this.service.monthYear.getValue().replace(/\//g, ''));
+    if (summaryRef) summaryRef.update({'summary': event.target.value});
   }
   
   trackById(index, item) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from 'angularfire2/firestore';
 import { ITransaction, IUser, ICategory } from './dataTypes';
 import { ObserveOnSubscriber } from '../../../node_modules/rxjs/internal/operators/observeOn';
 import { Observable, BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
@@ -26,10 +26,12 @@ export class DbService {
   monthYear: BehaviorSubject<string>;
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
+  monthSummary = new BehaviorSubject<string>('');
 
   monthYearSub: Subscription;
   tranSub: Subscription;
   catSub: Subscription;
+  monthSummarySub: Subscription;
 
   constructor(private afs: AngularFirestore) {
     this.init();
@@ -46,6 +48,13 @@ export class DbService {
       this.monthYearSub = this.monthYear.subscribe(m => {
         const monthPK = m.replace(/\//g, '');
         this.CreateMonthIfNotExists(monthPK);
+        this.monthsCollection.doc(monthPK).ref.get().then(doc => {
+          this.monthSummary.next(doc.data['summary']);
+        });
+        if (this.monthSummarySub) { this.monthSummarySub.unsubscribe(); }
+        this.monthSummarySub = this.monthsCollection.doc(monthPK).snapshotChanges().subscribe(d => {
+          this.monthSummary.next(d.payload.data()['summary']);
+        });
 
         this.categoriesCollection = this.afs.collection(`monthsPK/${monthPK}/categories`);
         if (this.catSub) { this.catSub.unsubscribe(); }
@@ -84,8 +93,13 @@ export class DbService {
   CreateMonthIfNotExists(monthPK) {
     this.monthsCollection.ref.doc(monthPK).get().then(snap => {
       if (!snap.exists) {
-        this.monthsCollection.ref.doc(monthPK).set({'name': monthPK});
+        this.monthsCollection.ref.doc(monthPK).set({'name': monthPK, 'summary': ''});
         this.monthsCollection.doc(monthPK).ref.collection('categories').doc().set({});
+      }
+      else {
+        if (snap.data()['summary'] === undefined) {
+          this.monthsCollection.ref.doc(monthPK).update({'summary': ''});
+        }
       }
     });
   }

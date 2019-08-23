@@ -32,24 +32,23 @@ export class MonthYearPickerComponent {
   date = new FormControl(moment());
 
   constructor(private service: DbService) {
-    this.service.monthYear.subscribe(my => {
-        if (moment(this.date.value).format(MMYY_FORMAT.display.dateInput) != this.service.monthYear.getValue()) {
-          const d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
-          this.date.setValue(moment(d))
-        }
-      })
+      const d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
+      this.date.setValue(moment(d))
   }
 
   chosenMonthHandler(normlizedMonth: Moment, datepicker: MatDatepicker<Moment>) {
     const ctrlValue = this.date.value;
     ctrlValue.month(normlizedMonth.month());
+    ctrlValue.year(normlizedMonth.year());
     this.date.setValue(ctrlValue);
     datepicker.close();
     this.service.monthYear.next(moment(this.date.value).format(MMYY_FORMAT.display.dateInput))
   }
 
   NavigateMonth(increment: number) {
-    this.service.monthYear.next(moment(this.date.value).add(increment, 'month').format(MMYY_FORMAT.display.dateInput))
+    const d = moment(this.date.value).add(increment, 'month');
+    this.service.monthYear.next(d.format(MMYY_FORMAT.display.dateInput));
+    this.date.setValue(d);
   }
 
 }

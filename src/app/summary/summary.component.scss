@@ -6,13 +6,22 @@
 .app-summary-categories {
     min-height: 100vh;
     height:auto;
+    width: 50%;
 }
 
-.expense-card {
+.app-summary-notes {
+    width: 50%;
+}
+
+.summary-card {
     height: 80vh;
     height: calc(100vh - 150px);
     margin: 10px;
     overflow-y: scroll;
+}
+
+.summaryField {
+    width: 100%;
 }
 
 ::-webkit-scrollbar {
@@ -76,10 +85,14 @@ mat-list-item {
 }
 
 @media(max-width: 1000px) {
-    .expense-card {
+    .summary-card {
         margin: 10px;
     }
     .app-summary-component {
         flex-direction: column
+    }
+    .app-summary-categories, .app-summary-notes {
+        width: 100%;
+        min-height: unset;
     }
 }
