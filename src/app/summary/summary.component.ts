@@ -21,7 +21,7 @@ interface reportCat {
 })
 export class SummaryComponent implements OnInit, OnDestroy {
 
-  constructor(private service: DbService, public dialog: MatDialog) { }
+  constructor(public service: DbService, public dialog: MatDialog) { }
 
   catsTrans: Subscription;
   actualIncome: number;
