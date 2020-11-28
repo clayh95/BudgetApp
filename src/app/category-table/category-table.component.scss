@@ -2,7 +2,7 @@
     .mat-cell {
         padding:8px;
     } 
-    /deep/ td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
+    ::ng-deep td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
         padding:8px;
     }
     .valueCategory {
@@ -17,9 +17,9 @@
             width:100%
         }
     }
-    /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+    ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-wrapper {
         padding-bottom: 0em;
-        /deep/ .mat-form-field-underline {
+        ::ng-deep .mat-form-field-underline {
             position: unset;
         }
     }

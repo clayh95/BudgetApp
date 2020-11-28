@@ -40,9 +40,9 @@
         width:15%;
     }
 
-    /deep/ .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+    ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-wrapper {
         padding-bottom: 0em;
-        /deep/ .mat-form-field-underline {
+        ::ng-deep .mat-form-field-underline {
             position: unset;
         }
     }
@@ -173,10 +173,10 @@
         width: 100%;
         height: auto;
         // transform: scale(.85);
-        /deep/ .mat-paginator-page-size {
+        ::ng-deep .mat-paginator-page-size {
             display: none !important;
         }
-        /deep/ .mat-paginator-range-label {
+        ::ng-deep .mat-paginator-range-label {
             display: none !important;
         }
         border-top: 1px solid #3f51b53b;
@@ -186,7 +186,7 @@
           display: flex !important;
           width: 30%;
           margin-right:5px;
-          /deep/ .mat-form-field-wrapper {
+          ::ng-deep .mat-form-field-wrapper {
               width: 100% !important;
           }
       }
