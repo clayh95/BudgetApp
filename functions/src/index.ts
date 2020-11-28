@@ -8,6 +8,12 @@ import { environment } from './environments/environments.prod';
 import * as appEnviroment from '../../src/environments/environment.prod';
 import { QueryDocumentSnapshot } from '@google-cloud/firestore';
 
+//CHANGE THIS!
+// var serviceAccount = require("json creds");
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: "https://budgetapp-fcb30.firebaseio.com",              
+// });
 admin.initializeApp(functions.config().firebase);
 
 const MMYY_FORMAT = {
@@ -28,7 +34,7 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     //Decrypt credentials
     const fireID = decrypt(request.header("fireID"));
     if (fireID !== appEnviroment.environment.firebase.apiKey)
-        return response.send('App not authorized!');
+        response.send('App not authorized!');
 
     const encPend:string = request.body["pendingTransactions"];
     const encPost:string = request.body["postedTransactions"];
@@ -40,10 +46,13 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     let currDate:moment.Moment;
     currDate = moment();
     const monthPK:string = currDate.format(MMYY_FORMAT.display.noSlash); 
+    const previousMonthPK:string = currDate.add(-1, "month").format(MMYY_FORMAT.display.noSlash); 
     const transactionCollection = admin.firestore().collection(`monthsPK/${monthPK}/transactions`);
     const categoryCollection = admin.firestore().collection(`monthsPK/${monthPK}/categories`);
-    const cats = await categoryCollection.get().then(qs => {return qs.docs})
+    const previousMonthTransactionCollection = admin.firestore().collection(`monthsPK/${previousMonthPK}/transactions`);
+    const cats = await categoryCollection.get().then(qs => {return qs.docs}); //Sort of assuming these will be acceptable for both months
     let latestDate:string
+    let previousMonthLatestDate:string
 
     const pendTrans = Object.keys(pendIn).reduce((obj, key, idx) => {
         obj[idx] = ConvertScrapeToTransaction(pendIn[key], dataTypes.ITransactionStatus.pending, cats);
@@ -55,72 +64,100 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
         return obj;
     }, []);
 
-    await transactionCollection.where("status", "==", "Posted").get().then(querySnapshot => {
-        if (querySnapshot.docs.length > 0) {
-            const arr = querySnapshot.docs
-            arr.sort((a, b) => {
-                return +moment(b.data().date, "MM/DD/YYYY") - +moment(a.data().date, "MM/DD/YYYY")
-            })
-            latestDate = arr[0].data().date;
-        } else {
-            latestDate = moment().subtract(1, "days").format("MM/DD/YYYY");
-        }
-    });
+    latestDate = await getLatestDate(transactionCollection);
+    previousMonthLatestDate = await getLatestDate(previousMonthTransactionCollection);
 
-    let retVal:String = 'LatestDate: ' + latestDate + '\n';
-    retVal += 'monthPK: ' + monthPK + '\n';
+    let retVal:String = `latestDate: ${latestDate}\n`;
+    retVal += `monthPK: ${monthPK}\n`;
+    retVal += `previousMonthLatestDate: ${previousMonthLatestDate}\n`;
+    retVal += `previousMonthPK: ${previousMonthPK}\n`;
 
-    //DELETE all pending transactions currently in the collection
-    await transactionCollection
-        .where("status", "==", "Pending")
-        .get()
-        .then(querySnapshot => {
-            querySnapshot.forEach(doc => {
-                doc.ref.delete().then(() => {
-                    retVal += `Deleted doc ${doc.ref.id}\n`;
-                }).catch(e => {
-                    retVal += e.toString();
-                });
-            });
-        }).then(function() {
-            retVal += 'Delete complete\n';
-        }).catch(e => {
-            retVal += e.toString();
-            return retVal;
-        }); 
+    // Delete all pending transactions for curr and previous months
+    retVal = await deletePendingTransactions(transactionCollection, retVal);
+    retVal = await deletePendingTransactions(previousMonthTransactionCollection, retVal);
 
-
-    //ADD all pending transactions from WF
+    // Add all pending transactions to the current month from WF.
+    // Anything pending will be for the current month
     pendTrans.map(t => {
         transactionCollection.add(t).then(() => {
-            retVal += 'Add pending: ' + JSON.stringify(t) + '\n';
+            retVal +=  `Add Pending: ${JSON.stringify(t)} to ${monthPK}\n`;
         }).catch(e => {
             retVal += e.toString();
             return retVal;
         });
-    })
+    });
 
-    //Filter Posted list to date greater than greatest collection trans date
+    // Add WF transactions greater than Firebase latest date
     postTrans
         .filter(t => {
             return moment(t.date, "MM/DD/YYYY").isAfter(moment(latestDate, "MM/DD/YYYY"))
         })
         .map(t => {
             transactionCollection.add(t).then(r => {
-                retVal += 'Add Posted: ' + JSON.stringify(t) + '\n';
+                retVal += `Add Posted: ${JSON.stringify(t)} to ${monthPK}\n`;
             }).catch(e => {
                 retVal += e.toString();
                 return retVal;
             });
         });
 
-    return response.send(retVal);
 
+    // Add WF transactions greater than previous month's Firebase latest date, but less than current month
+    postTrans
+        .filter(t => {
+            return moment(t.date, "MM/DD/YYYY").isAfter(moment(previousMonthLatestDate, "MM/DD/YYYY"))
+                    && moment(t.date, "MM/DD/YYYY").isBefore(moment().startOf('month'));
+        })
+        .map(t => {
+            previousMonthTransactionCollection.add(t).then(r => {
+                retVal += `Add Posted: ${JSON.stringify(t)} to ${previousMonthPK}\n`;
+            }).catch(e => {
+                retVal += e.toString();
+                return retVal;
+            });
+        });
+
+    response.send(retVal);
 });
 
 
+async function deletePendingTransactions(transactionCollection: FirebaseFirestore.CollectionReference, retVal: String) {
+    await transactionCollection
+        .where("status", "==", "Pending")
+        .get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                doc.ref.delete().then(() => {
+                     retVal += `Deleted doc ${doc.ref.id}\n`;
+                }).catch(e => {
+                    retVal += e.toString();
+                });
+            });
+        }).then(function () {
+            retVal += 'Delete complete\n';
+        }).catch(e => {
+            retVal += e.toString();
+            return retVal;
+        });
+    return retVal;
+}
+
+async function getLatestDate(transactionCollection: FirebaseFirestore.CollectionReference) {
+    let ret:string = null;
+    await transactionCollection.where("status", "==", "Posted").get().then(querySnapshot => {
+        if (querySnapshot.docs.length > 0) {
+            const arr = querySnapshot.docs;
+            arr.sort((a, b) => {
+                return +moment(b.data().date, "MM/DD/YYYY") - +moment(a.data().date, "MM/DD/YYYY");
+            });
+            ret = arr[0].data().date;
+        }
+    });
+    return ret;
+}
+
 //FUNCTIONS
-function decrypt(encString) {
+function decrypt(encString:string) {
     const testBytes = CryptoJS.AES.decrypt(encString, environment.autoImport.key);
     return testBytes.toString(CryptoJS.enc.Utf8);
 }
