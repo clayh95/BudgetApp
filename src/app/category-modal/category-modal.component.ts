@@ -1,6 +1,7 @@
 import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { DbService } from '../core/db.service';
-import { MatDialogRef, MAT_DIALOG_DATA, MatChipInputEvent } from '@angular/material';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { HasElementRef } from '@angular/material/core/typings/common-behaviors/color';

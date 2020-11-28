@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild, Inject } from '@angular/core';
-import { MatPaginator, MatSort, MatDialog, MatDialogRef, MAT_DIALOG_DATA, Sort } from '@angular/material';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
 // import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';

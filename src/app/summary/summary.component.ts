@@ -3,7 +3,7 @@ import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';

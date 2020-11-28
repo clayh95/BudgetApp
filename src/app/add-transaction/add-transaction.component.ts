@@ -1,6 +1,6 @@
 import { Component,  Inject } from '@angular/core';
 import { ITransaction } from '../core/dataTypes'
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
