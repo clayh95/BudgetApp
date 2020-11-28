@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -20,9 +20,9 @@ import { colors } from '../reports/reports.component';
   templateUrl: './category-table.component.html',
   styleUrls: ['./category-table.component.scss']
 })
-export class CategoryTableComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+export class CategoryTableComponent implements AfterViewInit {
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: CategoryTableDataSource;
 
   displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
@@ -43,7 +43,7 @@ export class CategoryTableComponent implements OnInit {
 
   constructor(public CATsvc: DbService, public dialog: MatDialog) {}
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.dataSource = new CategoryTableDataSource(this.paginator, 
                                                   this.sort, 
                                                   this.CATsvc.categories,

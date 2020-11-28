@@ -12,7 +12,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 })
 export class MainNavComponent {
 
-  @ViewChild('drawer') drawer: MatSidenav;
+  @ViewChild('drawer', {static: false}) drawer: MatSidenav;
 
   //can this be put into a service?
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)

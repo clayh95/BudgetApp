@@ -37,7 +37,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.filter
     ];
 
-    return combineLatest(...dataMutations).pipe(map((d) => {
+    return combineLatest(dataMutations).pipe(map((d) => {
       let val = <ITransaction[]>d[0];
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;

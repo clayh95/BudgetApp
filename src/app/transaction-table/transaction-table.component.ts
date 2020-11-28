@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject, AfterViewInit } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -16,9 +16,9 @@ import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
   styleUrls: ['./transaction-table.component.scss'],
   animations: [rowsEnterLeave, rowsColor]
 })
-export class TransactionTableComponent implements OnInit {
+export class TransactionTableComponent implements AfterViewInit  {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: TransactionTableDataSource;
   displayedColumns = ['id', 'status', 'date', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
@@ -27,14 +27,17 @@ export class TransactionTableComponent implements OnInit {
               public dialog: MatDialog) {
 
   }
-
-  ngOnInit() {
+  ngAfterViewInit(): void {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
-                                                      this.sort, 
-                                                      this.Tsvc,
-                                                      this.filter);
+      this.sort, 
+      this.Tsvc,
+      this.filter);
     this.sort.direction = "desc";
     this.sort.active = "date";
+  }
+
+  ngOnInit() {
+    
   }
 
   TransactionCategoryChanged(id, value) {

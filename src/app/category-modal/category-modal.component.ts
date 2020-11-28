@@ -4,7 +4,6 @@ import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { HasElementRef } from '@angular/material/core/typings/common-behaviors/color';
 
 @Component({
   selector: 'app-category-modal',
