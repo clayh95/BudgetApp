@@ -9,7 +9,7 @@ import * as appEnviroment from '../../src/environments/environment.prod';
 import { QueryDocumentSnapshot } from '@google-cloud/firestore';
 
 //CHANGE THIS!
-// var serviceAccount = require("json creds");
+// var serviceAccount = require("credential json");
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
 //     databaseURL: "https://budgetapp-fcb30.firebaseio.com",              
@@ -66,6 +66,10 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
 
     latestDate = await getLatestDate(transactionCollection);
     previousMonthLatestDate = await getLatestDate(previousMonthTransactionCollection);
+
+    // This means there are no posted transactions in the current month,
+    // so we use the last day of the previous month
+    if (latestDate === null) latestDate = currDate.add(-1, "month").endOf('month').format("MM/DD/YYYY");
 
     let retVal:String = `latestDate: ${latestDate}\n`;
     retVal += `monthPK: ${monthPK}\n`;
