@@ -12,7 +12,7 @@ import { QueryDocumentSnapshot } from '@google-cloud/firestore';
 // var serviceAccount = require("credential json");
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: "https://budgetapp-fcb30.firebaseio.com",              
+//     databaseURL: "",              
 // });
 admin.initializeApp(functions.config().firebase);
 
