@@ -126,24 +126,25 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
 
 
 async function deletePendingTransactions(transactionCollection: FirebaseFirestore.CollectionReference, retVal: String) {
+    let ret = retVal;
     await transactionCollection
         .where("status", "==", "Pending")
         .get()
         .then(querySnapshot => {
             querySnapshot.forEach(doc => {
                 doc.ref.delete().then(() => {
-                     retVal += `Deleted doc ${doc.ref.id}\n`;
+                    ret += `Deleted doc ${doc.ref.id}\n`;
                 }).catch(e => {
-                    retVal += e.toString();
+                    ret += e.toString();
                 });
             });
         }).then(function () {
-            retVal += 'Delete complete\n';
+            ret += 'Delete complete\n';
         }).catch(e => {
-            retVal += e.toString();
-            return retVal;
+            ret += e.toString();
+            return ret;
         });
-    return retVal;
+    return ret;
 }
 
 async function getLatestDate(transactionCollection: FirebaseFirestore.CollectionReference) {
