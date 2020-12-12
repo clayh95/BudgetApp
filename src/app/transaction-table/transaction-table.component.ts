@@ -7,6 +7,7 @@ import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
 import { Observable, BehaviorSubject } from '../../../node_modules/rxjs';
 import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
+import { getIcon } from '../core/utilities';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
 import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
 
@@ -20,7 +21,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: TransactionTableDataSource;
-  displayedColumns = ['id', 'status', 'date', 'amount', 'description', 'notes', 'category'];
+  displayedColumns = ['id', 'status', 'date', 'amount', 'description', 'info', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
 
   constructor(public Tsvc: DbService,
@@ -82,6 +83,10 @@ export class TransactionTableComponent implements AfterViewInit  {
     if (row.changeAction) {
       row.changeAction = '';
     }
+  }
+
+  getIconFromUtils(description:string):string {
+    return getIcon(description);
   }
 
 }

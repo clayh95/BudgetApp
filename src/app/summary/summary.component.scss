@@ -76,13 +76,20 @@
 
 mat-list-item {
     mat-icon {
-        transform: translateY(3px);
+        transform: translateY(5px);
     }
 }
 
 .editIcon {
     transform: scale(.8);
 }
+
+
+.infoBusiness {
+    max-height: 15px;
+    margin-right: 5px;
+}
+
 
 @media(max-width: 1000px) {
     .summary-card {

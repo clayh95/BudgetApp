@@ -35,6 +35,7 @@
           <td mat-cell class="date" *matCellDef="let row">
             {{row.date}}
             <span class="mobile">
+              <img class="infoBusinessMobile" src="{{getIconFromUtils(row.description)}}"/>
               <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
               <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
               {{row.amount | currency}}
@@ -58,6 +59,16 @@
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
         <td mat-cell class="description" (click)="editTransaction(row.id)" *matCellDef="let row">
           {{row.description}}
+        </td>
+        <td mat-footer-cell *matFooterCellDef></td>
+      </ng-container>
+      
+      <!-- info Column -->
+      <ng-container matColumnDef="info">
+        <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header>Info</th>
+        <td mat-cell class="info" *matCellDef="let row">
+          <img class="infoBusiness desktop" src="{{getIconFromUtils(row.description)}}"/>
+          <!-- Also the transaction status? (Split, etc) -->
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>

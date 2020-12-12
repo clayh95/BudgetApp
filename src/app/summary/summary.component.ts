@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
+import { getIcon } from '../core/utilities';
 const moment = _rollupMoment
 
 interface reportCat {
@@ -127,6 +128,10 @@ export class SummaryComponent implements OnInit, OnDestroy {
     } else {
       return ['', ''];
     }
+  }
+
+  getIconFromUtils(description:string):string {
+    return getIcon(description);
   }
 
   SetExpandedPanel(id: string) {

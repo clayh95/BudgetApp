@@ -46,7 +46,8 @@
               <mat-list-item *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
-                  <span style="float:right;font-weight: bold;">
+                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
+                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
                     <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
                     <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
                       check_circle_outline
@@ -86,7 +87,8 @@
               <mat-list-item *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
-                  <span style="float:right;font-weight: bold;">
+                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
+                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
                     <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
                     <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
                       check_circle_outline
