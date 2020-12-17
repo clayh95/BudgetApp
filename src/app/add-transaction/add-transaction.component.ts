@@ -74,18 +74,27 @@ export class AddTransactionComponent {
 
   Split() {
     if (this.data.length == 1) {
-      this.data[0].notes += ' [1 of 2]'
       this.dummyCopy.push({...this.data[0]});
+      const zero = 0;
+      this.data[0].amount = zero.toFixed(2); // Start with all zeroes
+      this.data[0].notes += ' [1 of 2]'
     }
     this.tmpDate.push(this.tmpDate[0]); //set the date to the orig date
-    let t = <ITransaction>{date:this.data[0].date, description:this.data[0].description, amount:"0", category:"", notes: `[${this.data.length} of ${this.data.length}]`, status: this.data[0].status}
+    let t = <ITransaction>{date:this.data[0].date, description:this.data[0].description, amount:"0.00", category:"", notes: `[${this.data.length} of ${this.data.length}]`, status: this.data[0].status}
     this.data.push(t);
     this.data.map((tr, index) => {tr.notes = tr.notes.replace(/\[[0-9] of [0-9]\]$/gi, `[${index+1} of ${this.data.length}]`)});
-    this.UpdateTotal();
   }
 
-  UpdateTotal() {
+  UpdateTotal(idx:number) {
     if (this.data.length > 1) {
+      if (idx !== null) {
+        const newIdx:number = (idx + 1) % this.data.length;
+        let tmp = new Array<ITransaction>();
+        tmp.push(...this.data);
+        tmp.splice(newIdx, 1);
+        let remainingTAmount = tmp.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
+        this.data[newIdx].amount = (this.origTotal - remainingTAmount).toFixed(2);
+      }
       this.newTotal = parseFloat(this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
     }
   }

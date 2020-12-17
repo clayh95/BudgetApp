@@ -4,8 +4,8 @@
   <button mat-icon-button class="rotateIcon" *ngIf="data[0].id !== undefined" (click)="Split()"><mat-icon>call_split</mat-icon></button>
   <button mat-icon-button *ngIf="data[0].id !== undefined" (click)="deleteTransaction(data[0].id)"><mat-icon>delete</mat-icon></button>
   <div class="splitTotal" *ngFor="let t of dummyCopy">
-    <mat-form-field>
-      <input disabled matInput placeholder="Total" [value]="dummyCopy[0].amount"/>
+    <mat-form-field class="topTotal">
+      <input disabled matInput placeholder="Total" [value]="this.origTotal"/>
     </mat-form-field>
   </div>
   <button mat-icon-button matTooltip="Totals do not Match!" [matTooltipPosition]="'right'" style="color:red;" *ngIf="origTotal != newTotal"><mat-icon>error</mat-icon></button>
@@ -38,7 +38,7 @@
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
       <mat-form-field class="addTransactionFieldShort">
-        <input matInput placeholder="Amount" (blur)="UpdateTotal()" [(ngModel)]="t.amount"/>
+        <input matInput placeholder="Amount" (blur)="UpdateTotal(i)" [(ngModel)]="t.amount"/>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
         <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>
