@@ -47,6 +47,7 @@ import { AddTransactionComponent } from './add-transaction/add-transaction.compo
 import { ReportsComponent } from './reports/reports.component';
 import { SummaryComponent } from './summary/summary.component';
 import { CategoryModalComponent } from './category-modal/category-modal.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 
 @NgModule({
@@ -102,7 +103,8 @@ import { CategoryModalComponent } from './category-modal/category-modal.componen
     MatCardModule,
     MatExpansionModule,
     MatGridListModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
     AngularFirestore,
