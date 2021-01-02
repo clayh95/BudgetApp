@@ -69,9 +69,10 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
 
     // This means there are no posted transactions in the current month,
     // so we use the last day of the previous month
-    if (latestDate === null) latestDate = currDate.add(-1, "month").endOf('month').format("MM/DD/YYYY");
+    if (latestDate === null) latestDate = moment().add(-1, "month").endOf('month').format("MM/DD/YYYY");
 
     let retVal:String = `latestDate: ${latestDate}\n`;
+    retVal += `currDate: ${currDate.format('MM/DD/YYYY')}\n`
     retVal += `monthPK: ${monthPK}\n`;
     retVal += `previousMonthLatestDate: ${previousMonthLatestDate}\n`;
     retVal += `previousMonthPK: ${previousMonthPK}\n`;
