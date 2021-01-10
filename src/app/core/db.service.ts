@@ -26,6 +26,7 @@ export class DbService {
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
+  additionalDataCollection: AngularFirestoreCollection;
 
   monthYearSub: Subscription;
   tranSub: Subscription;
@@ -39,6 +40,7 @@ export class DbService {
   init() {
       this.userCollection = this.afs.collection('users');
       this.monthsCollection = this.afs.collection('monthsPK');
+      this.additionalDataCollection = this.afs.collection('additionalData');
 
       const startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`;
       this.monthYear = new BehaviorSubject<string>('');
@@ -157,5 +159,18 @@ export class DbService {
    CheckIfTransactionExists(monthYear, desc): Promise<any> {
     const tmpColl = this.afs.collection(`monthsPK/${monthYear}/transactions`);
     return tmpColl.ref.where('description', '==', desc).get()
+  }
+
+  async getBalances() {
+    let doc = await this.additionalDataCollection.doc('balances').ref.get();
+    let array = [];
+    for (let account in doc.data()) {
+        let item = {};
+        item['key'] = account;
+        item['value'] = doc.data()[account];
+        array.push(item);
+    }
+    console.log(array);
+    return array;
   }
 }

@@ -2,8 +2,10 @@
 <div class="loginControls">
     <span class="name" *ngIf="user">{{user.displayName}}</span>
     <img [matMenuTriggerFor]="menu" matTooltip="Login with Google" [src]="image" class="userImage" width="50" height="50">
+    <mat-icon class="badge" *ngIf="nonZeroBalance" style="color:orange;font-size: 1.2em">warning</mat-icon>
 </div>
 <mat-menu #menu="matMenu" yPosition="below" [overlapTrigger]="false">
     <button mat-menu-item (click)="authService.googleLogin()">Login</button>
     <button mat-menu-item (click)="authService.logOut()">Log Out</button>
+    <button mat-menu-item *ngFor="let balance of balances">{{balance.key}}: {{balance.value}}</button>
 </mat-menu>
