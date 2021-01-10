@@ -38,9 +38,11 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
 
     const encPend:string = request.body["pendingTransactions"];
     const encPost:string = request.body["postedTransactions"];
+    const encBalances:string = request.body['balances'];
 
     const pendIn = JSON.parse(decrypt(encPend));
     const postIn = JSON.parse(decrypt(encPost));
+    const balancesIn = JSON.parse(decrypt(encBalances));
 
     //Get Latest date
     let currDate:moment.Moment;
@@ -51,6 +53,7 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     const categoryCollection = admin.firestore().collection(`monthsPK/${monthPK}/categories`);
     const previousMonthTransactionCollection = admin.firestore().collection(`monthsPK/${previousMonthPK}/transactions`);
     const cats = await categoryCollection.get().then(qs => {return qs.docs}); //Sort of assuming these will be acceptable for both months
+    const additionalDataCollection = admin.firestore().collection('additionalData');
     let latestDate:string
     let previousMonthLatestDate:string
 
@@ -120,6 +123,14 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
                 retVal += e.toString();
                 return retVal;
             });
+        });
+
+    additionalDataCollection
+        .doc('balances')
+        .set(balancesIn)
+        .catch(e => {
+            retVal += e.toString();
+            return retVal;
         });
 
     response.send(retVal);
