@@ -2,15 +2,22 @@
 <div class="loginControls">
     <span class="name" *ngIf="user">{{user.displayName}}</span>
     <img [matMenuTriggerFor]="menu" matTooltip="Login with Google" [src]="image" class="userImage" width="50" height="50">
-    <mat-icon class="badge" *ngIf="nonZeroBalance" style="color:orange;font-size: 1.2em">warning</mat-icon>
+    <mat-icon class="badge" *ngIf="nonZeroBalance" style="color:orange;font-size: 1.2em">notification_important</mat-icon>
 </div>
 <mat-menu #menu="matMenu" yPosition="below" [overlapTrigger]="false">
-    <button mat-menu-item (click)="authService.googleLogin()">Login</button>
-    <button mat-menu-item (click)="authService.logOut()">Log Out</button>
+    <button *ngIf="user === null" mat-menu-item (click)="authService.googleLogin()">
+        <mat-icon>login</mat-icon>
+        <span>Log In</span>
+    </button>
+    <button *ngIf="user !== null" mat-menu-item (click)="authService.logOut()">
+        <mat-icon>keyboard_backspace</mat-icon>
+        <span>Log Out</span>
+    </button>
     <hr>
     <button mat-menu-item 
         *ngFor="let balance of balances" 
         (click)="goToLink('https://www.wellsfargo.com')">
-        {{balance.key}}: {{balance.value}}
+        <span>{{balance.key}}: <b>{{balance.value}}</b></span>
+        <mat-icon *ngIf="nonZeroBalance && balance.key == 'Credit Card'" style="color:orange;font-size: 1.2em">notification_important</mat-icon>
     </button>
 </mat-menu>
