@@ -22,7 +22,7 @@
       <ng-container matColumnDef="status">
           <th mat-header-cell class="status" *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell class="status desktop" *matCellDef="let row">
-              <button *ngIf="row.status == 'Pending'" mat-icon-button><mat-icon style="color:orange">warning</mat-icon></button>
+              <button *ngIf="row.status == 'Pending'" mat-icon-button><mat-icon style="color:orange">error_outline</mat-icon></button>
               <button *ngIf="row.status != 'Pending'" mat-icon-button><mat-icon style="color:green">check_circle_outline</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
@@ -36,7 +36,7 @@
             {{row.date}}
             <span class="mobile">
               <img class="infoBusinessMobile" src="{{getIconFromUtils(row.description)}}"/>
-              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
+              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
               <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
               {{row.amount | currency}}
             </span>

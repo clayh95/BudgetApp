@@ -48,7 +48,7 @@
                   <span>{{trans.date}}</span>
                   <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
                     <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
-                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
+                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
                     <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
                       check_circle_outline
                     </mat-icon>
@@ -89,7 +89,7 @@
                   <span>{{trans.date}}</span>
                   <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
                     <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
-                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">warning</mat-icon>
+                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
                     <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
                       check_circle_outline
                     </mat-icon>
