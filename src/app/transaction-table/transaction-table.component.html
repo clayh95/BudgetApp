@@ -1,11 +1,11 @@
 <div class="transactionTableComponent">
 
 <mat-card class="transactionTableCard">
-  <mat-card-title class="tableTitle">
+  <!-- <mat-card-title class="tableTitle">
       <mat-form-field>
           <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
         </mat-form-field>
-  </mat-card-title>
+  </mat-card-title> -->
   <mat-card-content>
     <table mat-table #table [dataSource]="dataSource" [trackBy]="trackById" class="transactionTable" matSort aria-label="Elements">
       <!-- id Column -->
@@ -108,10 +108,6 @@
         *matRowDef="let row; columns: displayedColumns;">
       </tr>
     </table>
-
-
-  
-  
   </mat-card-content>
 </mat-card>
 </div>
@@ -121,7 +117,7 @@
     <mat-form-field class="controlsFilter">
       <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
     </mat-form-field>
-    <!-- <span class="total">{{dataSource.total | currency}}</span> -->
+    <span class="total"><b>{{getTotal() | currency}}</b></span>
     <!-- We'll see if we miss this... -->
     <mat-paginator #paginator
       [length]="Tsvc.transactions.getValue().length"

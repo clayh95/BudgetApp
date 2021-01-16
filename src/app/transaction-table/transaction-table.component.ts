@@ -85,6 +85,13 @@ export class TransactionTableComponent implements AfterViewInit  {
     }
   }
 
+  getTotal():number {
+    if (this.dataSource) {
+      return this.dataSource.total;
+    }
+    return null;
+  }
+
   getIconFromUtils(description:string):string {
     return getIcon(description);
   }

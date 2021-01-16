@@ -80,8 +80,9 @@
 
 .tableTitle { 
     mat-form-field {
-        width:90%;
+        width:60%;
     }
+    font-size: 18px;
 }
 
 .mobile {
@@ -90,6 +91,10 @@
 
 .mat-row, .mat-header-row {
     height:auto;
+}
+
+.mat-cell {
+    border-bottom: none;
 }
 
 .infoBusiness {
@@ -113,7 +118,7 @@
         padding-right:10px;
     }
     .controlsFilter {
-        display: none;
+        margin-right: 25px;
     }
 }
 
@@ -149,7 +154,6 @@
       
           .mat-cell {
               width: 100% !important;
-              border-bottom: none;
               padding: 0px;
           }
       
@@ -198,7 +202,6 @@
       .controlsFilter {
           display: flex !important;
           width: 30%;
-          margin-right:5px;
           ::ng-deep .mat-form-field-wrapper {
               width: 100% !important;
           }
