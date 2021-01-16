@@ -106,4 +106,8 @@ export class AddTransactionComponent {
     }
   }
 
+  getTitle() { 
+    return (this.data[0].id === undefined ? 'Add' : 'Edit') + ' Transaction'
+  }
+
 }

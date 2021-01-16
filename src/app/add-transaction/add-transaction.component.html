@@ -1,3 +1,4 @@
+<h2 mat-dialog-title>{{getTitle()}}</h2>
 <mat-dialog-actions>
   <button mat-icon-button *ngIf="data[0].id === undefined" (click)="Add()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="data[0].id !== undefined" [disabled]="origTotal !== newTotal" (click)="Update()"><mat-icon>save</mat-icon></button>

@@ -170,7 +170,6 @@ export class DbService {
         item['value'] = doc.data()[account];
         array.push(item);
     }
-    console.log(array);
     return array;
   }
 }
