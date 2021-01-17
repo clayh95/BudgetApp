@@ -1,6 +1,7 @@
 .categoryTable {
     .mat-cell {
         padding:8px;
+        border-bottom: none;
     } 
     ::ng-deep td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
         padding:8px;
@@ -12,10 +13,13 @@
         width:5%;
     }
     .keyword-chip-list {
-        width:75%;
+        width:65%;
         mat-form-field {
             width:100%
         }
+    }
+    .mat-standard-chip {
+        font-size: 12px;
     }
     ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-wrapper {
         padding-bottom: 0em;
@@ -26,22 +30,19 @@
     
 }
 
-.categoryTableDiv {
-    padding:10px;
-    display: inline-flex;
-    width:98%;
-    mat-card {
-        margin-right:10px
+.categoryTableComponent {
+    padding:1em;
+    mat-form-field {
+        padding-right:1em;
     }
+    height:100vh;
 }
+
 
 .tableTitle { 
     mat-form-field {
         width:40%;
     }
-    // .material-icons {
-    //     font-size: 36px
-    // }
 }
 
 mat-card-title {
@@ -50,13 +51,29 @@ mat-card-title {
     }
 }
 
-.tableCard {
-    width:100%
+.categoryTableCard {
+    height: 80vh;
+    height: calc(100vh - 250px);
+    overflow-y: scroll;
 }
 
 
-.raisedTable {
-    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+.tableControls {
+    position: fixed;
+    bottom: 10px;
+    right: 25px;
+    display: flex;
+    padding: 5px;
+    mat-card-content {
+        display: flex;
+        align-items: center;
+        padding-right:10px;
+    }
+    .controlsFilter {
+        margin-right: 25px;
+    }
+    .controlsAddButton{
+        margin-right: 10px;
+    }
 }
-
 
