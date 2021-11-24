@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgModuleFactoryLoader } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from 'angularfire2/firestore';
 import { ITransaction, IUser, ICategory } from './dataTypes';
 import { ObserveOnSubscriber } from '../../../node_modules/rxjs/internal/operators/observeOn';
@@ -137,7 +137,16 @@ export class DbService {
     if (toDelete) {
       toDelete.delete().then(() => {console.log('Document removed')})
     }
-    newDocRef.set({date: data.date, description: data.description, amount: data.amount, notes: data.notes, category: data.category, status: data.status}) //Enumerating all the fields to add the ID property
+    newDocRef.set({
+      date: data.date, 
+      description: data.description, 
+      amount: data.amount, 
+      notes: data.notes, 
+      category: data.category, 
+      status: data.status,
+      xId: data.xId ?? null,
+      xIndex: data.xIndex ?? null
+    }) //Enumerating all the fields to add the ID property
     //if not subscribed...
     //this seemed so wrong...there is probably some reason i will find
     // this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
@@ -171,5 +180,26 @@ export class DbService {
         array.push(item);
     }
     return array;
+  }
+
+  async getTransactionsForEdit(selectedTrans:ITransaction):Promise<ITransaction[]> {
+    let modalData:ITransaction[] = new Array<ITransaction>();
+    if (selectedTrans.xId != null) {
+      let snap = await this.transactionCollection.ref.where("xId","==",selectedTrans.xId).get();
+      if (snap.docs.length > 0) {
+        snap.docs
+        .sort((a, b) => a.data()["xIndex"] - b.data()["xIndex"])
+        .map(doc => {
+          const id = doc.id;
+          let trans:ITransaction = <ITransaction>doc.data();
+          trans.id = doc.id;
+          modalData.push(trans);
+        });
+      }
+    }
+    else {
+      modalData  = [Object.assign({}, selectedTrans)];
+    }
+    return modalData;
   }
 }

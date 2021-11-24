@@ -138,8 +138,13 @@ export class SummaryComponent implements OnInit, OnDestroy {
     this.expandedPanel = id;
   }
   
-  editTransaction(t) {
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [Object.assign({}, t)], autoFocus: false})
+  editTransaction(t:ITransaction) {
+    this.service.getTransactionsForEdit(t).then(modalData => {
+      const dialogRef = this.dialog.open(
+        AddTransactionComponent, 
+        {width:'1600px', maxWidth:'90vw', data: modalData, autoFocus: false}
+      );
+    });
   }
 
   editCategory(event, c) {

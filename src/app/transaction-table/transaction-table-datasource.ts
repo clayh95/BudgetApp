@@ -91,7 +91,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   private getFilteredData(data: ITransaction[], filter:string) {
     return data.filter(t => {
-      return Object.values(t).map(v => v.toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
+      return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
     })
   }
   

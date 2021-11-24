@@ -39,14 +39,10 @@ export class AddTransactionComponent {
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
-
-                //IInitial date should always be the first one
-                if (this.data[0].date !== undefined) {
-                  this.tmpDate = [moment(this.data[0].date, "MM/DD/YYYY")];
-                }
-                this.origTotal = +data[0].amount;
-                this.newTotal = +data[0].amount;
-
+                this.tmpDate = this.data.map(x => moment(x.date, "MM/DD/YYYY"));
+                // this.origTotal = +data[0].amount;
+                this.origTotal = data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0);
+                this.newTotal = +this.origTotal;
                 history.pushState(null, null, location.href);
               }
 
@@ -58,31 +54,40 @@ export class AddTransactionComponent {
     this.dialogRef.close();
   }
 
-  //The first transaction should be an update; any additional ones are from SPLIT so we're adding them
   Update() {
     this.data.map((tr, index) => {
-      tr.date = this.tmpDate[index].format('MM/DD/YYYY')
-      if (index == 0) {
-        this.ATsvc.AddOrUpdateTransaction(tr, tAction.update);
+      if (this.dummyCopy.length > 0) {
+        tr.xId = this.data[0].id;
+        tr.xIndex = index;
       }
-      else {
+      tr.date = this.tmpDate[index].format('MM/DD/YYYY');
+      if (tr.id == null) {
         this.ATsvc.AddOrUpdateTransaction(tr, tAction.add);
       }
-    })
+      else {
+        this.ATsvc.AddOrUpdateTransaction(tr, tAction.update);
+      }
+    });
     this.dialogRef.close();
   }
 
   Split() {
-    if (this.data.length == 1) {
-      this.dummyCopy.push({...this.data[0]});
-      const zero = 0;
-      this.data[0].amount = zero.toFixed(2); // Start with all zeroes
-      this.data[0].notes += ' [1 of 2]'
+    if (this.data[0].xId == null) {
+      this.data[0].xId = this.data[0].id;
+      this.data[0].xIndex = 0;
     }
     this.tmpDate.push(this.tmpDate[0]); //set the date to the orig date
-    let t = <ITransaction>{date:this.data[0].date, description:this.data[0].description, amount:"0.00", category:"", notes: `[${this.data.length} of ${this.data.length}]`, status: this.data[0].status}
+    let t = <ITransaction>{
+      date:this.data[0].date, 
+      description:this.data[0].description, 
+      amount:"0.00", 
+      category:"", 
+      notes: "", 
+      status: this.data[0].status,
+      xId: this.data[0].id,
+      xIndex: this.data.length
+    }
     this.data.push(t);
-    this.data.map((tr, index) => {tr.notes = tr.notes.replace(/\[[0-9] of [0-9]\]$/gi, `[${index+1} of ${this.data.length}]`)});
   }
 
   UpdateTotal(idx:number) {
@@ -107,7 +112,7 @@ export class AddTransactionComponent {
   }
 
   getTitle() { 
-    return (this.data[0].id === undefined ? 'Add' : 'Edit') + ' Transaction'
+    return (this.data[0].id === undefined ? 'New Transaction' : this.data[0].description);
   }
 
 }

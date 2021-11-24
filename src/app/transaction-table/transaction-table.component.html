@@ -7,7 +7,7 @@
       <ng-container matColumnDef="id">
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header>Actions</th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
-              <button mat-icon-button (click)="editTransaction(row.id)"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button (click)="editTransaction(row)"><mat-icon>edit</mat-icon></button>
               <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
@@ -52,7 +52,7 @@
       <!-- description Column -->
       <ng-container matColumnDef="description">
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
-        <td mat-cell class="description" (click)="editTransaction(row.id)" *matCellDef="let row">
+        <td mat-cell class="description" (click)="editTransaction(row)" *matCellDef="let row">
           {{row.description}}
         </td>
         <td mat-footer-cell *matFooterCellDef></td>

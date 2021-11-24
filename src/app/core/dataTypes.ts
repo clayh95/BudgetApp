@@ -7,6 +7,8 @@ export interface ITransaction {
     notes?: string;
     status?: string;
     changeAction?: string;
+    xId?: string;
+    xIndex?: number;
 }
 
 export enum ITransactionStatus {
