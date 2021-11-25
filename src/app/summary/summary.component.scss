@@ -13,9 +13,6 @@
     width: 50%;
 }
     
-.split-icon {
-    transform: rotate(90deg);
-}
 
 .summary-card {
     height: 80vh;
@@ -80,7 +77,16 @@
 
 mat-list-item {
     mat-icon {
-        transform: translateY(5px);
+        width: 16px;
+        height: unset;
+        max-height: 20px;
+        margin-right: 5px;
+    }
+    img {
+        margin-right: 8px;
+    }
+    .split-icon {
+        transform: rotate(90deg) !important;
     }
 }
 
