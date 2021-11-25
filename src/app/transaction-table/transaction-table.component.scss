@@ -11,11 +11,6 @@
         padding: 0px;
     }
 
-    .status {
-        width: 5%;
-        padding: 0px;
-    }
-
     .date {
         width:7%
     }
@@ -30,7 +25,11 @@
     }
 
     .info {
-        width: 5%;
+        width: 10%;
+    }
+    
+    .split-icon {
+        transform: rotate(90deg);
     }
 
     .notes {
@@ -98,12 +97,32 @@
 }
 
 .infoBusiness {
-    max-height: 20px;
+    img {
+        max-height: 16px;
+        margin-right: 5px;
+        margin-top: 2px
+    }
+    ::ng-deep .mat-icon {
+        width: 16px;
+        height: unset;
+        max-height: 20px;
+        margin-right: 5px;
+    }
+    display: flex;
+    justify-content: flex-end;
 }
 
 .infoBusinessMobile {
-    max-height: 15px;
-    margin-right: 5px;
+    img {
+        max-height: 15px;
+        margin-right: 5px;
+    }
+    ::ng-deep .mat-icon {
+        width: 16px;
+        height: unset;
+        max-height: 20px;
+        margin-right: 5px;
+    }
 }
 
 .tableControls {

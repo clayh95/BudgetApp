@@ -93,6 +93,7 @@
                     <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
                       check_circle_outline
                     </mat-icon>
+                    <mat-icon *ngIf="trans.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
                     {{trans.amount | currency}}
                   </span>
                 </p>

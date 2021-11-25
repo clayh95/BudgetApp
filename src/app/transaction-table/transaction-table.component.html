@@ -14,14 +14,14 @@
       </ng-container>
 
       <!-- status Column -->
-      <ng-container matColumnDef="status">
+      <!-- <ng-container matColumnDef="status">
           <th mat-header-cell class="status" *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell class="status desktop" *matCellDef="let row">
               <button *ngIf="row.status == 'Pending'" mat-icon-button><mat-icon style="color:orange">error_outline</mat-icon></button>
               <button *ngIf="row.status != 'Pending'" mat-icon-button><mat-icon style="color:green">check_circle_outline</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
+      </ng-container> -->
       
       <div>
         <!-- date Column -->
@@ -29,11 +29,12 @@
           <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
           <td mat-cell class="date" *matCellDef="let row">
             {{row.date}}
-            <span class="mobile">
-              <img class="infoBusinessMobile" src="{{getIconFromUtils(row.description)}}"/>
+            <span class="mobile infoBusinessMobile">
+              <img src="{{getIconFromUtils(row.description)}}"/>
               <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
               <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
-              {{row.amount | currency}}
+              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
+          {{row.amount | currency}}
             </span>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
@@ -60,9 +61,14 @@
       
       <!-- info Column -->
       <ng-container matColumnDef="info">
-        <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header>Info</th>
+        <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header></th>
         <td mat-cell class="info" *matCellDef="let row">
-          <img class="infoBusiness desktop" src="{{getIconFromUtils(row.description)}}"/>
+          <span class="infoBusiness desktop">
+              <img src="{{getIconFromUtils(row.description)}}"/>
+              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
+              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
+              <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.4em">check_circle_outline</mat-icon>
+          </span>
           <!-- Also the transaction status? (Split, etc) -->
         </td>
         <td mat-footer-cell *matFooterCellDef></td>

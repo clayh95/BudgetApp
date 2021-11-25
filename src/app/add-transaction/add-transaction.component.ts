@@ -41,7 +41,7 @@ export class AddTransactionComponent {
               @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
                 this.tmpDate = this.data.map(x => moment(x.date, "MM/DD/YYYY"));
                 // this.origTotal = +data[0].amount;
-                this.origTotal = data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0);
+                this.origTotal = parseFloat(data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
                 this.newTotal = +this.origTotal;
                 history.pushState(null, null, location.href);
               }

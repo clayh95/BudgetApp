@@ -21,7 +21,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: TransactionTableDataSource;
-  displayedColumns = ['id', 'status', 'date', 'amount', 'description', 'info', 'notes', 'category'];
+  displayedColumns = ['id', 'date', 'info', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
 
   constructor(public Tsvc: DbService,
