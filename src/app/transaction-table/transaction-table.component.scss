@@ -16,12 +16,21 @@
     }
 
     .amount {
-        width:7%
+        width:7%;
+        font-weight: 600;
     }
 
     .description {
         width:45%;
         cursor: pointer;
+        color:black;
+        transition: 0.3s;
+    }
+
+    td.description:hover {
+        // transform:scale(1.02);
+        transition: 0.3s;
+        color:rgba($color: blue, $alpha: 0.6);
     }
 
     .info {
