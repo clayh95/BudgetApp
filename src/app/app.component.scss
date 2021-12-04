@@ -1,25 +1,27 @@
-
-
     ::ng-deep.mat-select-panel {
         background-color: rgba(255, 255, 255, .5);
-        backdrop-filter: blur(2em);
+        backdrop-filter: blur(12px);
+        border-radius: 10px !important;
       }
 
     ::ng-deep.mat-menu-panel {
         background-color: rgba(255, 255, 255, .5);
-        backdrop-filter: blur(2em);
+        backdrop-filter: blur(12px);
+        border-radius: 10px !important;
       }
 
     ::ng-deep.mat-datepicker-content {
         background-color: rgba(255, 255, 255, .5);
-        backdrop-filter: blur(2em);
+        backdrop-filter: blur(12px);
+        border-radius: 10px !important;
       }
 
-      ::ng-deep.mat-dialog-container {
-          background-color: rgba(255, 255, 255, .5);
-          backdrop-filter: blur(2em);
-        }
+    ::ng-deep.mat-dialog-container {
+        background-color: rgba(255, 255, 255, .5);
+        backdrop-filter: blur(12px);
+        border-radius: 10px !important;
+    }
 
-        ::ng-deep.cdk-overlay-dark-backdrop {
-            background: unset !important;
-        }
+    ::ng-deep.cdk-overlay-dark-backdrop {
+        background: unset !important;
+    }
