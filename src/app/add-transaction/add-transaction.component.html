@@ -12,11 +12,14 @@
 <br />
 <mat-dialog-content>
     <div class="transactionFields" *ngFor="let t of data; index as i">
-      <mat-form-field class="addTransactionFieldShort">
-        <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
+      <span class="title-span">
+        <p class="item-index" *ngIf="t.xIndex != null">{{t.xIndex + 1}}</p>
+        <mat-form-field class="addTransactionFieldHeader">
+          <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </span>
       <mat-form-field class="addTransactionFieldShort">
         <input matInput placeholder="Amount" (blur)="UpdateTotal(i)" [(ngModel)]="t.amount"/>
       </mat-form-field>

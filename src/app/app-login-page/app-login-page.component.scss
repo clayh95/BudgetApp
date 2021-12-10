@@ -1,0 +1,63 @@
+
+.login-background {
+    background-color: blue;
+    height: 100vh;
+    width: 60vw;
+}
+
+::ng-deep.mat-card {
+    background-color: rgba(255, 255, 255, .5);
+    backdrop-filter: blur(12px);
+    border-radius: 10px !important;
+}
+
+.login-card {
+    margin: 0;
+    position: absolute;
+    width: 30%;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    .login-title {
+        margin: auto;
+        text-align: center;
+    }
+    .login-state {
+        margin: auto;
+        text-align: center;
+    }
+}
+
+.login-card-content {
+    display: flex;
+    flex-direction: column;
+    .app-icon {
+        width: 25%;
+        margin: auto;
+        padding: 45px 0px 25px 0px;
+    }
+}
+
+.login-actions {
+    padding-bottom: 15px !important;
+    .login-button{
+        width: 50%;
+        margin: auto;
+        .google-icon {
+            height: 1.5em;
+            margin-left: 10px;
+            transform: translate(0px, 5px);
+        }
+    }
+}
+
+@media(max-width: 1000px) {
+    .login-card {
+        width: 80%;
+    }
+    .login-background {
+        height:60vh;
+        width: 100vw;
+    }
+}

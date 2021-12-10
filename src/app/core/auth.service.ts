@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { IUser } from './dataTypes';
 import {Router} from '@angular/router';
 
-import { Observable ,  of } from 'rxjs';
+import { BehaviorSubject, Observable ,  of } from 'rxjs';
 import * as firebase from 'firebase/app';
 import { AngularFireAuth } from '../../../node_modules/angularfire2/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '../../../node_modules/angularfire2/firestore';
@@ -15,24 +15,15 @@ import { map } from '../../../node_modules/rxjs/operators';
 export class AuthService {
 
   user: Observable<firebase.User>;
-  //TODO: Should I just set up an admin part of the page that allows user management? for FTNRO, probably yes
+  loginState: BehaviorSubject<string>;
   
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
               private dbService: DbService,
               private router: Router) {
 
-     this.user = this.afAuth.authState
-                // .switchMap(user => {
-                //   console.log(user);
-                //   if (user) {
-                //     // return this.afs.doc<IUser>(`users/${user.uid}`).valueChanges();
-                //     return user;
-                //   } else {
-                //     return of(null);
-                //   }
-                // });
-
+     this.user = this.afAuth.authState;
+     this.loginState = new BehaviorSubject<string>("");
   }
 
   googleLogin() {
@@ -43,29 +34,29 @@ export class AuthService {
   logOut() {
     this.afAuth.auth.signOut().then(x => {
       this.dbService.signOut();
-    })
+    });
   }
 
-  private oAuthLogin(provider) {
+  private oAuthLogin(provider: firebase.auth.AuthProvider) {
     return this.afAuth.auth.signInWithPopup(provider)
       .then((credential) => {
         return this.checkUserState(credential.user);
       })
   }
 
-  private checkUserState(user) {
+  private checkUserState(user: firebase.User) {
     this.dbService.userCollection.ref.where("uid", "==", user.uid)
       .get()
       .then(querySnapshot => {
         if (querySnapshot.docs.length == 0) {
-          console.log(`${user.displayName}, you are not a valid user.`)
+          this.loginState.next(`Sorry ${user.displayName}, you are not a valid user.`);
           this.logOut();
         }
         else {
-          console.log('Welcome ' +  user.displayName);
+          this.loginState.next("");
           this.dbService.signIn()
         }
-      })
+      });
   }
 
 }

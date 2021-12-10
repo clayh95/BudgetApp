@@ -48,6 +48,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { SummaryComponent } from './summary/summary.component';
 import { CategoryModalComponent } from './category-modal/category-modal.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { AppLoginPageComponent } from './app-login-page/app-login-page.component';
 
 
 @NgModule({
@@ -65,7 +66,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
     AddTransactionComponent,
     ReportsComponent,
     SummaryComponent,
-    CategoryModalComponent
+    CategoryModalComponent,
+    AppLoginPageComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,

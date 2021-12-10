@@ -153,7 +153,6 @@ export class DbService {
   }
 
   signOut() {
-    this.monthYear.unsubscribe();
     this.tranSub.unsubscribe();
     this.catSub.unsubscribe();
     this.transactions.next([]);

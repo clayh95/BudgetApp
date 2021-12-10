@@ -3,6 +3,7 @@ import { ITransaction } from './core/dataTypes';
 import { AngularFirestore } from 'angularfire2/firestore';
 import { Observable } from 'rxjs';
 import { DbService } from './core/db.service';
+import { AuthService } from './core/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -10,15 +11,12 @@ import { DbService } from './core/db.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'fdsf';
+  constructor(service: DbService, public authService: AuthService) {
 
-  // transactions: Observable<ITransaction[]>;
-  
-  constructor(service: DbService) {
-    // this.transactions = service.transactionCollection.valueChanges();
   }
 
   ngOnInit() {
+    
   }
 
   }

@@ -7,7 +7,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { SummaryComponent } from './summary/summary.component';
 
 const routes: Routes = [
-  { path: '', component: TransactionTableComponent }, //Full list of transactions
+  { path: '', component: TransactionTableComponent },
   { path: 'csv', component: CsvImportComponent},
   { path: 'categories', component: EditCategoriesComponent},
   { path: 'reports', component: ReportsComponent},

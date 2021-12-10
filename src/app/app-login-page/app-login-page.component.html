@@ -1,0 +1,16 @@
+<div class="login-background">
+    <mat-card class="login-card">
+        <mat-card-title class="login-title">
+            Welcome to the Budget App
+        </mat-card-title>
+        <mat-card-content class="login-card-content">
+            <img class="app-icon" src="assets/images/budget.png">
+            <p class="login-state">{{this.authService.loginState | async}}</p>
+        </mat-card-content>
+        <mat-card-actions class="login-actions" align="end">
+            <button mat-raised-button class="login-button" color="" (click)="authService.googleLogin()">
+                <span>Login with <img class="google-icon" src="../../assets/images/google_g.png" /></span>
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>

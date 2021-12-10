@@ -1,1 +1,2 @@
-<app-main-nav></app-main-nav>
+<app-login-page *ngIf="(this.authService.user| async) == null"></app-login-page>
+<app-main-nav *ngIf="(this.authService.user| async) != null"></app-main-nav>

@@ -77,3 +77,89 @@ mat-card-title {
     }
 }
 
+
+@media(max-width: 1000px) {
+
+
+    .categoryTable {
+
+        width: 100%;
+
+        .mat-header-row {
+            display: none;
+        }
+        
+        tr { 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10px;
+            height: unset;
+            width:93%;    
+            border-left: 1px solid blue;
+            margin-bottom: 25px;
+            .description {
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                /* autoprefixer: off */
+                -webkit-box-orient: vertical;
+            }
+        }
+      
+        .mat-cell {
+            width: 100% !important;
+            padding: 18px 0px 0px 0px;
+        }
+    
+        .mat-form-field {
+            width: 100%;
+        }
+    
+        .mobile {
+            display: flex ;
+            float: right;
+        }
+    
+        .actions{
+            .mat-icon-button {
+                display: flex;
+                float: right;
+            }
+        }
+    
+        .desktop {
+            display: none;
+        }
+    }
+
+    .tableControls {
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        display: flex;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-right: 15px;
+        padding-left: 15px;
+        width: 100%;
+        height: auto;
+        // transform: scale(.85);
+        ::ng-deep .mat-paginator-page-size {
+            display: none !important;
+        }
+        ::ng-deep .mat-paginator-range-label {
+            display: none !important;
+        }
+        border-top: 1px solid #3f51b53b;
+        border-radius: 0px;
+      }
+      .controlsFilter {
+          display: flex !important;
+          width: 30%;
+          ::ng-deep .mat-form-field-wrapper {
+              width: 100% !important;
+          }
+      }
+
+  }

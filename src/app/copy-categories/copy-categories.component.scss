@@ -1,8 +1,8 @@
 .copyCatsDiv {
-    display: inline;
-
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     mat-form-field {
         width:10em;
-        padding-right: 50px;
     }
 }
