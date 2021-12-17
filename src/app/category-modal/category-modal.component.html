@@ -1,11 +1,9 @@
-<h1 mat-dialog-title>
-  {{data.name}}
-</h1>
 <mat-dialog-actions>
   <button mat-icon-button *ngIf="data.id === undefined" (click)="Add()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="data.id !== undefined" (click)="Update()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="data.id !== undefined" (click)="Delete(data.id)"><mat-icon>delete</mat-icon></button>
 </mat-dialog-actions>
+<h2 mat-dialog-title>{{data.name}}</h2>
 <mat-dialog-content>
   <div class="categoryFields">
     <mat-form-field class="categoryModalField">

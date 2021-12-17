@@ -74,9 +74,10 @@ export class CategoryTableComponent implements AfterViewInit {
   }
 
   deleteCategory(id, name) {
-    //TODO: Prompt here...
-    this.CATsvc.categoriesCollection.doc(id).delete();
-    this.updateRelatedTransactions(name, '')
+    if (confirm(`Are you sure you want to delete Category: ${name}`)) {
+      this.CATsvc.categoriesCollection.doc(id).delete();
+      this.updateRelatedTransactions(name, '')
+    }
   }
 
   updateRelatedTransactions(catName, value) {
@@ -97,7 +98,8 @@ export class CategoryTableComponent implements AfterViewInit {
     colUpdate[`${colName}`] = event.target.value;
     if (colName.toLowerCase() == 'name') {
       keyRef.ref.get().then(d => {
-        this.updateRelatedTransactions(d.data().name, event.target.value) //We have to do this after the get promise returns here to make sure we get the oldvalue
+        //We have to do this after the get promise returns here to make sure we get the oldvalue
+        this.updateRelatedTransactions(d.data().name, event.target.value) 
         if (keyRef) keyRef.update(colUpdate)
       })
     }
