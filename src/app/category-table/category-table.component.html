@@ -6,7 +6,7 @@
             <!-- id Column -->
             <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-                <td mat-cell class="desktop" *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row.id, row.name)"><mat-icon>delete</mat-icon></button></td>
+                <td mat-cell class="desktop" *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row)"><mat-icon>delete</mat-icon></button></td>
                 <!-- <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addCategory()"><mat-icon>add</mat-icon></button> </td> -->
             </ng-container>
             
@@ -15,7 +15,7 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
               <td mat-cell class="valueCategory" *matCellDef="let row">
                 <mat-form-field>
-                  <input matInput placeholder="Category" value="{{row.name}}" (blur)="valueChanged($event, row.id, 'name')"/>
+                  <input matInput placeholder="Category" value="{{row.name}}" (blur)="updateValueOnChange($event.target.value, row.id, 'name')"/>
                 </mat-form-field>
               </td>
               <td mat-footer-cell *matFooterCellDef></td>
@@ -26,7 +26,7 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Budgeted</th>
               <td mat-cell class="valueAmount" *matCellDef="let row">
                 <mat-form-field>
-                  <input matInput placeholder="Budgeted" value="{{row.budgeted}}" (blur)="valueChanged($event, row.id, 'budgeted')"/>
+                  <input matInput placeholder="Budgeted" value="{{row.budgeted}}" (blur)="updateValueOnChange($event.target.value, row.id, 'budgeted')"/>
                 </mat-form-field>
               </td>
               <td mat-footer-cell *matFooterCellDef></td>

@@ -6,14 +6,12 @@ import { CategoryTableDataSource } from './category-table-datasource';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { BehaviorSubject } from 'rxjs';
-import { Chart } from 'Chart.js'
-
 
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
 
 import * as firebase from 'firebase/app';
-import { colors } from '../reports/reports.component';
+import { collectionType, ICategory } from '../core/dataTypes';
 
 @Component({
   selector: 'app-category-table',
@@ -50,71 +48,64 @@ export class CategoryTableComponent implements AfterViewInit {
                                                   this.filter);
     this.sort.direction = "asc";
     this.sort.active = "category";
-
-    // this.CATsvc.categories.subscribe(cats => {
-    //   if (this.BudgetChart) {this.BudgetChart.destroy()}
-    //   cats = cats.filter(c => c.name.toLowerCase() != 'income')
-    //   this.BudgetChart = new Chart('canvasBudget', {type: 'doughnut', options: {legend: {display: true}}})
-    //   this.BudgetChart.data = {
-    //     datasets: [{
-    //       data: cats.map(c => c.budgeted),
-    //       backgroundColor: cats.map((c, index) => colors[Object.keys(colors)[index]])
-    //     }],
-    //     labels: cats.map(c => c.name)
-    //   };
-    //   this.totalBudgeted = cats.map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
-    //   this.BudgetChart.update()
-    // })
-
   }
 
   addCategory() {
-    let newCategoryRef = this.CATsvc.categoriesCollection.ref.doc();
-    newCategoryRef.set({name: "", keywords: [], budgeted: null});
+    let c = <ICategory>{name: "", keywords: [], budgeted: null}
+    this.CATsvc.addDocument(c, collectionType.categories);
   }
 
-  deleteCategory(id, name) {
-    if (confirm(`Are you sure you want to delete Category: ${name}`)) {
-      this.CATsvc.categoriesCollection.doc(id).delete();
-      this.updateRelatedTransactions(name, '')
+  deleteCategory(category:ICategory) {
+    if (confirm(`Are you sure you want to delete Category: ${category.name}`)) {
+      this.CATsvc.deleteDocument(category, collectionType.categories);
+      this.updateRelatedTransactions(category.name, '')
     }
   }
 
-  updateRelatedTransactions(catName, value) {
-    this.CATsvc.transactionCollection.ref.where("category","==",catName)
-      .get()
-      .then(d => {
-        if (d.docs.length > 0) {
-          d.docs.forEach(doc =>{
-            this.CATsvc.transactionCollection.ref.doc(doc.id).update({category: value})
-          })
-        }
-      })
+  async updateRelatedTransactions(oldName:string, newName:string) {
+    if (oldName == "") { return }
+    var querySnap = await this.CATsvc.getQuerySnapshot(collectionType.transactions, "category", "==", oldName);
+    querySnap.docs?.forEach(doc => {
+      this.CATsvc.updateDocument(doc.id, collectionType.transactions, {category: newName});
+    });
   }
 
-  valueChanged(event, id, colName) {
-    let keyRef =  this.CATsvc.categoriesCollection.doc(id);
-    let colUpdate = {};
-    colUpdate[`${colName}`] = event.target.value;
-    if (colName.toLowerCase() == 'name') {
-      keyRef.ref.get().then(d => {
-        //We have to do this after the get promise returns here to make sure we get the oldvalue
-        this.updateRelatedTransactions(d.data().name, event.target.value) 
-        if (keyRef) keyRef.update(colUpdate)
-      })
-    }
-    else {
-      if (keyRef) keyRef.update(colUpdate)
+  async updateValueOnChange(newValue: string, id: string, columnName: string) {
+    let update = {};
+    update[columnName] = newValue;
+    await this.CATsvc.updateDocument(id, collectionType.categories, update);
+    if (columnName.toLowerCase() == 'name') {
+      // feels a bit hacky...
+      this.updateRelatedTransactions(this.CATsvc.actionStack[0].previousData['name'], newValue);
     }
   }
 
-  addKeyword(event: MatChipInputEvent, id): void {
+  // valueChanged(event, id, colName) {
+  //   let keyRef =  this.CATsvc.categoriesCollection.doc(id);
+  //   let colUpdate = {};
+  //   colUpdate[`${colName}`] = event.target.value;
+  //   if (colName.toLowerCase() == 'name') {
+  //     keyRef.ref.get().then(d => {
+  //       //We have to do this after the get promise returns here to make sure we get the oldvalue
+  //       this.updateRelatedTransactions(d.data().name, event.target.value) 
+  //       if (keyRef) keyRef.update(colUpdate)
+  //     })
+  //   }
+  //   else {
+  //     if (keyRef) keyRef.update(colUpdate)
+  //   }
+  // }
+
+  addKeyword(event: MatChipInputEvent, id: string) {
     const input = event.input;
     const value = event.value;
 
     if ((value || '').trim()) {
-      let keyRef =  this.CATsvc.categoriesCollection.doc(id);
-      if (keyRef) keyRef.update({keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())})
+      this.CATsvc.updateDocument(
+        id, 
+        collectionType.categories, 
+        {keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())}
+      );
     }
 
     if (input) {
@@ -122,9 +113,12 @@ export class CategoryTableComponent implements AfterViewInit {
     }
   }
 
-  removeKeyword(kw: string, id): void {
-    let keyRef =  this.CATsvc.categoriesCollection.doc(id);
-    if (keyRef) keyRef.update({keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())})
+  removeKeyword(kw: string, id: string) {
+    this.CATsvc.updateDocument(
+      id, 
+      collectionType.categories, 
+      {keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())}
+    );
   }
 
   openCopyCategoryDialog() {

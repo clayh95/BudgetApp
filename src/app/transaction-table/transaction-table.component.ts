@@ -6,7 +6,7 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
 import { Observable, BehaviorSubject } from '../../../node_modules/rxjs';
-import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
+import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { getIcon } from '../core/utilities';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
 import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
@@ -37,20 +37,10 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.sort.active = "date";
   }
 
-  ngOnInit() {
-    
-  }
-
-  TransactionCategoryChanged(id, value) {
-    let tRef =  this.Tsvc.transactionCollection.doc(id);
-    if (tRef) tRef.update({category: value});
-  }
-
-  valueChanged(event, id, colName) {
-    let keyRef =  this.Tsvc.transactionCollection.doc(id);
-    let colUpdate = {};
-    colUpdate[`${colName}`] = event.target.value;
-    if (keyRef) keyRef.update(colUpdate);
+  updateValueOnChange(newValue: string, id: string, columnName: string) {
+    let update = {};
+    update[columnName] = newValue;
+    this.Tsvc.updateDocument(id, collectionType.transactions, update);
   }
 
   addTransaction() {
@@ -58,9 +48,9 @@ export class TransactionTableComponent implements AfterViewInit  {
     const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
   }
 
-  deleteTransaction(id:string) {
+  deleteTransaction(t:ITransaction) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-      this.Tsvc.transactionCollection.doc(id).delete();
+      this.Tsvc.deleteDocument(t, collectionType.transactions);
     }
   }
 

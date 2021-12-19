@@ -2,7 +2,7 @@ import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ICategory } from '../core/dataTypes';
+import { collectionType, ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 
 @Component({
@@ -22,57 +22,50 @@ export class CategoryModalComponent {
   addOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   @ViewChild("chipInput") chipInput: ElementRef;
-  
   //CHIPS
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
               @Inject(MAT_DIALOG_DATA) public data: ICategory) {
-
                 this.origName = this.data.name;
-                
                 history.pushState(null, null, location.href);
                }
 
-  Add() {
-    let newCategoryRef = this.CATsvc.categoriesCollection.ref.doc();
-    newCategoryRef.set({
+  add() {
+    let doc = {
       name: this.data.name, 
       keywords: this.data.keywords, 
       budgeted: this.data.budgeted
-    });
+    }
+    this.CATsvc.addDocument(doc, collectionType.categories);
     this.dialogRef.close();
   }
 
-  Update() {
-    let keyRef =  this.CATsvc.categoriesCollection.doc(this.data.id);
-    if (keyRef) keyRef.update({
-      "name": this.data.name,
-      "budgeted": this.data.budgeted,
-      "keywords": this.data.keywords
-    }).then(() => {
-      this.updateRelatedTransactions() //We have to do this after the get promise returns here to make sure we get the oldvalue
-    });
+  async update() {
+    let doc = {
+      name: this.data.name, 
+      keywords: this.data.keywords ?? [], 
+      budgeted: this.data.budgeted
+    }
+    await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
+    this.updateRelatedTransactions(this.data.name);
     this.dialogRef.close();
   }
 
-  Delete() {
+  delete() {
     if (confirm('Are you sure you want to delete this category?')) {
-      this.CATsvc.categoriesCollection.doc(this.data.id).delete();
+      this.CATsvc.deleteDocument(this.data, collectionType.categories);
+      this.updateRelatedTransactions('');
       this.dialogRef.close();
     }
   }
 
-  updateRelatedTransactions() {
-    this.CATsvc.transactionCollection.ref.where("category","==",this.origName)
-      .get()
-      .then(d => {
-        if (d.docs.length > 0) {
-          d.docs.forEach(doc =>{
-            this.CATsvc.transactionCollection.ref.doc(doc.id).update({category: this.data.name})
-          })
-        }
-      })
+  async updateRelatedTransactions(newName:string) {
+    if (this.origName == "") { return }
+    var querySnap = await this.CATsvc.getQuerySnapshot(collectionType.transactions, "category", "==", this.origName);
+    querySnap.docs?.forEach(doc => {
+      this.CATsvc.updateDocument(doc.id, collectionType.transactions, {category: newName});
+    });
   }
   
   addKeyword(event: MatChipInputEvent): void {

@@ -1,11 +1,11 @@
 import { Injectable, NgModuleFactoryLoader } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from 'angularfire2/firestore';
-import { ITransaction, IUser, ICategory } from './dataTypes';
+import { ITransaction, IUser, ICategory, IDocumentAction, documentActionType, editorActionType, ITransactionStatus, collectionType } from './dataTypes';
 import { ObserveOnSubscriber } from '../../../node_modules/rxjs/internal/operators/observeOn';
 import { Observable, BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
 import { map, tap, subscribeOn } from '../../../node_modules/rxjs/operators';
 import {default as _rollupMoment, Moment} from 'moment';
-// import { initChangeDetectorIfExisting } from '../../../node_modules/@angular/core/src/render3/instructions';
+import firebase, { firestore } from 'firebase';
 const moment = _rollupMoment;
 
 export enum tAction {
@@ -17,30 +17,36 @@ export enum tAction {
   providedIn: 'root'
 })
 export class DbService {
-  transactionCollection: AngularFirestoreCollection;
-  tmpColl: AngularFirestoreCollection;
-  userCollection: AngularFirestoreCollection<IUser>;
-  monthsCollection: AngularFirestoreCollection;
-  categoriesCollection: AngularFirestoreCollection;
+  // TODO: make these private and implement functions that can work for Undo/redo
+  private transactionCollection: AngularFirestoreCollection;
+  // tmpColl: AngularFirestoreCollection;
+  private userCollection: AngularFirestoreCollection<IUser>;
+  private monthsCollection: AngularFirestoreCollection;
+  private categoriesCollection: AngularFirestoreCollection;
+  private additionalDataCollection: AngularFirestoreCollection;
+  
+  private monthYearSub: Subscription;
+  private tranSub: Subscription;
+  private catSub: Subscription;
+  private monthSummarySub: Subscription;
+
   monthYear: BehaviorSubject<string>;
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
-  additionalDataCollection: AngularFirestoreCollection;
 
-  monthYearSub: Subscription;
-  tranSub: Subscription;
-  catSub: Subscription;
-  monthSummarySub: Subscription;
+  // TODO: put in chrome storage
+  actionStack: IDocumentAction[] = new Array<IDocumentAction>();
+  actionStackIndex: number = 0;
 
   constructor(private afs: AngularFirestore) {
     this.init();
   }
 
   init() {
-      this.userCollection = this.afs.collection('users');
-      this.monthsCollection = this.afs.collection('monthsPK');
-      this.additionalDataCollection = this.afs.collection('additionalData');
+      this.userCollection = this.afs.collection(this.getCollectionPath(collectionType.users));
+      this.monthsCollection = this.afs.collection(this.getCollectionPath(collectionType.monthsPK));
+      this.additionalDataCollection = this.afs.collection(this.getCollectionPath(collectionType.additionalData));
 
       const startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`;
       this.monthYear = new BehaviorSubject<string>('');
@@ -57,11 +63,11 @@ export class DbService {
           this.monthSummary.next(d.payload.data()['summary']);
         });
 
-        this.categoriesCollection = this.afs.collection(`monthsPK/${monthPK}/categories`);
+        this.categoriesCollection = this.afs.collection(this.getCollectionPath(collectionType.categories));
         if (this.catSub) { this.catSub.unsubscribe(); }
         this.catSub = this.categoriesCollection.snapshotChanges().subscribe(ref => this.processCategories(ref));
 
-        this.transactionCollection = this.afs.collection(`monthsPK/${monthPK}/transactions`);
+        this.transactionCollection = this.afs.collection(this.getCollectionPath(collectionType.transactions));
         if (this.tranSub) { this.tranSub.unsubscribe(); }
         this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions));
     });
@@ -118,38 +124,175 @@ export class DbService {
     });
   }
 
-  AddOrUpdateTransaction(data, action) {
-    const mPK = moment(data.date, "MM/DD/YYYY").format('MMYYYY');
-    this.tmpColl = this.afs.collection(`monthsPK/${mPK}/transactions`);
-    let toDelete: firebase.firestore.DocumentReference;
-    if (mPK !== this.monthYear.getValue().replace(/\//g, '')) {
-      this.CreateMonthIfNotExists(mPK);
-      if (data.id) { toDelete = this.transactionCollection.ref.doc(data.id); }
-      action = tAction.add;
-      this.tranSub.unsubscribe(); //doing this so we don't get weird changes for a moment
+  // TODO: Allow moving a trans (via add)
+
+  // AddOrUpdateTransaction(data, action) {
+  //   const mPK = moment(data.date, "MM/DD/YYYY").format('MMYYYY');
+  //   this.tmpColl = this.afs.collection(`monthsPK/${mPK}/transactions`);
+    
+  //   let toDelete: firebase.firestore.DocumentReference;
+  //   if (mPK !== this.getMonthPKValue()) {
+  //     this.CreateMonthIfNotExists(mPK);
+  //     if (data.id) { toDelete = this.transactionCollection.ref.doc(data.id); }
+  //     action = tAction.add;
+  //     this.tranSub.unsubscribe(); //doing this so we don't get weird changes for a moment
+  //   }
+
+  //   let newDocRef: firebase.firestore.DocumentReference;
+  //   if (action == tAction.add) {
+  //     newDocRef = this.tmpColl.ref.doc();
+  //   } else {
+  //     newDocRef = this.tmpColl.doc(data.id).ref
+  //   }
+  //   if (toDelete) {
+  //     toDelete.delete().then(() => {console.log('Document removed')})
+  //   }
+
+  //   newDocRef.set({
+  //     date: data.date, 
+  //     description: data.description, 
+  //     amount: data.amount, 
+  //     notes: data.notes, 
+  //     category: data.category, 
+  //     status: data.status,
+  //     xId: data.xId ?? null,
+  //     xIndex: data.xIndex ?? null
+  //   });
+  //   // Enumerating all the fields to add the ID property
+  // }
+
+  async updateDocument(id: string, collection: collectionType, data: firebase.firestore.DocumentData, monthPK?:string) {
+    let documentAction: IDocumentAction = {
+      id: id,
+      collectionPath: this.getCollectionPath(collection, monthPK),
+      action: documentActionType.update,
+      undoAction: documentActionType.update,
+      previousData: null,
+      newData: data
+    };
+    await this.processAction(documentAction, editorActionType.initial);
+  }
+
+  async deleteDocument(obj:Object, collection: collectionType) {
+    var prevData = {};
+    Object.keys(obj).forEach((k: string) => prevData[k] = obj[k]);
+    let docId:string = prevData['id'];
+    delete prevData['id'];
+    let documentAction: IDocumentAction = {
+      id: docId,
+      collectionPath: this.getCollectionPath(collection),
+      action: documentActionType.remove,
+      undoAction: documentActionType.add,
+      previousData: prevData,
+      newData: null
+    };
+    this.processAction(documentAction, editorActionType.initial);
+  }
+
+  async addDocument(data: firebase.firestore.DocumentData, collection: collectionType, monthPK?:string) {
+    let documentAction: IDocumentAction = {
+      id: "",
+      collectionPath: this.getCollectionPath(collection, monthPK),
+      action: documentActionType.add,
+      undoAction: documentActionType.remove,
+      previousData: null,
+      newData: data
+    };
+    this.processAction(documentAction, editorActionType.initial);
+  }
+
+  async redo() {
+    this.processAction(this.actionStack[this.actionStackIndex], editorActionType.redo);
+  }
+
+  async undo() {
+    this.processAction(this.actionStack[this.actionStackIndex], editorActionType.undo);
+  }
+
+  async getQuerySnapshot(
+    collection: collectionType, 
+    whereColumn: string, whereOp: firestore.WhereFilterOp, 
+    value: any): Promise<firestore.QuerySnapshot> {
+      var snap = await this.afs.collection(this.getCollectionPath(collection)).ref.where(whereColumn, whereOp, value).get();
+      return snap;
+  }
+
+  //TODO: Get the full dcoument path (for restore??)
+  private async processAction(documentAction: IDocumentAction, action: editorActionType) {
+    var actionToPerform: documentActionType;
+    var dataToUse: firebase.firestore.DocumentData;
+    switch (action) {
+      case editorActionType.initial:
+      case editorActionType.redo: {
+        actionToPerform = documentAction.action;
+        dataToUse = documentAction.newData;
+        break;
+      }
+      case editorActionType.undo: {
+        actionToPerform = documentAction.undoAction;
+        dataToUse = documentAction.previousData;
+        break;
+      }
     }
-    let newDocRef: firebase.firestore.DocumentReference;
-    if (action == tAction.add) {
-      newDocRef = this.tmpColl.ref.doc();
-    } else {
-      newDocRef = this.tmpColl.doc(data.id).ref
+
+    switch (actionToPerform) {
+      case documentActionType.add: {
+        let doc: firebase.firestore.DocumentReference;
+        if (documentAction.id) {
+          doc = this.afs.collection(documentAction.collectionPath).doc(documentAction.id).ref;
+        } else {
+          doc = this.afs.collection(documentAction.collectionPath).ref.doc();
+          documentAction.id = doc.id;
+        }
+        await doc.set(dataToUse);
+        console.log('Document added');
+        break;
+      }
+      case documentActionType.remove: {
+        var doc = this.afs.collection(documentAction.collectionPath).doc(documentAction.id).ref;
+        await doc.delete();
+        console.log('Document removed');
+        break;
+      }
+      case documentActionType.update: {
+        let doc = this.afs.collection(documentAction.collectionPath).doc(documentAction.id).ref;
+        if (action == editorActionType.initial) {
+          var snap = await doc.get();
+          documentAction.previousData = {};
+          Object.keys(dataToUse).map(k => documentAction.previousData[k] = snap.data()[k]);
+        }
+        await doc.update(dataToUse);
+        console.log('Document updated');
+        break;
+      }
+      case documentActionType.set: {
+        let doc = this.afs.collection(documentAction.collectionPath).doc(documentAction.id).ref;
+        if (action == editorActionType.initial) {
+          var snap = await doc.get();
+          documentAction.previousData = snap.data;
+        }
+        await doc.update(dataToUse);
+        console.log('Document set');
+        break;
+      }
     }
-    if (toDelete) {
-      toDelete.delete().then(() => {console.log('Document removed')})
+
+    switch (action) {
+      case editorActionType.initial: {
+        this.actionStack.splice(0, this.actionStackIndex);
+        this.actionStackIndex = 0;
+        this.actionStack.unshift(documentAction);
+        break;
+      }
+      case editorActionType.redo: {
+        this.actionStackIndex -= 1;
+        break;
+      }
+      case editorActionType.undo: {
+        this.actionStackIndex += 1;
+        break;
+      }
     }
-    newDocRef.set({
-      date: data.date, 
-      description: data.description, 
-      amount: data.amount, 
-      notes: data.notes, 
-      category: data.category, 
-      status: data.status,
-      xId: data.xId ?? null,
-      xIndex: data.xIndex ?? null
-    }) //Enumerating all the fields to add the ID property
-    //if not subscribed...
-    //this seemed so wrong...there is probably some reason i will find
-    // this.tranSub = this.transactionCollection.snapshotChanges().subscribe(actions => this.processTransactions(actions))
   }
 
   signOut() {
@@ -164,9 +307,21 @@ export class DbService {
     this.init()
   }
 
-   CheckIfTransactionExists(monthYear, desc): Promise<any> {
+   CheckIfTransactionExists(monthYear:string, desc:string): Promise<any> {
     const tmpColl = this.afs.collection(`monthsPK/${monthYear}/transactions`);
-    return tmpColl.ref.where('description', '==', desc).get()
+    return tmpColl.ref.where('description', '==', desc).get();
+  }
+
+  getMonthPKValue():string {
+    return this.monthYear.getValue().replace(/\//g, '');
+  }
+
+  getCollectionPath(collection:collectionType, monthPK?:string):string {
+    if ([collectionType.transactions, collectionType.categories].includes(collection)) {
+      return `${collectionType.monthsPK}/${monthPK ?? this.getMonthPKValue()}/${collection}`
+    } else {
+      return collection;
+    }
   }
 
   async getBalances() {

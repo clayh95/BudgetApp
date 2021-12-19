@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
-import { ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
+import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
 import { MatDialog } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
@@ -34,7 +34,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     
-    this.catsTrans = combineLatest(this.service.categories, this.service.transactions).subscribe(([cats, trans]) => {
+    this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
 
           if (cats.length === 0 || trans.length === 0) {
             this.reportCats = [];
@@ -152,9 +152,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
     const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
   }
 
-  updateSummaryNotes(event) {
-    let summaryRef = this.service.monthsCollection.doc(this.service.monthYear.getValue().replace(/\//g, ''));
-    if (summaryRef) summaryRef.update({'summary': event.target.value});
+  updateSummaryNotes(value:string) {
+    this.service.updateDocument(this.service.getMonthPKValue(), collectionType.monthsPK, {'summary': value});
   }
   
   trackById(index, item) {
@@ -162,6 +161,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
 
   carryAmounts() {
+    //TODO: show a summary of what's going to be copied
     if (confirm("Are you sure?")) {
       let tmp:number = 0
       this.reportCats.filter(c => (c.category.budgeted - c.category.spent) != 0).map(c => {
@@ -177,8 +177,9 @@ export class SummaryComponent implements OnInit, OnDestroy {
             status: "Posted"
           }
         tmp += +t.amount;
-        this.service.AddOrUpdateTransaction(t, tAction.add);
-      })
+        const mPK = moment(t.date, "MM/DD/YYYY").format('MMYYYY');
+        this.service.addDocument(t, collectionType.transactions, mPK);
+      });
     }
   }
   

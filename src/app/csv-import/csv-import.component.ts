@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef  } from '@angular/core';
-import { ITransaction, ITransactionStatus } from '../core/dataTypes';
+import { collectionType, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
 import { map } from 'rxjs/operators';
@@ -75,10 +75,10 @@ export class CsvImportComponent {
       }
     })
 
-    transactionsToAdd.forEach(t => {
-      this.service.transactionCollection.add(t);
+    transactionsToAdd.forEach(async t =>  {
+      await this.service.addDocument(t, collectionType.transactions)
       this.importSummary.chargesImported ++;
-    })
+    });
   }
   
 
@@ -101,6 +101,7 @@ export class CsvImportComponent {
   SetCategoryFromKeywords(tDesc: string): string {
     tDesc = tDesc.toUpperCase();
     let ret = '';
+    // TODO: make this private and add helper readonly method? probably
     this.service.categories.getValue().map(c => {
       if (c.keywords) {
         c.keywords.map(k => {
@@ -114,15 +115,12 @@ export class CsvImportComponent {
     return ret;
   }
 
-
   ImportSelectedAnyway(selectedList) {
-    selectedList.map(t => {
-      this.service.transactionCollection.add(t.value).then(() => {
-        this.importSummary.chargesImported ++;
-        this.importSummary.duplicates --;
-        this.importSummary.summaries.splice(this.importSummary.summaries.indexOf(t), 1)
-        // t.selected = false;
-      });
+    selectedList.map(async t => {
+      await this.service.addDocument(t.value, collectionType.transactions);
+      this.importSummary.chargesImported++;
+      this.importSummary.duplicates--;
+      this.importSummary.summaries.splice(this.importSummary.summaries.indexOf(t), 1)
     });
   }
 

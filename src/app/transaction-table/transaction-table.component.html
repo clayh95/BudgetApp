@@ -8,7 +8,7 @@
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header>Actions</th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
               <button mat-icon-button (click)="editTransaction(row)"><mat-icon>edit</mat-icon></button>
-              <button mat-icon-button (click)="deleteTransaction(row.id)"><mat-icon>delete</mat-icon></button>
+              <button mat-icon-button (click)="deleteTransaction(row)"><mat-icon>delete</mat-icon></button>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
@@ -79,7 +79,7 @@
         <th mat-header-cell class="notes" *matHeaderCellDef mat-sort-header>Notes</th>
         <td mat-cell class="notes desktop" *matCellDef="let row">
           <mat-form-field class="example-full-width">
-            <input matInput placeholder="Notes" value="{{row.notes}}" (blur)="valueChanged($event, row.id, 'notes')"/>
+            <input matInput placeholder="Notes" value="{{row.notes}}" (blur)="updateValueOnChange($event.target.value, row.id, 'notes')"/>
           </mat-form-field>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
@@ -91,8 +91,8 @@
         <td mat-cell class="category" *matCellDef="let row">
           <mat-form-field>
             <mat-select placeholder="Category" [value]="row.category">
-              <mat-option (click)="TransactionCategoryChanged(row.id, '')"></mat-option>
-              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (click)="TransactionCategoryChanged(row.id, category.name)">
+              <mat-option (click)="updateValueOnChange('', row.id, 'category')"></mat-option>
+              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (click)="updateValueOnChange(category.name, row.id, 'category')">
                 {{category.name}}
               </mat-option>
             </mat-select>

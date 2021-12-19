@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IUser } from './dataTypes';
+import { collectionType, IUser } from './dataTypes';
 import {Router} from '@angular/router';
 
 import { BehaviorSubject, Observable ,  of } from 'rxjs';
@@ -8,6 +8,7 @@ import { AngularFireAuth } from '../../../node_modules/angularfire2/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '../../../node_modules/angularfire2/firestore';
 import { DbService } from './db.service';
 import { map } from '../../../node_modules/rxjs/operators';
+import { T } from '@angular/cdk/keycodes';
 
 @Injectable({
   providedIn: 'root'
@@ -45,8 +46,7 @@ export class AuthService {
   }
 
   private checkUserState(user: firebase.User) {
-    this.dbService.userCollection.ref.where("uid", "==", user.uid)
-      .get()
+    this.dbService.getQuerySnapshot(collectionType.users, 'uid', "==", user.uid)
       .then(querySnapshot => {
         if (querySnapshot.docs.length == 0) {
           this.loginState.next(`Sorry ${user.displayName}, you are not a valid user.`);

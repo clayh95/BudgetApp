@@ -1,5 +1,5 @@
 import { Component,  Inject } from '@angular/core';
-import { ITransaction } from '../core/dataTypes'
+import { collectionType, ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
@@ -46,15 +46,16 @@ export class AddTransactionComponent {
                 history.pushState(null, null, location.href);
               }
 
-  Add() {
+  add() {
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY')
-      this.ATsvc.AddOrUpdateTransaction(tr, tAction.add)
+      this.ATsvc.addDocument(tr, collectionType.transactions); //should we pass in another monthPK? or maybe alert or somethign?
     })
     this.dialogRef.close();
   }
 
-  Update() {
+  //TODO: figure out how to handle moving between monthPKs
+  update() {
     this.data.map((tr, index) => {
       if (this.dummyCopy.length > 0) {
         tr.xId = this.data[0].id;
@@ -62,16 +63,16 @@ export class AddTransactionComponent {
       }
       tr.date = this.tmpDate[index].format('MM/DD/YYYY');
       if (tr.id == null) {
-        this.ATsvc.AddOrUpdateTransaction(tr, tAction.add);
+        this.ATsvc.addDocument(tr, collectionType.transactions);
       }
       else {
-        this.ATsvc.AddOrUpdateTransaction(tr, tAction.update);
+        this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
       }
     });
     this.dialogRef.close();
   }
 
-  Split() {
+  split() {
     if (this.data[0].xId == null) {
       this.data[0].xId = this.data[0].id;
       this.data[0].xIndex = 0;
@@ -90,7 +91,7 @@ export class AddTransactionComponent {
     this.data.push(t);
   }
 
-  UpdateTotal(idx:number) {
+  updateTotal(idx:number) {
     if (this.data.length > 1) {
       if (idx !== null) {
         const newIdx:number = (idx + 1) % this.data.length;
@@ -104,9 +105,10 @@ export class AddTransactionComponent {
     }
   }
 
-  deleteTransaction(id) {
+  deleteTransaction(t:ITransaction) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-      this.ATsvc.transactionCollection.doc(id).delete();
+      // this.ATsvc.transactionCollection.doc(id).delete();
+      this.ATsvc.deleteDocument(t, collectionType.transactions);
       this.dialogRef.close();
     }
   }

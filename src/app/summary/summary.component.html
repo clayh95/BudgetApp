@@ -115,7 +115,7 @@
             matInput 
             cdkTextareaAutosize
             value="{{service.monthSummary | async}}" 
-            (change)="updateSummaryNotes($event)"></textarea>
+            (change)="updateSummaryNotes($event.target.value)"></textarea>
           </mat-form-field>
     </mat-card>
   </div>

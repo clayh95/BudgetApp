@@ -1,6 +1,7 @@
 
 .transactionTable {
     width:100%;
+    background-color: transparent;
 
     .mat-cell, .mat-header-cell {
         padding: 8px;
@@ -140,6 +141,9 @@
     right: 25px;
     display: flex;
     padding: 5px;
+    ::ng-deep .mat-paginator-page-size {
+        background-color: transparent;
+    }
     mat-card-content {
         display: flex;
         align-items: center;
@@ -168,9 +172,6 @@
             align-items: flex-start;
             padding: 10px;
             width:93%;
-            .date {
-                font-weight: bold;
-            }
             .description {
               overflow: hidden;
               display: -webkit-box;

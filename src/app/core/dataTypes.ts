@@ -30,4 +30,33 @@ export interface ICategory {
     spent: number;
 }
 
+export interface IDocumentAction {
+    id?: string;
+    collectionPath: string;
+    action: documentActionType;
+    undoAction: documentActionType;
+    previousData?: firebase.firestore.DocumentData;
+    newData?: firebase.firestore.DocumentData;
+}
+
+export enum documentActionType {
+    add,
+    remove,
+    set,
+    update
+}
+
+export enum editorActionType {
+    initial,
+    undo,
+    redo
+}
+
+export enum collectionType {
+    transactions = "transactions",
+    categories = "categories",
+    users = "users",
+    monthsPK = "monthsPK",
+    additionalData = "additionalData"
+}
 
