@@ -12,6 +12,23 @@
       <a mat-list-item routerLink="/csv"><button mat-icon-button matTooltip="Import From CSV" [matTooltipPosition]="'right'"><mat-icon>import_export</mat-icon></button></a>
       <!-- <a mat-list-item routerLink="/reports"><button mat-icon-button matTooltip="Reports" [matTooltipPosition]="'right'"><mat-icon>show_chart</mat-icon></button></a> -->
       <a mat-list-item routerLink="/summary"><button mat-icon-button matTooltip="Summary" [matTooltipPosition]="'right'"><mat-icon>assignment</mat-icon></button></a>
+      <hr />
+      <button 
+        mat-icon-button 
+        class="action"
+        matTooltip="Undo last action" [matTooltipPosition]="'right'" 
+        [disabled] = "service.actionStack.length == 0 || service.actionStackIndex == service.actionStack.length"
+        (click)="undo()" >
+        <mat-icon>undo</mat-icon>
+      </button>
+      <button 
+        mat-icon-button 
+        class="action" 
+        matTooltip="Redo last action" [matTooltipPosition]="'right'" 
+        [disabled] = "service.actionStackIndex == 0"
+        (click)="redo()" >
+        <mat-icon>redo</mat-icon>
+      </button>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>

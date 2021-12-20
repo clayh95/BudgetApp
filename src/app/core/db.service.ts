@@ -74,7 +74,6 @@ export class DbService {
   }
 
   processTransactions(actions) {
-    console.log(`Transactions - read ${actions.length} docs`);
     const tmp = new Array();
       actions.map(a => {
         const data = <ITransaction>a.payload.doc.data();
@@ -85,7 +84,6 @@ export class DbService {
   }
 
   processCategories(ref) {
-    console.log(`Categories - read ${ref.length} docs`);
     const tmp = new Array();
     if (ref.length === 0) { this.categories.next([]); }
     ref.forEach(a => {
@@ -162,6 +160,7 @@ export class DbService {
   // }
 
   async updateDocument(id: string, collection: collectionType, data: firebase.firestore.DocumentData, monthPK?:string) {
+    delete data['id']; // shouldn't ever need ID in document data
     let documentAction: IDocumentAction = {
       id: id,
       collectionPath: this.getCollectionPath(collection, monthPK),
@@ -202,7 +201,7 @@ export class DbService {
   }
 
   async redo() {
-    this.processAction(this.actionStack[this.actionStackIndex], editorActionType.redo);
+    this.processAction(this.actionStack[this.actionStackIndex - 1], editorActionType.redo);
   }
 
   async undo() {

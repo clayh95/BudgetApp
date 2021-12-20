@@ -116,7 +116,7 @@
 <mat-card class="tableControls">
   <mat-card-content>
     <mat-form-field class="controlsFilter">
-      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
     </mat-form-field>
     <span class="total"><b>{{getTotal() | currency}}</b></span>
     <mat-paginator #paginator
