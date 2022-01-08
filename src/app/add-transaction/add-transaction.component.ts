@@ -49,12 +49,18 @@ export class AddTransactionComponent {
   add() {
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY')
-      this.ATsvc.addDocument(tr, collectionType.transactions); //should we pass in another monthPK? or maybe alert or somethign?
+      if (this.movingMonthsCheck(this.tmpDate[index])) {
+        if (this.movingMonthsConfirm(this.tmpDate[index])) {
+          this.ATsvc.addDocument(tr, collectionType.transactions, this.ATsvc.getMonthPKFromMoment(this.tmpDate[index]));
+        }
+      }
+      else {
+        this.ATsvc.addDocument(tr, collectionType.transactions);
+      }
     })
     this.dialogRef.close();
   }
 
-  //TODO: figure out how to handle moving between monthPKs
   update() {
     this.data.map((tr, index) => {
       if (this.dummyCopy.length > 0) {
@@ -62,14 +68,37 @@ export class AddTransactionComponent {
         tr.xIndex = index;
       }
       tr.date = this.tmpDate[index].format('MM/DD/YYYY');
-      if (tr.id == null) {
-        this.ATsvc.addDocument(tr, collectionType.transactions);
+      let monthPK:string = this.ATsvc.getMonthPKFromMoment(this.tmpDate[index]);
+
+      if (this.movingMonthsCheck(this.tmpDate[index])) {
+        if (this.movingMonthsConfirm(this.tmpDate[index])) {
+          this.ATsvc.deleteDocument(tr, collectionType.transactions);
+          this.ATsvc.addDocument(tr, collectionType.transactions, monthPK);
+        }
       }
       else {
-        this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
+        if (tr.id == null) {
+          this.ATsvc.addDocument(tr, collectionType.transactions);
+        }
+        else {
+          this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
+        }
       }
     });
     this.dialogRef.close();
+  }
+
+  movingMonthsCheck(checkDate:_rollupMoment.Moment) {
+    return checkDate.format('MM') != this.ATsvc.getMonthYearValue().substring(0,2);
+  }
+
+  movingMonthsConfirm(checkDate:_rollupMoment.Moment) {
+    if (confirm(`Are you sure you want to move this transaction from 
+                  to ${moment(this.ATsvc.getMonthYearValue().substring(0,2), 'M').format('MMMM')}?
+                  ${checkDate.format('MMMM')}`)) {
+      return true;
+    }
+    return false;
   }
 
   split() {
