@@ -52,7 +52,7 @@
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
         <td mat-cell class="description" (click)="editTransaction(row)" *matCellDef="let row">
           <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
-          <span>{{row.description}}</span>
+          <span class="desktop-height">{{row.description}}</span>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>

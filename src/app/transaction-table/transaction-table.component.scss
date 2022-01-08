@@ -32,6 +32,7 @@
 
     .description {
         // width:45%;
+        min-height: 48px;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -189,6 +190,7 @@
             padding: 10px;
             width:93%;
             .description {
+              min-height: auto;
               overflow: hidden;
               display: -webkit-box;
               -webkit-line-clamp: 2;
