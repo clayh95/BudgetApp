@@ -5,23 +5,17 @@
     <table mat-table #table [dataSource]="dataSource" [trackBy]="trackById" class="transactionTable" matSort aria-label="Elements">
       <!-- id Column -->
       <ng-container matColumnDef="id">
-          <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header>Actions</th>
+          <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
-              <button mat-icon-button (click)="editTransaction(row)"><mat-icon>edit</mat-icon></button>
-              <button mat-icon-button (click)="deleteTransaction(row)"><mat-icon>delete</mat-icon></button>
+              <!-- <button mat-icon-button (click)="editTransaction(row)"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button (click)="deleteTransaction(row)"><mat-icon>delete</mat-icon></button> -->
+              <span class="icons">
+                <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
+                <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.4em">check_circle_outline</mat-icon>
+              </span>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
-
-      <!-- status Column -->
-      <!-- <ng-container matColumnDef="status">
-          <th mat-header-cell class="status" *matHeaderCellDef mat-sort-header>Status</th>
-          <td mat-cell class="status desktop" *matCellDef="let row">
-              <button *ngIf="row.status == 'Pending'" mat-icon-button><mat-icon style="color:orange">error_outline</mat-icon></button>
-              <button *ngIf="row.status != 'Pending'" mat-icon-button><mat-icon style="color:green">check_circle_outline</mat-icon></button>
-          </td>
-          <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container> -->
       
       <div>
         <!-- date Column -->
@@ -34,7 +28,7 @@
               <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
               <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
               <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-          {{row.amount | currency}}
+              {{row.amount | currency}}
             </span>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
@@ -44,7 +38,10 @@
         <ng-container matColumnDef="amount">
           <th mat-header-cell class="amount" *matHeaderCellDef mat-sort-header>Amount</th>
           <td mat-cell class="amount desktop" *matCellDef="let row">
-            {{row.amount | currency}}
+            <span class="infoBusiness desktop">
+              {{row.amount | currency}}
+              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
+            </span>
           </td>
           <td mat-footer-cell *matFooterCellDef></td> 
         </ng-container>
@@ -54,7 +51,8 @@
       <ng-container matColumnDef="description">
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
         <td mat-cell class="description" (click)="editTransaction(row)" *matCellDef="let row">
-          {{row.description}}
+          <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
+          <span>{{row.description}}</span>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
@@ -63,12 +61,6 @@
       <ng-container matColumnDef="info">
         <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header></th>
         <td mat-cell class="info" *matCellDef="let row">
-          <span class="infoBusiness desktop">
-              <img src="{{getIconFromUtils(row.description)}}"/>
-              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
-              <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.4em">check_circle_outline</mat-icon>
-          </span>
           <!-- Also the transaction status? (Split, etc) -->
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
@@ -113,20 +105,26 @@
 </mat-card>
 </div>
 
-<mat-card class="tableControls">
+<div class="paginator">
+  <mat-form-field class="controlsFilter">
+    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
+  </mat-form-field>
+  <mat-paginator #paginator
+    [length]="Tsvc.transactions.getValue().length"
+    [pageIndex]="0"
+    [pageSize]="10"
+    [pageSizeOptions]="[10, 25, 50]">
+  </mat-paginator>
+</div>
+
+<!-- <mat-card class="tableControls">
   <mat-card-content>
     <mat-form-field class="controlsFilter">
       <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
     </mat-form-field>
     <span class="total"><b>{{getTotal() | currency}}</b></span>
-    <mat-paginator #paginator
-      [length]="Tsvc.transactions.getValue().length"
-      [pageIndex]="0"
-      [pageSize]="10"
-      [pageSizeOptions]="[10, 25, 50]">
-    </mat-paginator>
     <button mat-icon-button color="primary" (click)="addTransaction()"><mat-icon>add</mat-icon></button>
   </mat-card-content>
-</mat-card>
+</mat-card> -->
 
 
