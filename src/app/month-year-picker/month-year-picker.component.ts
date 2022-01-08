@@ -7,7 +7,6 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { FormControl } from '@angular/forms';
 
-//TODO: Provide more formats for the All Transactions Screen
 export const MMYY_FORMAT = {
   parse: {
     dateInput: 'MM/YYYY',

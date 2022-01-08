@@ -59,9 +59,9 @@ export class CsvImportComponent {
   async checkTransaction(t:ITransaction) {
     let transactionsToAdd = [];
     let promiseArray:Array<Promise<any>> = []
-    let d = new Date(`${this.service.monthYear.getValue().split('\/')[0]}\/01\/${this.service.monthYear.getValue().split('\/')[1]}`)
-    let pks = [this.service.monthYear.getValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
-    pks.forEach(p => promiseArray.push(this.service.CheckIfTransactionExists(p, t.description)));
+    let d = new Date(`${this.service.getMonthYearValue().split('\/')[0]}\/01\/${this.service.getMonthYearValue().split('\/')[1]}`)
+    let pks = [this.service.getMonthYearValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
+    pks.forEach(p => promiseArray.push(this.service.checkIfTransactionExists(p, t.description)));
     await Promise.all(promiseArray).then(res => {
       for (let r of res) {
         if (r.docs.length > 0){
@@ -101,7 +101,6 @@ export class CsvImportComponent {
   SetCategoryFromKeywords(tDesc: string): string {
     tDesc = tDesc.toUpperCase();
     let ret = '';
-    // TODO: make this private and add helper readonly method? probably
     this.service.categories.getValue().map(c => {
       if (c.keywords) {
         c.keywords.map(k => {

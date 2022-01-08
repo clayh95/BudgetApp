@@ -41,7 +41,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       let val = <ITransaction[]>d[0];
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
-      this.lastMY = this.service.monthYear.getValue();
+      this.lastMY = this.service.getMonthYearValue();
       let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3])
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
@@ -54,7 +54,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
 
   private highlightUpserts(ret: ITransaction[]): ITransaction[] {
     //start with just checking if exists
-    if (this.lastMY !== this.service.monthYear.getValue()) { return ret; }
+    if (this.lastMY !== this.service.getMonthYearValue()) { return ret; }
     return ret.map(t => {
       const compT = this.lastIDs.find(x => x.id === t.id);
       if (compT === undefined) {

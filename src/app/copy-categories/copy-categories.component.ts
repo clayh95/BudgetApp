@@ -41,13 +41,13 @@ export class CopyCategoriesComponent {
   copyCategories() {
     let copyToMonthYear: string = `${this.dp_copyForm.value.format('MM')}\/${this.dp_copyForm.value.format('YYYY')}`
     let copyToMonthYearNoSlash: string = copyToMonthYear.replace(/\//g,"")
-    if (copyToMonthYear == this.service.monthYear.getValue()) {
+    if (copyToMonthYear == this.service.getMonthYearValue()) {
       alert("You probably don't want to copy those to the same month...")
     }
     else {
-      this.service.CreateMonthIfNotExists(copyToMonthYearNoSlash);
-      this.service.CopyCagetories(copyToMonthYearNoSlash);
-      this.service.monthYear.next(copyToMonthYear);
+      this.service.createMonthIfNotExists(copyToMonthYearNoSlash);
+      this.service.copyCagetories(copyToMonthYearNoSlash);
+      this.service.addNextMonthYear(copyToMonthYear);
       this.dialogRef.close();
     }
   }

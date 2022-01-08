@@ -1,10 +1,8 @@
-import { Injectable, NgModuleFactoryLoader } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from 'angularfire2/firestore';
-import { ITransaction, IUser, ICategory, IDocumentAction, documentActionType, editorActionType, ITransactionStatus, collectionType } from './dataTypes';
-import { ObserveOnSubscriber } from '../../../node_modules/rxjs/internal/operators/observeOn';
-import { Observable, BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
-import { map, tap, subscribeOn } from '../../../node_modules/rxjs/operators';
-import {default as _rollupMoment, Moment} from 'moment';
+import { ITransaction, ICategory, IDocumentAction, documentActionType, editorActionType, collectionType } from './dataTypes';
+import { BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
+import {default as _rollupMoment} from 'moment';
 import firebase, { firestore } from 'firebase';
 const moment = _rollupMoment;
 
@@ -17,10 +15,8 @@ export enum tAction {
   providedIn: 'root'
 })
 export class DbService {
-  // TODO: make these private and implement functions that can work for Undo/redo
   private transactionCollection: AngularFirestoreCollection;
-  // tmpColl: AngularFirestoreCollection;
-  private userCollection: AngularFirestoreCollection<IUser>;
+  // private userCollection: AngularFirestoreCollection<IUser>;
   private monthsCollection: AngularFirestoreCollection;
   private categoriesCollection: AngularFirestoreCollection;
   private additionalDataCollection: AngularFirestoreCollection;
@@ -35,7 +31,7 @@ export class DbService {
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
 
-  // TODO: put in chrome storage
+  // TODO: put in chrome storage (maybe?)
   actionStack: IDocumentAction[] = new Array<IDocumentAction>();
   actionStackIndex: number = 0;
 
@@ -44,7 +40,7 @@ export class DbService {
   }
 
   init() {
-      this.userCollection = this.afs.collection(this.getCollectionPath(collectionType.users));
+      // this.userCollection = this.afs.collection(this.getCollectionPath(collectionType.users));
       this.monthsCollection = this.afs.collection(this.getCollectionPath(collectionType.monthsPK));
       this.additionalDataCollection = this.afs.collection(this.getCollectionPath(collectionType.additionalData));
 
@@ -54,7 +50,7 @@ export class DbService {
 
       this.monthYearSub = this.monthYear.subscribe(m => {
         const monthPK = m.replace(/\//g, '');
-        this.CreateMonthIfNotExists(monthPK);
+        this.createMonthIfNotExists(monthPK);
         this.monthsCollection.doc(monthPK).ref.get().then(doc => {
           this.monthSummary.next(doc.data['summary']);
         });
@@ -73,7 +69,7 @@ export class DbService {
     });
   }
 
-  processTransactions(actions) {
+  processTransactions(actions:DocumentChangeAction<firestore.DocumentData>[]) {
     const tmp = new Array();
       actions.map(a => {
         const data = <ITransaction>a.payload.doc.data();
@@ -83,11 +79,11 @@ export class DbService {
     this.transactions.next( tmp );
   }
 
-  processCategories(ref) {
+  processCategories(ref:DocumentChangeAction<firestore.DocumentData>[]) {
     const tmp = new Array();
     if (ref.length === 0) { this.categories.next([]); }
     ref.forEach(a => {
-      const data = a.payload.doc.data(); // TODO: should this be ICategory or are we past that?
+      const data = a.payload.doc.data();
       const id = a.payload.doc.id;
       tmp.push({ id, ...data });
     });
@@ -95,7 +91,7 @@ export class DbService {
     // The reason we do snapshot is to get the doc id...valueChanges() does not do that, sadly
   }
 
-  CreateMonthIfNotExists(monthPK) {
+  createMonthIfNotExists(monthPK:string) {
     this.monthsCollection.ref.doc(monthPK).get().then(snap => {
       if (!snap.exists) {
         this.monthsCollection.ref.doc(monthPK).set({'name': monthPK, 'summary': ''});
@@ -109,7 +105,7 @@ export class DbService {
     });
   }
 
-  CopyCagetories(copyToPK) {
+  copyCagetories(copyToPK) {
     const copyColl = this.categoriesCollection.ref;
     let numCopied = 0;
     copyColl.get().then(docs => {
@@ -189,6 +185,7 @@ export class DbService {
   }
 
   async addDocument(data: firebase.firestore.DocumentData, collection: collectionType, monthPK?:string) {
+    delete data['id']; // No id should be present on a true add (we could have one from an undo or redo but that will be handled properly)
     let documentAction: IDocumentAction = {
       id: "",
       collectionPath: this.getCollectionPath(collection, monthPK),
@@ -216,7 +213,6 @@ export class DbService {
       return snap;
   }
 
-  //TODO: Get the full dcoument path (for restore??)
   private async processAction(documentAction: IDocumentAction, action: editorActionType) {
     var actionToPerform: documentActionType;
     var dataToUse: firebase.firestore.DocumentData;
@@ -306,13 +302,25 @@ export class DbService {
     this.init()
   }
 
-   CheckIfTransactionExists(monthYear:string, desc:string): Promise<any> {
+  checkIfTransactionExists(monthYear:string, desc:string): Promise<any> {
     const tmpColl = this.afs.collection(`monthsPK/${monthYear}/transactions`);
     return tmpColl.ref.where('description', '==', desc).get();
   }
 
   getMonthPKValue():string {
     return this.monthYear.getValue().replace(/\//g, '');
+  }
+
+  getMonthYearValue():string {
+    return this.monthYear.getValue();
+  }
+
+  addNextMonthYear(value:string) {
+    this.monthYear.next(value);
+  }
+
+  getMonthPKFromMoment(dt:_rollupMoment.Moment):string {
+    return `${dt.format('MM')}${dt.format('YYYY')}`
   }
 
   getCollectionPath(collection:collectionType, monthPK?:string):string {
