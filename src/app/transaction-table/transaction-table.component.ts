@@ -23,6 +23,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   dataSource: TransactionTableDataSource;
   displayedColumns = ['id', 'date', 'info', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
+  bShowPending = new BehaviorSubject<boolean>(true);
 
   constructor(public Tsvc: DbService,
               public dialog: MatDialog) {
@@ -32,7 +33,8 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.dataSource = new TransactionTableDataSource(this.paginator, 
       this.sort, 
       this.Tsvc,
-      this.filter);
+      this.filter,
+      this.bShowPending);
     this.sort.direction = "desc";
     this.sort.active = "date";
   }
@@ -65,6 +67,10 @@ export class TransactionTableComponent implements AfterViewInit  {
 
   applyFilter(filterValue: string) {
     this.filter.next(filterValue.trim().toLowerCase())
+  }
+
+  togglePendingVisibility() {
+    this.bShowPending.next(!this.bShowPending.getValue());
   }
 
   trackById(index, item) {

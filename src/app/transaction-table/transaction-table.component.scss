@@ -28,6 +28,9 @@
     .amount {
         width: 10%;
         font-weight: 600;
+        .split-icon {
+            transform: rotate(90deg) translateX(3px);
+        }
     }
 
     .description {
@@ -50,7 +53,7 @@
     }
     
     .split-icon {
-        transform: rotate(90deg) translateX(3px);
+        transform: rotate(90deg) translateX(-1px);
     }
 
     .notes {
@@ -159,6 +162,7 @@
 .paginator {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding-left: 2em;
     padding-right: 2em;
     bottom: 25px;
@@ -168,6 +172,7 @@
     }
     .controlsFilter {
         width: 50%;
+        margin-right: 25px;
     }
 }
 

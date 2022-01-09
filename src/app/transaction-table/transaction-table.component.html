@@ -109,6 +109,11 @@
   <mat-form-field class="controlsFilter">
     <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
   </mat-form-field>
+
+  <button mat-icon-button (click)="togglePendingVisibility()" [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'">
+      <mat-icon [style.color]="bShowPending.getValue() ? 'orange' : 'gray'">error_outline</mat-icon>
+  </button>
+
   <mat-paginator #paginator
     [length]="Tsvc.transactions.getValue().length"
     [pageIndex]="0"

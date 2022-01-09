@@ -3,7 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { ITransaction } from '../core/dataTypes';
+import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
 import * as _ from "lodash";
 
@@ -25,7 +25,8 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
               private sort: MatSort, 
               // private transactions: Observable<ITransaction[]>,
               private service: DbService,
-              private filter: BehaviorSubject<string>) {
+              private filter: BehaviorSubject<string>,
+              private bShowPending: BehaviorSubject<boolean>) {
     super();
   }
 
@@ -34,7 +35,8 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.service.transactions,
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith('0')),
-      this.filter
+      this.filter,
+      this.bShowPending
     ];
 
     return combineLatest(dataMutations).pipe(map((d) => {
@@ -42,7 +44,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
       this.lastMY = this.service.getMonthYearValue();
-      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3])
+      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3], <boolean>d[4]);
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
       ret = this.getPagedData(ret);
@@ -89,19 +91,12 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     });
   }
 
-  private getFilteredData(data: ITransaction[], filter:string) {
+  private getFilteredData(data: ITransaction[], filter:string, bShowPending:boolean) {
     return data.filter(t => {
       return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
+        && bShowPending || t.status == ITransactionStatus.posted
     })
   }
-  
-  // updateBeginDate(val) {
-  //   this.beginDateChange.next(val);
-  // }
-
-  // updateEndDate(val) {
-  //   this.endDateChange.next(val);
-  // }
 }
 
 
