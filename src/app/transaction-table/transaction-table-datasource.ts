@@ -94,7 +94,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   private getFilteredData(data: ITransaction[], filter:string, bShowPending:boolean) {
     return data.filter(t => {
       return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
-        && bShowPending || t.status == ITransactionStatus.posted
+        && (bShowPending || t.status == ITransactionStatus.posted)
     })
   }
 }

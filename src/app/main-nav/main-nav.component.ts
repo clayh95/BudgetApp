@@ -21,7 +21,7 @@ export class MainNavComponent {
       map(result => result.matches)
     );
     
-  constructor(private breakpointObserver: BreakpointObserver, router: Router, private service: DbService) {
+  constructor(private breakpointObserver: BreakpointObserver, router: Router, public service: DbService) {
     router.events.pipe(
       withLatestFrom(this.isHandset$),
       filter(([a, b]) => b && a instanceof NavigationEnd)
