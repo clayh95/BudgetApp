@@ -105,15 +105,34 @@
 </mat-card>
 </div>
 
+
 <div class="paginator">
+
+  <div [class]="bToggleFilter.getValue() ? 'expanded' : 'stacked'">
+    <button mat-icon-button (click)="togglePendingVisibility()"
+    [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'">
+        <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
+    </button>
+  
+    <button mat-icon-button (click)="toggleStartingBalanceVisibility()" 
+    [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'">
+        <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">balance</mat-icon>
+    </button>
+  
+    <button mat-icon-button (click)="toggleUncategorizedFilter()" 
+    [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized') ">
+        <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
+    </button>
+
+    <button class="filters-menu-button" mat-icon-button (click)="toggleFilterMenu()" 
+    [matTooltip]="(bToggleFilter.getValue() ? 'Hide' : 'Show') + ' pending'">
+        <mat-icon [style.color]="bToggleFilter.getValue() ? 'darkorange' : 'gray'">filter_alt</mat-icon>
+    </button>
+  </div>
+
   <mat-form-field class="controlsFilter">
     <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
   </mat-form-field>
-
-  <button mat-icon-button (click)="togglePendingVisibility()" [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'">
-      <mat-icon [style.color]="bShowPending.getValue() ? 'orange' : 'gray'">error_outline</mat-icon>
-  </button>
-
   <mat-paginator #paginator
     [length]="Tsvc.transactions.getValue().length"
     [pageIndex]="0"
@@ -121,15 +140,5 @@
     [pageSizeOptions]="[10, 25, 50]">
   </mat-paginator>
 </div>
-
-<!-- <mat-card class="tableControls">
-  <mat-card-content>
-    <mat-form-field class="controlsFilter">
-      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
-    </mat-form-field>
-    <span class="total"><b>{{getTotal() | currency}}</b></span>
-    <button mat-icon-button color="primary" (click)="addTransaction()"><mat-icon>add</mat-icon></button>
-  </mat-card-content>
-</mat-card> -->
 
 

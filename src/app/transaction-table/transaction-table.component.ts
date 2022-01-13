@@ -23,7 +23,10 @@ export class TransactionTableComponent implements AfterViewInit  {
   dataSource: TransactionTableDataSource;
   displayedColumns = ['id', 'date', 'info', 'amount', 'description', 'notes', 'category'];
   filter = new BehaviorSubject<string>("");
-  bShowPending = new BehaviorSubject<boolean>(true);
+  bShowPending = new BehaviorSubject<boolean>(false);
+  bShowStartingBalances = new BehaviorSubject<boolean>(false);
+  bOnlyUncategorized = new BehaviorSubject<boolean>(false);
+  bToggleFilter = new BehaviorSubject<boolean>(false);
 
   constructor(public Tsvc: DbService,
               public dialog: MatDialog) {
@@ -34,7 +37,9 @@ export class TransactionTableComponent implements AfterViewInit  {
       this.sort, 
       this.Tsvc,
       this.filter,
-      this.bShowPending);
+      this.bShowPending,
+      this.bShowStartingBalances,
+      this.bOnlyUncategorized);
     this.sort.direction = "desc";
     this.sort.active = "date";
   }
@@ -71,6 +76,18 @@ export class TransactionTableComponent implements AfterViewInit  {
 
   togglePendingVisibility() {
     this.bShowPending.next(!this.bShowPending.getValue());
+  }
+
+  toggleStartingBalanceVisibility() {
+    this.bShowStartingBalances.next(!this.bShowStartingBalances.getValue());
+  }
+
+  toggleUncategorizedFilter() {
+    this.bOnlyUncategorized.next(!this.bOnlyUncategorized.getValue());
+  }
+
+  toggleFilterMenu() {
+    this.bToggleFilter.next(!this.bToggleFilter.getValue());
   }
 
   trackById(index, item) {

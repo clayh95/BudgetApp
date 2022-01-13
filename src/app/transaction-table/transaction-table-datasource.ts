@@ -26,7 +26,10 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
               // private transactions: Observable<ITransaction[]>,
               private service: DbService,
               private filter: BehaviorSubject<string>,
-              private bShowPending: BehaviorSubject<boolean>) {
+              private bShowPending: BehaviorSubject<boolean>,
+              private bShowStartingBalances: BehaviorSubject<boolean>,
+              private bOnlyUncategorized: BehaviorSubject<boolean>
+              ) {
     super();
   }
 
@@ -36,7 +39,9 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith('0')),
       this.filter,
-      this.bShowPending
+      this.bShowPending,
+      this.bShowStartingBalances,
+      this.bOnlyUncategorized
     ];
 
     return combineLatest(dataMutations).pipe(map((d) => {
@@ -44,7 +49,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
       this.lastMY = this.service.getMonthYearValue();
-      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3], <boolean>d[4]);
+      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3], <boolean>d[4], <boolean>d[5], <boolean>d[6]);
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
       ret = this.getPagedData(ret);
@@ -91,10 +96,17 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     });
   }
 
-  private getFilteredData(data: ITransaction[], filter:string, bShowPending:boolean) {
+  private getFilteredData(data: ITransaction[], 
+                          filter:string, 
+                          bShowPending:boolean,
+                          bShowStartingBalances:boolean,
+                          bOnlyUncategorized:boolean
+                          ) {
     return data.filter(t => {
       return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
         && (bShowPending || t.status == ITransactionStatus.posted)
+        && (bShowStartingBalances || !t.description.endsWith('Starting Balance'))
+        && (bOnlyUncategorized ? (t.category == '') : 1==1)
     })
   }
 }
