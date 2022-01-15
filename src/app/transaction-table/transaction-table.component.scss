@@ -140,7 +140,6 @@
 }
 
 
-
 .paginator {
     display: flex;
     justify-content: space-around;
@@ -150,12 +149,47 @@
     }
     .controlsFilter {
         width: 45%;
-        margin-right: 25px;
     } 
-    .filters-menu-button { 
-        display: none;
+    ::ng-deep .mat-paginator-page-size {
+        display: none !important;
     }
-}
+    ::ng-deep .mat-paginator-range-label {
+        display: none !important;
+    }
+    max-height: 70px;
+    .filters-menu-button { 
+        display: unset;
+        z-index: 500;
+    }
+
+    .filters-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-options-show {
+        opacity: 1;
+        transform:scale(1);
+    }
+
+    .filter-options-hide {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    .filter-options {
+        transition:all 0.3s ease;
+        transform-origin: 50% 100%;
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        border-radius: 15px;
+        position: absolute;
+        bottom: 75px;
+        backdrop-filter: blur(1em)
+    }
+  }
+
 
 @media(max-width: 1000px) {
 
@@ -211,37 +245,5 @@
           }
     }
 
-      .paginator {
-        ::ng-deep .mat-paginator-page-size {
-            display: none !important;
-        }
-        ::ng-deep .mat-paginator-range-label {
-            display: none !important;
-        }
-        max-height: 70px;
-        .filters-menu-button { 
-            display: unset;
-            background: white;
-            z-index: 500;
-        }
-
-        .stacked {
-            display: grid;
-            align-items: center;
-            grid-template-columns: 5px 1fr;
-            grid-template-rows: 5px 1fr;
-            .mat-icon-button  {
-                grid-area: 1/1;
-            }
-        }
-        .expanded {
-            display: flex;
-            align-items: flex-start;
-            flex-direction: column;
-            transform: translateY(-62px);
-            background: white;
-            border-radius: 15px;
-        }
-      }
 
   }

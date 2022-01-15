@@ -107,25 +107,26 @@
 
 
 <div class="paginator">
-
-  <div [class]="bToggleFilter.getValue() ? 'expanded' : 'stacked'">
-    <button mat-icon-button (click)="togglePendingVisibility()"
-    [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'">
-        <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
-    </button>
+  <div class="filters-wrapper">
+    <div [class]="'filter-options ' + (bToggleFilter.getValue() ? 'filter-options-show' : 'filter-options-hide')">
+      <button mat-icon-button (click)="togglePendingVisibility()"
+      [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'" matTooltipPosition="after">
+          <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
+      </button>
+    
+      <button mat-icon-button (click)="toggleStartingBalanceVisibility()" 
+      [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'" matTooltipPosition="after">
+          <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">balance</mat-icon>
+      </button>
+    
+      <button mat-icon-button (click)="toggleUncategorizedFilter()" 
+      [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized') " matTooltipPosition="after">
+          <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
+      </button>
+    </div>
   
-    <button mat-icon-button (click)="toggleStartingBalanceVisibility()" 
-    [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'">
-        <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">balance</mat-icon>
-    </button>
-  
-    <button mat-icon-button (click)="toggleUncategorizedFilter()" 
-    [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized') ">
-        <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
-    </button>
-
     <button class="filters-menu-button" mat-icon-button (click)="toggleFilterMenu()" 
-    [matTooltip]="(bToggleFilter.getValue() ? 'Hide' : 'Show') + ' pending'">
+    [matTooltip]="(bToggleFilter.getValue() ? 'Hide' : 'Show') + ' filters'" matTooltipPosition="after">
         <mat-icon [style.color]="bToggleFilter.getValue() ? 'darkorange' : 'gray'">filter_alt</mat-icon>
     </button>
   </div>
