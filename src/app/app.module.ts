@@ -49,6 +49,7 @@ import { SummaryComponent } from './summary/summary.component';
 import { CategoryModalComponent } from './category-modal/category-modal.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppLoginPageComponent } from './app-login-page/app-login-page.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 
 @NgModule({
@@ -106,6 +107,7 @@ import { AppLoginPageComponent } from './app-login-page/app-login-page.component
     MatExpansionModule,
     MatGridListModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
