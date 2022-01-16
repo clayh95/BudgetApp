@@ -116,7 +116,7 @@
     
       <button mat-icon-button (click)="toggleStartingBalanceVisibility()" 
       [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'" matTooltipPosition="after">
-          <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">balance</mat-icon>
+          <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">account_balance_wallet</mat-icon>
       </button>
     
       <button mat-icon-button (click)="toggleUncategorizedFilter()" 
@@ -134,8 +134,10 @@
   <mat-form-field class="controlsFilter">
     <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
   </mat-form-field>
+
+  <div class="total desktop" [style.background]="this.getTotalColor()">{{getTotal() | currency}}</div>
+
   <mat-paginator #paginator
-    [length]="Tsvc.transactions.getValue().length"
     [pageIndex]="0"
     [pageSize]="10"
     [pageSizeOptions]="[10, 25, 50]">

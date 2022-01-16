@@ -149,12 +149,6 @@
     }
     .controlsFilter {
         width: 45%;
-    } 
-    ::ng-deep .mat-paginator-page-size {
-        display: none !important;
-    }
-    ::ng-deep .mat-paginator-range-label {
-        display: none !important;
     }
     max-height: 70px;
     .filters-menu-button { 
@@ -187,6 +181,13 @@
         position: absolute;
         bottom: 75px;
         backdrop-filter: blur(1em)
+    }
+
+    .total  {
+        font-family: Roboto, "Helvetica Neue", sans-serif;
+        border-radius: 25px;
+        color: white;
+        padding: 5px 10px 5px 10px;
     }
   }
 
@@ -239,11 +240,19 @@
                   float: right;
               }
           }
-      
-          .desktop {
-              display: none;
-          }
     }
 
+    .desktop {
+        display: none;
+    }
+
+    .paginator {
+        ::ng-deep .mat-paginator-page-size {
+            display: none !important;
+        }
+        ::ng-deep .mat-paginator-range-label {
+            display: none !important;
+        }
+      }
 
   }

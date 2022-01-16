@@ -107,6 +107,13 @@ export class TransactionTableComponent implements AfterViewInit  {
     return null;
   }
 
+  getTotalColor():string {
+    if (this.dataSource) {
+      return this.dataSource.total > -1 ? 'mediumseagreen' : 'orangered';
+    }
+    return null;
+  }
+
   getIconFromUtils(description:string):string {
     return getIcon(description);
   }
