@@ -28,6 +28,39 @@
   flex: 1 1 auto;
 }
 
+.spacer-small {
+  flex: .5 1 auto;
+}
+
+.save-status {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: .25 1 auto;
+  min-width: 25%;
+  .mat-icon {
+    position: relative;
+    font-size: 28px;
+    height: 28px;
+    width: 28px;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+  }
+  ::ng-deep .mat-progress-spinner circle, .mat-spinner circle {
+      stroke: white;
+  }
+  .save-description {
+    font-size: 11px;
+    font-style: italic;
+    font-weight: normal;
+    margin-right: 15px;
+    position: relative;
+  }
+}
+
+
 .mat-toolbar {
   // box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
   height: 75px;

@@ -60,3 +60,9 @@ export enum collectionType {
     additionalData = "additionalData"
 }
 
+export enum saveState {
+    done,
+    saving,
+    error
+}
+

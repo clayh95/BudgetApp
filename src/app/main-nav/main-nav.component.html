@@ -39,6 +39,13 @@
       <span class="spacer"><span class="desktop">Budget App</span></span>
       <app-month-year-picker style="height:inherit"></app-month-year-picker>
       <span class="spacer"></span>
+      <div class="save-status desktop">
+        <span class="save-description">{{this.service.getSaveStatusDescription()}}</span>
+        <mat-icon *ngIf="this.service.getSaveState() == 'done'">cloud_done</mat-icon>
+        <mat-icon *ngIf="this.service.getSaveState() == 'error'" color="orangered">warning_amber</mat-icon>
+        <mat-spinner [diameter]="25" class="spinner" *ngIf="this.service.getSaveState() == 'saving'"></mat-spinner>
+      </div>
+      <span class="spacer-small"></span>
       <app-user-login></app-user-login>
     </mat-toolbar>
     <div style="height:100%">

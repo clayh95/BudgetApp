@@ -5,6 +5,7 @@ import { map, withLatestFrom, filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { DbService } from '../core/db.service';
+import { saveState } from '../core/dataTypes';
 
 @Component({
   selector: 'app-main-nav',
