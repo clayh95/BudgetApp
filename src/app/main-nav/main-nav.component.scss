@@ -77,3 +77,12 @@
     margin-bottom: 10px;
   }
 }
+
+@media(max-width: 750px) {
+  .tablet {
+    display: none;
+  }
+  .save-status {
+    min-width: 40px;
+  }
+}
