@@ -71,7 +71,7 @@
         <th mat-header-cell class="notes" *matHeaderCellDef mat-sort-header>Notes</th>
         <td mat-cell class="notes desktop" *matCellDef="let row">
           <mat-form-field class="example-full-width">
-            <input matInput placeholder="Notes" value="{{row.notes}}" (blur)="updateValueOnChange($event.target.value, row.id, 'notes')"/>
+            <input matInput placeholder="Notes" value="{{row.notes}}" (change)="updateValueOnChange($event.target.value, row.id, 'notes')"/>
           </mat-form-field>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>

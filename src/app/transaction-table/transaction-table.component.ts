@@ -45,6 +45,8 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   updateValueOnChange(newValue: string, id: string, columnName: string) {
+    let t = <ITransaction>this.Tsvc.transactions.getValue().filter(t => t.id === id)[0];
+    if (newValue === t[columnName]) { return; }
     let update = {};
     update[columnName] = newValue;
     this.Tsvc.updateDocument(id, collectionType.transactions, update);

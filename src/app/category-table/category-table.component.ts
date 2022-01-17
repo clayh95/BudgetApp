@@ -71,6 +71,8 @@ export class CategoryTableComponent implements AfterViewInit {
   }
 
   async updateValueOnChange(newValue: string, id: string, columnName: string) {
+    let t = <ICategory>this.CATsvc.categories.getValue().filter(t => t.id === id)[0];
+    if (newValue === t[columnName]) { return; }
     let update = {};
     update[columnName] = newValue;
     await this.CATsvc.updateDocument(id, collectionType.categories, update);
