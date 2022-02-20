@@ -50,6 +50,7 @@ import { CategoryModalComponent } from './category-modal/category-modal.componen
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppLoginPageComponent } from './app-login-page/app-login-page.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { CarryBalancesModalComponent } from './carry-balances-modal/carry-balances-modal.component';
 
 
 @NgModule({
@@ -68,7 +69,8 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     ReportsComponent,
     SummaryComponent,
     CategoryModalComponent,
-    AppLoginPageComponent
+    AppLoginPageComponent,
+    CarryBalancesModalComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,

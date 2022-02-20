@@ -8,6 +8,7 @@ import { AddTransactionComponent } from '../add-transaction/add-transaction.comp
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
 import { getIcon } from '../core/utilities';
+import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
 const moment = _rollupMoment
 
 interface reportCat {
@@ -161,26 +162,28 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
 
   carryAmounts() {
-    //TODO: show a summary of what's going to be copied
-    if (confirm("Are you sure?")) {
-      let tmp:number = 0
-      this.reportCats.filter(c => (c.category.budgeted - c.category.spent) != 0).map(c => {
-        let m = this.service.monthYear.getValue();
-        let d = new Date(`${m.split('/')[0]}/01/${m.split('/')[1]}`)
-        let dPlus = new Date(d.getFullYear(), d.getMonth() + 1, 1)
-        let t = <ITransaction>{
-            description: `${c.category.name} Starting Balance`, 
-            amount: (c.category.budgeted-c.category.spent).toFixed(2), 
-            category: c.category.name, 
-            date: moment(dPlus).format('MM/DD/YYYY'),
-            notes: "",
-            status: "Posted"
-          }
-        tmp += +t.amount;
-        const mPK = moment(t.date, "MM/DD/YYYY").format('MMYYYY');
-        this.service.addDocument(t, collectionType.transactions, mPK);
-      });
-    }
+    // let tmp:number = 0;
+    let list:Array<ITransaction> = [];
+    this.reportCats.filter(c => (c.category.budgeted - c.category.spent) != 0).map(c => {
+      let m = this.service.monthYear.getValue();
+      let d = new Date(`${m.split('/')[0]}/01/${m.split('/')[1]}`)
+      let dPlus = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+      let t = <ITransaction>{
+          description: `${c.category.name} Starting Balance`, 
+          amount: (c.category.budgeted-c.category.spent).toFixed(2), 
+          category: c.category.name, 
+          date: moment(dPlus).format('MM/DD/YYYY'),
+          notes: "",
+          status: "Posted"
+        }
+      // tmp += +t.amount;
+      list.push(t);
+    });
+    // open the dialog
+    const carryBalancesRef = this.dialog.open(
+      CarryBalancesModalComponent, 
+      {width:'1600px', maxWidth:'90vw', data: list, autoFocus: false}
+      );
   }
   
   ngOnDestroy() {

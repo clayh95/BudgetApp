@@ -1,0 +1,16 @@
+
+<mat-dialog-actions class="actions">
+  <button mat-icon-button class="go-button" (click)="carryAmounts()">Go<mat-icon>keyboard_double_arrow_right</mat-icon></button>
+</mat-dialog-actions>
+<h2 mat-dialog-title>Carry Balances to {{this.newMonthDate.format('MMMM')}}</h2>
+<mat-dialog-content>
+    <ul class="summary-list">
+        <li class="summary-item" *ngFor="let row of this.data">
+            <div class="summary-info">
+                <span style="flex:2;text-align:end;">{{row.description.replace(' Starting Balance', '')}}:</span>
+                <span style="flex:.1"></span>
+                <span style="flex:1;text-align:start;">{{row.amount | currency}}</span>
+            </div>
+        </li>
+    </ul>
+</mat-dialog-content>

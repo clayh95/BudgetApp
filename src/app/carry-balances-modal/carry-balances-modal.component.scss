@@ -1,0 +1,32 @@
+
+
+.actions {
+    justify-content: flex-end;
+    font-size: 20px;
+    .go-button {
+        color:#3b8d5f;
+    }
+}
+
+.summary-list {
+    list-style-type: none;
+    columns: 2;
+    width: 85%;
+    .summary-item {
+        margin-bottom: 10px;
+        min-height: 26px;
+        line-height: 26px;
+        .summary-info {
+            display:flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+}
+
+@media(max-width: 1000px) {
+    .summary-list {
+        width: 75%;
+        columns: 1;
+    }
+}
