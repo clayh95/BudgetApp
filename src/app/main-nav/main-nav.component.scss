@@ -1,5 +1,11 @@
 .sidenav {
   width: 70px;
+  .mat-nav-list a.active {
+    color: #3b8d5f;
+  }
+  .mat-nav-list a {
+    color: black;
+  }
 }
 
 .action {

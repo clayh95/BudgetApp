@@ -8,6 +8,7 @@ import { SummaryComponent } from './summary/summary.component';
 
 const routes: Routes = [
   { path: '', component: TransactionTableComponent },
+  { path: 'transactions', component: TransactionTableComponent },
   { path: 'csv', component: CsvImportComponent},
   { path: 'categories', component: EditCategoriesComponent},
   { path: 'reports', component: ReportsComponent},
