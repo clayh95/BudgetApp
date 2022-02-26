@@ -6,7 +6,11 @@
             <!-- id Column -->
             <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
-                <td mat-cell class="desktop" *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row)"><mat-icon>delete</mat-icon></button></td>
+                <td mat-cell class="desktop" *matCellDef="let row">
+                  <button mat-icon-button (click)="editCategory(row)">
+                    <mat-icon class="edit-category-button">edit</mat-icon>
+                  </button>
+                </td>
             </ng-container>
             
             <!-- Category Column -->

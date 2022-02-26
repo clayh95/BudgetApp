@@ -63,6 +63,13 @@ export class CategoryTableComponent implements AfterViewInit {
     );
   }
 
+  editCategory(c) {
+    const catDialogRef = this.dialog.open(CategoryModalComponent, 
+      {width:'1600px', maxWidth:'90vw', 
+      data: Object.assign({}, c), 
+      autoFocus: false})
+  }
+
   deleteCategory(category:ICategory) {
     if (confirm(`Are you sure you want to delete Category: ${category.name}`)) {
       this.CATsvc.deleteDocument(category, collectionType.categories);
