@@ -127,7 +127,7 @@
   
     <button class="filters-menu-button" mat-icon-button (click)="toggleFilterMenu()" 
     [matTooltip]="(bToggleFilter.getValue() ? 'Hide' : 'Show') + ' filters'" matTooltipPosition="after">
-        <mat-icon [style.color]="bToggleFilter.getValue() ? 'darkorange' : 'gray'">filter_alt</mat-icon>
+        <mat-icon [style.color]="filtersOn() ? 'darkorange' : 'gray'">filter_alt</mat-icon>
     </button>
   </div>
 

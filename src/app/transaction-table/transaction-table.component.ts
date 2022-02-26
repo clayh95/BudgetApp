@@ -92,6 +92,14 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.bToggleFilter.next(!this.bToggleFilter.getValue());
   }
 
+  filtersOn() {
+    return (
+      this.bShowPending.getValue()
+      || this.bShowStartingBalances.getValue()
+      || this.bOnlyUncategorized.getValue()
+    );
+  }
+
   trackById(index, item) {
     return item.id;
   }
