@@ -145,7 +145,7 @@
     justify-content: space-around;
     align-items: center;
     ::ng-deep .mat-paginator {
-        background: transparent;
+        background-color: transparent;
     }
     .controlsFilter {
         width: 35%;
@@ -188,6 +188,9 @@
         border-radius: 25px;
         color: white;
         padding: 5px 10px 5px 10px;
+    }
+    .add-button {
+        color: green;
     }
   }
 

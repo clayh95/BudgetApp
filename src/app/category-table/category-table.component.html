@@ -7,7 +7,6 @@
             <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
                 <td mat-cell class="desktop" *matCellDef="let row"><button mat-icon-button (click)="deleteCategory(row)"><mat-icon>delete</mat-icon></button></td>
-                <!-- <td mat-footer-cell *matFooterCellDef> <button mat-icon-button (click)="addCategory()"><mat-icon>add</mat-icon></button> </td> -->
             </ng-container>
             
             <!-- Category Column -->
@@ -57,32 +56,22 @@
         
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            <!-- <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr> -->
           </table>
-
-          <!-- <mat-paginator #paginator
-            [length]="CATsvc.categories.getValue().length"
-            [pageIndex]="0"
-            [pageSize]="5"
-            [pageSizeOptions]="[5, 10, 25]">
-          </mat-paginator> -->
-
       </mat-card-content>
 
 </mat-card>
 </div>
 
 
-<mat-card class="tableControls">
-  <mat-card-content>
+<div card class="paginator">
     <mat-form-field class="controlsFilter">
       <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
     </mat-form-field>
     <mat-paginator #paginator
       [length]="CATsvc.categories.getValue().length"
       [pageIndex]="0"
-      [pageSize]="5"
-      [pageSizeOptions]="[5, 10, 25]">
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 25, 50]">
     </mat-paginator>
     <button 
       class="controlsAddButton" 
@@ -91,12 +80,11 @@
       (click)="addCategory()">
       <mat-icon>add</mat-icon>
     </button>
-    <button mat-icon-button
-      color="warn" 
+    <button mat-icon-button      
       matTooltip="Copy these categories" 
       [matTooltipPosition]="'below'" 
-      (click)="openCopyCategoryDialog()">
+      (click)="openCopyCategoryDialog()"
+      class="copy-button">
       <mat-icon>fast_forward</mat-icon>
   </button>
-  </mat-card-content>
-</mat-card>
+</div>
