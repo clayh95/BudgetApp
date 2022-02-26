@@ -12,6 +12,7 @@ import { CopyCategoriesComponent } from '../copy-categories/copy-categories.comp
 
 import * as firebase from 'firebase/app';
 import { collectionType, ICategory } from '../core/dataTypes';
+import { CategoryModalComponent } from '../category-modal/category-modal.component';
 
 @Component({
   selector: 'app-category-table',
@@ -52,7 +53,14 @@ export class CategoryTableComponent implements AfterViewInit {
 
   addCategory() {
     let c = <ICategory>{name: "", keywords: [], budgeted: null}
-    this.CATsvc.addDocument(c, collectionType.categories);
+    const catDialogRef = this.dialog.open(
+      CategoryModalComponent, 
+      {
+        width:'1600px', maxWidth:'90vw',
+        data: c, 
+        autoFocus: false
+      }
+    );
   }
 
   deleteCategory(category:ICategory) {
@@ -82,22 +90,6 @@ export class CategoryTableComponent implements AfterViewInit {
     }
   }
 
-  // valueChanged(event, id, colName) {
-  //   let keyRef =  this.CATsvc.categoriesCollection.doc(id);
-  //   let colUpdate = {};
-  //   colUpdate[`${colName}`] = event.target.value;
-  //   if (colName.toLowerCase() == 'name') {
-  //     keyRef.ref.get().then(d => {
-  //       //We have to do this after the get promise returns here to make sure we get the oldvalue
-  //       this.updateRelatedTransactions(d.data().name, event.target.value) 
-  //       if (keyRef) keyRef.update(colUpdate)
-  //     })
-  //   }
-  //   else {
-  //     if (keyRef) keyRef.update(colUpdate)
-  //   }
-  // }
-
   addKeyword(event: MatChipInputEvent, id: string) {
     const input = event.input;
     const value = event.value;
@@ -109,7 +101,6 @@ export class CategoryTableComponent implements AfterViewInit {
         {keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())}
       );
     }
-
     if (input) {
       input.value = '';
     }
