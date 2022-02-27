@@ -7,8 +7,6 @@
       <ng-container matColumnDef="id">
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
-              <!-- <button mat-icon-button (click)="editTransaction(row)"><mat-icon>edit</mat-icon></button>
-              <button mat-icon-button (click)="deleteTransaction(row)"><mat-icon>delete</mat-icon></button> -->
               <span class="icons">
                 <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
                 <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.4em">check_circle_outline</mat-icon>

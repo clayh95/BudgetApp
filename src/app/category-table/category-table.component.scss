@@ -6,11 +6,30 @@
     ::ng-deep td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
         padding:8px;
     }
-    .valueCategory {
-        width:15%;
+    .percent {
+        .percentage {
+            color: gray;
+        }
+        width: 2%;
+        .visual {
+            width: 100%;
+            .total-bar {
+                border-bottom: 7px solid green;
+                width: 100%;
+            }
+            .amount-bar {
+                border-bottom: 3px solid white;
+                transform: translateY(-5px);
+            }
+        }
     }
-    .valueAmount {
+    .category-name {
+        width:15%;
+        cursor: pointer;
+    }
+    .category-amount {
         width:5%;
+        font-weight: bold;
     }
     .keyword-chip-list {
         width:65%;
@@ -60,6 +79,10 @@ mat-card-title {
     font-size: 20px;
 }
 
+.mobile {
+    display: none;
+}
+
 
 .paginator {
     display: flex;
@@ -96,7 +119,6 @@ mat-card-title {
             padding: 10px;
             height: unset;
             width:93%;    
-            border-left: 1px solid blue;
             margin-bottom: 25px;
             .description {
                 overflow: hidden;
@@ -119,6 +141,20 @@ mat-card-title {
         .mobile {
             display: flex ;
             float: right;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            .budgeted {
+                font-weight: bold;
+            }
+            .percentage {
+                margin-right: 15px;
+                color: gray;
+            }
         }
     
         .actions{

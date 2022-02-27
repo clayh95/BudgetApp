@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { CategoryTableDataSource } from './category-table-datasource';
 import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
@@ -27,7 +27,8 @@ export class CategoryTableComponent implements AfterViewInit {
   displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
   filter = new BehaviorSubject<string>("");
 
-  totalBudgeted: number
+  totalBudgeted: number;
+  catsSub: Subscription;
 
   //CHIPS
   visible = true;
@@ -49,6 +50,14 @@ export class CategoryTableComponent implements AfterViewInit {
                                                   this.filter);
     this.sort.direction = "asc";
     this.sort.active = "category";
+
+    this.catsSub = this.CATsvc.categories.subscribe(cats => {
+      this.totalBudgeted = cats.filter(c => c.name.toLowerCase() != "income").map(c => c.budgeted).reduce((pv, v) => +pv + +v, 0);
+    });
+  }
+
+  ngOnDestroy() {
+    this.catsSub.unsubscribe();
   }
 
   addCategory() {
@@ -127,6 +136,10 @@ export class CategoryTableComponent implements AfterViewInit {
 
   applyFilter(filterValue: string) {
     this.filter.next(filterValue.trim().toLowerCase())
+  }
+
+  getPercentage(budgeted:number):number {
+    return (budgeted / this.totalBudgeted);
   }
 
 }

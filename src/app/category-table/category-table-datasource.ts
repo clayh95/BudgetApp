@@ -46,6 +46,7 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
         case 'category': return compare(a.name, b.name, isAsc);
+        case 'budgeted': return compare(+a.budgeted, +b.budgeted, isAsc)
         default: return 0;
       }
     });
