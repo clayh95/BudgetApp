@@ -2,9 +2,9 @@ import { Component, ViewChild, ElementRef  } from '@angular/core';
 import { collectionType, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
-import { map } from 'rxjs/operators';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
 import {default as _rollupMoment, Moment} from 'moment';
+import { BehaviorSubject } from 'rxjs';
 const moment = _rollupMoment;
 
 @Component({
@@ -15,28 +15,39 @@ const moment = _rollupMoment;
 export class CsvImportComponent {
 
   selectedFile: File = null;
-  importSummary = {'title':'',summaries:[], chargesImported: 0, duplicates: 0};
-  showSummary: boolean = false;
+  importSummary = {
+    'title':'',
+    duplicateTransactions:[],
+    duplicateImportAnyway: 0,
+    transactionsImported: 0,
+    readyTransactions: []
+  };
+  // showSummary: boolean = false;
+  // showFileControls: boolean = true;
+  importDups:BehaviorSubject<Boolean> = new BehaviorSubject<Boolean>(false);
+  importComplete:boolean = false;
+
+  status:importStatus = importStatus.start;
 
   @ViewChild('fileUpload')
   myFileInput: ElementRef;
   
-  @ViewChild('notImported')
-  notImportedList: ElementRef;
+  @ViewChild('summary')
+  summaryList: ElementRef;
 
   constructor(private service: DbService) {}
 
   GetFiles(e) {
-    this.showSummary = false;
-    this.selectedFile = <File>e.target.files[0];    
+    this.status = importStatus.review;
+    this.selectedFile = <File>e.target.files[0];  
+    this.ProcessFile();
   }
 
   ProcessFile() {
     let fRdr = new FileReader();
-    this.importSummary.summaries = [];
-    this.importSummary.title = `Import results for ${this.selectedFile.name}`;
-    this.importSummary.chargesImported = 0;
-    this.importSummary.duplicates = 0;
+    this.importSummary.readyTransactions = [];
+    this.importSummary.duplicateTransactions = [];
+    this.importSummary.title = `Selected file: ${this.selectedFile.name}`;
 
     fRdr.onload = (e) => {
       let res: string = fRdr.result.toString();
@@ -48,16 +59,13 @@ export class CsvImportComponent {
           this.checkTransaction(t)
           }
       });
-      this.showSummary = true;
-      this.selectedFile = null;
-      this.myFileInput.nativeElement.value = "";
-  }
-
+    }
     fRdr.readAsText(this.selectedFile);
   }
 
+  // this.myFileInput.nativeElement.value = "";
+  
   async checkTransaction(t:ITransaction) {
-    let transactionsToAdd = [];
     let promiseArray:Array<Promise<any>> = []
     let d = new Date(`${this.service.getMonthYearValue().split('\/')[0]}\/01\/${this.service.getMonthYearValue().split('\/')[1]}`)
     let pks = [this.service.getMonthYearValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
@@ -65,22 +73,15 @@ export class CsvImportComponent {
     await Promise.all(promiseArray).then(res => {
       for (let r of res) {
         if (r.docs.length > 0){
-          this.importSummary.summaries.push(t);
-          this.importSummary.duplicates ++;
+          this.importSummary.duplicateTransactions.push(t);
           break;
         }
         if (res.indexOf(r) == res.length - 1) {
-          transactionsToAdd.push(t);
+          this.importSummary.readyTransactions.push(t);
         }
       }
-    })
-
-    transactionsToAdd.forEach(async t =>  {
-      await this.service.addDocument(t, collectionType.transactions)
-      this.importSummary.chargesImported ++;
     });
   }
-  
 
   //Check current month and previous 2
   //Break if value returned
@@ -114,13 +115,22 @@ export class CsvImportComponent {
     return ret;
   }
 
-  ImportSelectedAnyway(selectedList) {
-    selectedList.map(async t => {
+  async ImportSelected(selectedList) {
+    await selectedList.map(async t => {
       await this.service.addDocument(t.value, collectionType.transactions);
-      this.importSummary.chargesImported++;
-      this.importSummary.duplicates--;
-      this.importSummary.summaries.splice(this.importSummary.summaries.indexOf(t), 1)
+      this.importSummary.transactionsImported++;
     });
+    this.status = importStatus.complete;
   }
 
+  getStatus() {
+
+  }
+
+}
+
+enum importStatus {
+  start = 0,
+  review = 1,
+  complete = 2
 }

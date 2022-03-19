@@ -10,5 +10,30 @@
         width:50vw;
     }
 
+    .import-summary {
+        .mat-list-option {
+            margin-left: 20px;
+            height: 58px;
+        }
+        .import-list {
+            margin-bottom: 30px;
+        }
+    }
+
+    .transaction-list-item {
+        display: flex;
+        flex-direction: column;
+        .top-line {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        .bottom-line {
+            font-size: 14px;
+            margin-top: 5px
+        }
+    }
+    
+
 }
 
