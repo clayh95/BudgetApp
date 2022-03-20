@@ -6,10 +6,10 @@
             Import transactions from CSV
         </mat-card-title>
         <mat-card-content>
-                <div *ngIf="status == 0" class="file-controls">
+                <div *ngIf="isStart()" class="file-controls">
                     <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)"/>
                 </div>
-                <div class="import-summary" *ngIf="status == 1">
+                <div class="import-summary" *ngIf="isReview()">
                     <mat-selection-list class="import-list" role="list" #summary>
                         <h3>{{importSummary.title}}</h3>
                         <mat-list-item role="listitem">
@@ -53,14 +53,13 @@
                     </mat-selection-list>
 
                     <div *ngIf="summary.selectedOptions.selected.length > 0">
-                        <!-- <p>Import {{summary.selectedOptions.selected.length}} charge(s) anyway?</p> -->
                         <button mat-raised-button color="primary" (click)="ImportSelected(summary.selectedOptions.selected)">
                             Import {{summary.selectedOptions.selected.length}} charge(s)
                         </button>
                     </div>
                 </div>
 
-                <div *ngIf="status == 2">
+                <div *ngIf="isComplete()">
                     Imported {{importSummary.transactionsImported}} transactions.
                 </div>
             </mat-card-content>

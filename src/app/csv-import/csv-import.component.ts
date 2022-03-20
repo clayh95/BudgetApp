@@ -123,8 +123,16 @@ export class CsvImportComponent {
     this.status = importStatus.complete;
   }
 
-  getStatus() {
+  isStart() {
+    return this.status == importStatus.start;
+  }
 
+  isReview() {
+    return this.status == importStatus.review;
+  }
+
+  isComplete() {
+    return this.status == importStatus.complete;
   }
 
 }
