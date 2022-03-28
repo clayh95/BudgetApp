@@ -18,6 +18,8 @@ export const MMDDYYYY_FORMAT = {
   },
 };
 
+const tmpId:string = 'tmp_';
+
 export interface addEditTrans {
   type: number;
   transaction: ITransaction
@@ -35,6 +37,7 @@ export class AddTransactionComponent {
   origTotal:number;
   newTotal:number;
   dummyCopy = new Array<ITransaction>();
+  pendingDeletes: ITransaction[] = new Array<ITransaction>();
 
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
@@ -63,26 +66,26 @@ export class AddTransactionComponent {
 
   update() {
     this.data.map((tr, index) => {
-      if (this.dummyCopy.length > 0) {
-        tr.xId = this.data[0].id;
-        tr.xIndex = index;
-      }
       tr.date = this.tmpDate[index].format('MM/DD/YYYY');
       let monthPK:string = this.ATsvc.getMonthPKFromMoment(this.tmpDate[index]);
 
+      // not sure this logic is totally sound
       if (this.movingMonthsCheck(this.tmpDate[index])) {
         if (this.movingMonthsConfirm(this.tmpDate[index])) {
           this.ATsvc.deleteDocument(tr, collectionType.transactions);
           this.ATsvc.addDocument(tr, collectionType.transactions, monthPK);
         }
       }
+      else if (this.pendingDeletesIncludesId(tr)) {
+        if (!tr.id.startsWith(tmpId)) {
+          this.ATsvc.deleteDocument(this.pendingDeletes.find(t => t.id == tr.id), collectionType.transactions);
+        }
+      }
+      else if (tr.id.startsWith(tmpId)) {
+        this.ATsvc.addDocument(tr, collectionType.transactions);
+      }
       else {
-        if (tr.id == null) {
-          this.ATsvc.addDocument(tr, collectionType.transactions);
-        }
-        else {
-          this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
-        }
+        this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
       }
     });
     this.dialogRef.close();
@@ -108,6 +111,7 @@ export class AddTransactionComponent {
     }
     this.tmpDate.push(this.tmpDate[0]); //set the date to the orig date
     let t = <ITransaction>{
+      id: `${tmpId}${this.data.length}`,
       date:this.data[0].date, 
       description:this.data[0].description, 
       amount:"0.00", 
@@ -134,12 +138,19 @@ export class AddTransactionComponent {
     }
   }
 
-  deleteTransaction(t:ITransaction) {
-    if (confirm('Are you sure you want to delete this transaction?')) {
-      // this.ATsvc.transactionCollection.doc(id).delete();
-      this.ATsvc.deleteDocument(t, collectionType.transactions);
-      this.dialogRef.close();
+  deleteTransaction(t:ITransaction, idx:number) {
+    // this.data.splice(idx, 1);
+    this.pendingDeletes.push(Object.assign({}, t));
+    this.data[0].amount = (+this.data[0].amount + +t.amount).toFixed(2);
+    this.data[idx].amount = (0).toFixed(2);
+    if (this.data.length - this.pendingDeletes.length == 1) {
+      this.data[0].xId = null;
+      this.data[0].xIndex = null;
     }
+  }
+
+  pendingDeletesIncludesId(tr:ITransaction) {
+    return this.pendingDeletes.map(t => t.id).includes(tr.id);
   }
 
   getTitle() { 
