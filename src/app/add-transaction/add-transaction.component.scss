@@ -40,6 +40,31 @@ button {
     width:25%;
 }
 
+
+.pending-delete-section {
+    .hr {
+        border-top: 1px dashed gray;
+        opacity: .5;
+        margin: 20px 0px 20px 0px;
+    }
+    .pending-deletes {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        .pending-delete-fields {
+            display: flex;
+            flex-direction: row;
+            font-style: italic;
+            div {
+                margin-right: 25px;
+            }
+        }
+        .delete-controls {
+            margin-right: 25px;
+        }
+    }
+}
+
 .transactionFields {
     display: flex;
     flex-direction: row;
@@ -70,6 +95,9 @@ button {
             margin-right: 25px;
         }
     }
+    .delete-controls {
+        margin-top: 12px;
+    }
 }
 
 .title {
@@ -82,7 +110,7 @@ button {
 
 @media(max-width: 1000px) {
     
-    .transactionFields {
+    .transactionFields, .pending-deletes {
        flex-direction: column;
        overflow: auto;
        textarea {
@@ -100,6 +128,13 @@ button {
             width: 50% !important;
         }
         border-left: 1px solid blue;
+        padding-left: 5px;
+        margin-bottom: 45px;
+        overflow: hidden;
+    }
+
+    .pending-deletes {
+        border-left: 1px solid gray;
         padding-left: 5px;
         margin-bottom: 45px;
         overflow: hidden;

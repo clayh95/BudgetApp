@@ -124,6 +124,7 @@ export class DbService {
 
   async updateDocument(id: string, collection: collectionType, data: firebase.firestore.DocumentData, monthPK?:string) {
     delete data['id']; // shouldn't ever need ID in document data
+    delete data['changeAction']; // shouldn't ever need changeAction in document data
     let documentAction: IDocumentAction = {
       id: id,
       collectionPath: this.getCollectionPath(collection, monthPK),
@@ -140,6 +141,7 @@ export class DbService {
     Object.keys(obj).forEach((k: string) => prevData[k] = obj[k]);
     let docId:string = prevData['id'];
     delete prevData['id'];
+    delete prevData['changeAction']; // shouldn't ever need changeAction in document data
     let documentAction: IDocumentAction = {
       id: docId,
       collectionPath: this.getCollectionPath(collection),
@@ -153,6 +155,7 @@ export class DbService {
 
   async addDocument(data: firebase.firestore.DocumentData, collection: collectionType, monthPK?:string) {
     delete data['id']; // No id should be present on a true add (we could have one from an undo or redo but that will be handled properly)
+    delete data['changeAction']; // shouldn't ever need changeAction in document data
     let documentAction: IDocumentAction = {
       id: "",
       collectionPath: this.getCollectionPath(collection, monthPK),

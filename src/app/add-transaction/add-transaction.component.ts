@@ -76,16 +76,16 @@ export class AddTransactionComponent {
           this.ATsvc.addDocument(tr, collectionType.transactions, monthPK);
         }
       }
-      else if (this.pendingDeletesIncludesId(tr)) {
-        if (!tr.id.startsWith(tmpId)) {
-          this.ATsvc.deleteDocument(this.pendingDeletes.find(t => t.id == tr.id), collectionType.transactions);
-        }
-      }
       else if (tr.id.startsWith(tmpId)) {
         this.ATsvc.addDocument(tr, collectionType.transactions);
       }
       else {
         this.ATsvc.updateDocument(tr.id, collectionType.transactions, tr);
+      }
+    });
+    this.pendingDeletes.map((tr, index) => {
+      if (!tr.id.startsWith(tmpId)) {
+        this.ATsvc.deleteDocument(tr, collectionType.transactions);
       }
     });
     this.dialogRef.close();
@@ -105,10 +105,7 @@ export class AddTransactionComponent {
   }
 
   split() {
-    if (this.data[0].xId == null) {
-      this.data[0].xId = this.data[0].id;
-      this.data[0].xIndex = 0;
-    }
+    this.setXID();
     this.tmpDate.push(this.tmpDate[0]); //set the date to the orig date
     let t = <ITransaction>{
       id: `${tmpId}${this.data.length}`,
@@ -139,13 +136,16 @@ export class AddTransactionComponent {
   }
 
   deleteTransaction(t:ITransaction, idx:number) {
-    // this.data.splice(idx, 1);
-    this.pendingDeletes.push(Object.assign({}, t));
+    this.data.splice(idx, 1);
+    this.pendingDeletes.push(t);
+    if (this.data.length == 0) return;
     this.data[0].amount = (+this.data[0].amount + +t.amount).toFixed(2);
-    this.data[idx].amount = (0).toFixed(2);
-    if (this.data.length - this.pendingDeletes.length == 1) {
+    if (this.data.length == 1) {
       this.data[0].xId = null;
       this.data[0].xIndex = null;
+    }
+    else {
+      this.reassignIndexes();
     }
   }
 
@@ -153,8 +153,65 @@ export class AddTransactionComponent {
     return this.pendingDeletes.map(t => t.id).includes(tr.id);
   }
 
+  reassignIndexes() {
+    this.data.map((t, index) => {
+        t.xIndex = index;
+    });
+  }
+
+  undoDelete(t:ITransaction, i:number) {
+
+    this.pendingDeletes.splice(i, 1);
+    t.xIndex = this.data.length;
+    this.data.push(t);
+    this.updateTotal(t.xIndex);
+    this.setXID();
+    this.reassignIndexes();
+
+    // // pendingDeletes has the original amount 
+    // let dataTr = this.data.find(tr => tr.id == t.id);
+    // let dataIdx = this.data.indexOf(dataTr);
+
+    // let deleteTr = this.pendingDeletes.find(tr => tr.id == t.id);
+    // let deleteIdx = this.pendingDeletes.indexOf(deleteTr);
+
+    // this.data[dataIdx] = Object.assign({}, this.pendingDeletes[deleteIdx]);
+    
+    // this.pendingDeletes.splice(deleteIdx, 1);
+    // this.updateTotal(dataIdx);
+    // this.setXID();
+
+    // if (this.data.length - this.pendingDeletes.length > 1) {
+    //   this.reassignIndexes();
+    // }
+  }
+
+  private setXID() {
+    if (this.data[0].xId == null) {
+      this.data[0].xId = this.data[0].id;
+      this.data[0].xIndex = 0;
+    }
+  }
+
+  dataHasTransactions() {
+    return this.data.length > 0;
+  }
+
+  isAdd() {
+    return this.dataHasTransactions() && this.data[0].id === undefined;
+  }
+
+  isSplit() {
+    return this.dataHasTransactions() && this.data[0].xId !== undefined;
+  }
+
   getTitle() { 
-    return (this.data[0].id === undefined ? 'New Transaction' : this.data[0].description);
+    if (!this.dataHasTransactions()) {
+      return '';
+    }
+    else {
+      return (this.isAdd() ? 'New Transaction' : this.data[0].description);
+    }
   }
 
 }
