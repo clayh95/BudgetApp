@@ -1,5 +1,5 @@
 <div class="pickerDiv">
-  <button mat-icon-button (click)="NavigateMonth(-1)"><mat-icon>arrow_left</mat-icon></button>
+  <button mat-icon-button class="navigation-arrow" (click)="NavigateMonth(-1)"><mat-icon>arrow_left</mat-icon></button>
   <mat-form-field>
     <input matInput [matDatepicker]="dp" placeholder="Month and Year" [formControl]="date">
     <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
@@ -9,5 +9,5 @@
                     panelClass="example-month-picker">
     </mat-datepicker>
   </mat-form-field>
-  <button mat-icon-button (click)="NavigateMonth(1)"><mat-icon>arrow_right</mat-icon></button>
+  <button mat-icon-button class="navigation-arrow" (click)="NavigateMonth(1)"><mat-icon>arrow_right</mat-icon></button>
 </div>

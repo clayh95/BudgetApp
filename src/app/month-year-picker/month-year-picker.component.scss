@@ -1,7 +1,6 @@
 
 mat-form-field {
     padding: 10px;
-
 }
 
 ::ng-deep .pickerDiv {
@@ -21,5 +20,8 @@ mat-form-field {
         ::ng-deep .mat-form-field-label-wrapper {
             display:none !important;
         }
+    }
+    .navigation-arrow {
+        display: none;
     }
 }
