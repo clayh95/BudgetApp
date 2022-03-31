@@ -62,11 +62,17 @@ export class AddTransactionComponent {
       else {
         this.ATsvc.addDocument(tr, collectionType.transactions);
       }
-    })
+    });
     this.dialogRef.close();
   }
 
   update() {
+    if (this.pendingDeletes.length > 0) {
+      let list = this.pendingDeletes.map(t => `${t.description} - ${t.amount}`).join('\n');
+      if (!confirm(`Are you sure you want to delete the following transaction(s)?\n\n${list}`)) {
+        return;
+      }
+    }
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY');
       let monthPK:string = this.ATsvc.getMonthPKFromMoment(this.tmpDate[index]);

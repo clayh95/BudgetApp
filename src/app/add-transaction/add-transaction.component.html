@@ -12,40 +12,38 @@
 <br />
 <mat-dialog-content>
     <div [@deleteEnterLeave] class="transactionFields" *ngFor="let t of data; index as i">
-      <div style="display: flex;">
-        <button 
-          mat-icon-button 
-          class="delete-controls"
-          (click)="deleteTransaction(t, i)"
-          [disabled]="(i == 0 && data.length > 1)">
-          <mat-icon>delete</mat-icon>
-        </button>
-        <span class="title-span">
-          <p class="item-index" *ngIf="t.xIndex != null">{{t.xIndex + 1}}</p>
-          <mat-form-field class="addTransactionFieldHeader">
-            <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </span>
-        <mat-form-field class="addTransactionFieldShort">
-          <input matInput placeholder="Amount" (blur)="updateTotal(i)" [(ngModel)]="t.amount"/>
+      <button 
+        mat-icon-button 
+        class="delete-controls"
+        (click)="deleteTransaction(t, i)"
+        [disabled]="(i == 0 && data.length > 1)">
+        <mat-icon>delete</mat-icon>
+      </button>
+      <span class="title-span">
+        <p class="item-index" *ngIf="t.xIndex != null">{{t.xIndex + 1}}</p>
+        <mat-form-field class="addTransactionFieldHeader">
+          <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
-        <mat-form-field class="addTransactionField">
-          <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>
-        </mat-form-field>
-        <mat-form-field class="addTransactionField">
-          <textarea matInput placeholder="Notes" [(ngModel)]="t.notes"></textarea>
-        </mat-form-field>
-        <mat-form-field class="addTransactionField">
-            <mat-select placeholder="Category" [(ngModel)]="t.category">
-                <mat-option value=''></mat-option>
-                <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
-                  {{category.name}}
-                </mat-option>
-              </mat-select>
-        </mat-form-field>
-      </div>
+      </span>
+      <mat-form-field class="addTransactionFieldShort">
+        <input matInput placeholder="Amount" (blur)="updateTotal(i)" [(ngModel)]="t.amount"/>
+      </mat-form-field>
+      <mat-form-field class="addTransactionField">
+        <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>
+      </mat-form-field>
+      <mat-form-field class="addTransactionField">
+        <textarea matInput placeholder="Notes" [(ngModel)]="t.notes"></textarea>
+      </mat-form-field>
+      <mat-form-field class="addTransactionField">
+          <mat-select placeholder="Category" [(ngModel)]="t.category">
+              <mat-option value=''></mat-option>
+              <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
+                {{category.name}}
+              </mat-option>
+            </mat-select>
+      </mat-form-field>
     </div>
 
     <div class="pending-delete-section" *ngIf="pendingDeletes.length > 0">
