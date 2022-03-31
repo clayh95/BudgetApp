@@ -48,6 +48,7 @@ button {
         margin: 20px 0px 20px 0px;
     }
     .pending-deletes {
+        transform-origin: left;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -68,6 +69,7 @@ button {
 .transactionFields {
     display: flex;
     flex-direction: row;
+    transform-origin: left;
     textarea {
         resize: none;
         height: 18px;

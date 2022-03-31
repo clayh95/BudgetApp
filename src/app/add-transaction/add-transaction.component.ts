@@ -5,6 +5,7 @@ import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
+import { deleteEnterLeave } from '../animations/template.animations';
 
 export const MMDDYYYY_FORMAT = {
   parse: {
@@ -29,7 +30,8 @@ export interface addEditTrans {
   selector: 'app-add-transaction',
   templateUrl: './add-transaction.component.html',
   styleUrls: ['./add-transaction.component.scss'],
-  providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}]
+  providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}],
+  animations: [deleteEnterLeave]
 })
 export class AddTransactionComponent {
 

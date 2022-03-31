@@ -11,7 +11,7 @@
 <h2 class="title" mat-dialog-title>{{getTitle()}}</h2>
 <br />
 <mat-dialog-content>
-    <div class="transactionFields" *ngFor="let t of data; index as i">
+    <div [@deleteEnterLeave] class="transactionFields" *ngFor="let t of data; index as i">
       <div style="display: flex;">
         <button 
           mat-icon-button 
@@ -50,8 +50,8 @@
 
     <div class="pending-delete-section" *ngIf="pendingDeletes.length > 0">
       <hr class="hr"  />
-      <h2>Pending Deletes</h2>
-      <div class="pending-deletes" *ngFor="let t of pendingDeletes; index as i">
+      <h3>Pending Deletes</h3>
+      <div [@deleteEnterLeave] class="pending-deletes" *ngFor="let t of pendingDeletes; index as i">
         <button 
             mat-icon-button 
             class="delete-controls"

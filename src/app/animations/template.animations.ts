@@ -27,3 +27,14 @@ export const rowsEnterLeave =
           animate('.7s ease-out', style({ opacity: 1 }))
       ])
     ]);
+
+export const deleteEnterLeave = 
+  trigger('deleteEnterLeave', [
+    transition(':enter', [
+      style({transform: 'scale(0)'}),
+      animate(".2s .2s ease-out", style({ transform: 'scale(1)' })),
+    ]),
+    transition(':leave', [
+      animate(".2s ease-out", style({ transform: 'scale(0)' })),
+    ])
+  ]);
