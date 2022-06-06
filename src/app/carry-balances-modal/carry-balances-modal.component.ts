@@ -27,6 +27,7 @@ export class CarryBalancesModalComponent {
     this.data.map(t => {
       this.service.addDocument(t, collectionType.transactions, mPK);
     });
+    this.dialogRef.close();
   }
 
 }
