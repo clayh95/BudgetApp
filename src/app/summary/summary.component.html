@@ -19,7 +19,7 @@
             </mat-expansion-panel-header>
             <div>
               <p>{{getEmoji()[0]}} {{getEmoji()[1]}}</p>
-              <button mat-stroked-button *ngIf="totalBudgeted === actualIncome" color="warn" (click)="carryAmounts()">
+              <button mat-stroked-button *ngIf="totalBudgeted === actualIncome" (click)="carryAmounts()">
                 <mat-icon>fast_forward</mat-icon>
                 Carry Balances to Next Month
               </button>

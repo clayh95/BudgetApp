@@ -1,6 +1,13 @@
 
 <mat-dialog-actions class="actions">
-  <button mat-icon-button class="go-button" (click)="carryAmounts()">Go<mat-icon>keyboard_double_arrow_right</mat-icon></button>
+  <button 
+    mat-icon-button 
+    class="go-button"
+    matTooltip="Carry Amounts" 
+    color="warn"
+    (click)="carryAmounts()">
+      <mat-icon>fast_forward</mat-icon>
+    </button>
 </mat-dialog-actions>
 <h2 mat-dialog-title>Carry Balances to {{this.newMonthDate.format('MMMM')}}</h2>
 <mat-dialog-content>
