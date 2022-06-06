@@ -142,6 +142,13 @@ button {
         overflow: hidden;
     }
 
+    .pending-delete-fields {
+        flex-direction: column !important;
+        div {
+            margin-bottom: 5px;
+        }
+    }
+
     .dummyFields {
         display: none;
     }
@@ -151,6 +158,11 @@ button {
         mat-form-field {
             width: 100%
         }
+    }
+
+    .delete-controls {
+        margin-top: 0px !important;
+        margin-bottom: 12px;
     }
 
 
