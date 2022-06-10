@@ -28,6 +28,7 @@ export interface ICategory {
     keywords: Array<string>;
     budgeted: number;
     spent: number;
+    notes: string;
 }
 
 export interface IDocumentAction {

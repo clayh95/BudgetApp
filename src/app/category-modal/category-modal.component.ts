@@ -34,6 +34,7 @@ export class CategoryModalComponent {
   add() {
     let doc = {
       name: this.data.name, 
+      notes: this.data.notes,
       keywords: this.data.keywords, 
       budgeted: this.data.budgeted
     }
@@ -44,6 +45,7 @@ export class CategoryModalComponent {
   async update() {
     let doc = {
       name: this.data.name, 
+      notes: this.data.notes,
       keywords: this.data.keywords ?? [], 
       budgeted: this.data.budgeted
     }

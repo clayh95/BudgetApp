@@ -52,7 +52,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
             this.createReportCat(c, trans);
           });
 
-          const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: []}
+          const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: [], notes: ''}
 
           this.createReportCat(uncategorized, trans);
 

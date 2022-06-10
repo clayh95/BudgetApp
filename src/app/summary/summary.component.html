@@ -3,7 +3,7 @@
   <div class="app-summary-categories">
     <mat-card class="summary-card">
 
-      <div *ngIf="totalBudgeted !== 0" class="margin">
+      <div *ngIf="totalBudgeted !== 0" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel class="expansion-panel-round-all">
             <mat-expansion-panel-header>
@@ -28,14 +28,11 @@
         </mat-accordion>
       </div>
 
-      <div *ngIf="incomeData" class="margin">
+      <div *ngIf="incomeData" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel class="expansion-panel-round-all">
             <mat-expansion-panel-header>
               <mat-panel-title>
-                <button mat-icon-button (click)="editCategory($event, incomeData.category);">
-                  <mat-icon class="editIcon">edit</mat-icon>
-                </button>
                 <span style="padding-top: 5px;">Income <br /> {{incomeData.category.budgeted | currency}}</span>
               </mat-panel-title>
               <mat-panel-description>
@@ -43,6 +40,11 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
+              <mat-list-item>
+                <button mat-icon-button (click)="editCategory($event, incomeData.category);">
+                  <mat-icon class="editIcon">edit</mat-icon>
+                </button>
+              </mat-list-item>
               <mat-list-item *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
@@ -64,18 +66,14 @@
       </div>
 
 
-      <div *ngIf="reportCats" class="margin">
+      <div *ngIf="reportCats" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID"
             [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)"
             class="expansion-panel-round-ends">
             <mat-expansion-panel-header>
               <mat-panel-title>
-                <button [disabled]="item.category.name === 'Uncategorized'" mat-icon-button
-                  (click)="editCategory($event, item.category);">
-                  <mat-icon class="editIcon">edit</mat-icon>
-                </button>
-                <span style="padding-top: 5px;">{{item.category.name}} <br />
+                <span style="padding-top: 5px;line-height:22px">{{item.category.name}} <br />
                   {{item.category.budgeted | currency}}</span>
               </mat-panel-title>
               <mat-panel-description>
@@ -84,7 +82,19 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
-              <mat-list-item *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
+                <div class="category-info">
+                  <button 
+                      class="edit-category-buton"
+                      [disabled]="item.category.name === 'Uncategorized'" 
+                      mat-icon-button
+                      matTooltip="Edit Category" 
+                      class="editIcon"
+                      (click)="editCategory($event, item.category);">
+                      <mat-icon>edit</mat-icon>
+                  </button>
+                  <p class="category-notes">{{item.category.notes == null ? 'Edit Category' : item.category.notes}}</p>
+                </div>
+              <mat-list-item class="transaction-list-item" *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
                   <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
