@@ -82,18 +82,6 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
-                <div class="category-info">
-                  <button 
-                      class="edit-category-buton"
-                      [disabled]="item.category.name === 'Uncategorized'" 
-                      mat-icon-button
-                      matTooltip="Edit Category" 
-                      class="editIcon"
-                      (click)="editCategory($event, item.category);">
-                      <mat-icon>edit</mat-icon>
-                  </button>
-                  <p class="category-notes">{{item.category.notes == null ? 'Edit Category' : item.category.notes}}</p>
-                </div>
               <mat-list-item class="transaction-list-item" *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
@@ -110,6 +98,22 @@
                 <p matLine>{{trans.description}} &nbsp;</p>
                 <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
               </mat-list-item>
+              <mat-divider style="margin-top:10px"></mat-divider>
+                <div class="category-footer">
+                  <div class="footer-title-line">
+                    <div class="title"><b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted</div>
+                    <button 
+                      [disabled]="item.category.name === 'Uncategorized'" 
+                      mat-button
+                      class="edit-button"
+                      (click)="editCategory($event, item.category);">
+                      Edit Category
+                    </button>
+                  </div>
+                  <div class="category-info">
+                    <p class="category-notes">{{item.category.notes}}</p>
+                  </div>
+                </div>
             </mat-list>
           </mat-expansion-panel>
         </mat-accordion>

@@ -185,6 +185,10 @@ export class SummaryComponent implements OnInit, OnDestroy {
       {width:'1600px', maxWidth:'90vw', data: list, autoFocus: false}
       );
   }
+
+  getPercentage(budgeted:number):number {
+    return (budgeted / this.totalBudgeted);
+  }
   
   ngOnDestroy() {
     this.catsTrans.unsubscribe();
