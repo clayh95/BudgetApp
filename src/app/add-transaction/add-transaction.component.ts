@@ -222,4 +222,8 @@ export class AddTransactionComponent {
     }
   }
 
+  close() {
+    this.dialogRef.close();
+  }
+
 }

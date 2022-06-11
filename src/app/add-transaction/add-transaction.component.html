@@ -1,12 +1,14 @@
-<mat-dialog-actions>
+<mat-dialog-actions class="actions">
   <button mat-icon-button *ngIf="isAdd()" (click)="add()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="!isAdd()" [disabled]="origTotal !== newTotal" (click)="update()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button class="rotateIcon" *ngIf="!isAdd()" (click)="split()"><mat-icon>call_split</mat-icon></button>
   <!-- <button mat-icon-button *ngIf="data[0].id !== undefined" (click)="deleteTransaction(data[0])"><mat-icon>delete</mat-icon></button> -->
+  <div class="spacer"></div>
   <div class="splitTotal" *ngIf="isSplit()">
     <div class="total">{{this.origTotal.toFixed(2)}}</div>
   </div>
   <button mat-icon-button matTooltip="Totals do not Match!" [matTooltipPosition]="'right'" style="color:red;" *ngIf="origTotal != newTotal"><mat-icon>error</mat-icon></button>
+  <button mat-icon-button (click)="close()"><mat-icon>close</mat-icon></button>
 </mat-dialog-actions>
 <h2 class="title" mat-dialog-title>{{getTitle()}}</h2>
 <br />
