@@ -82,5 +82,9 @@ export class CategoryModalComponent {
     this.data.keywords.splice(this.data.keywords.indexOf(kw));
   }
 
+  close() {
+    this.dialogRef.close();
+  }
+
 
 }

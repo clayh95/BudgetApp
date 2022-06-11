@@ -1,7 +1,9 @@
-<mat-dialog-actions>
+<mat-dialog-actions class="actions">
   <button mat-icon-button *ngIf="data.id === undefined" (click)="add()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="data.id !== undefined" (click)="update()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button *ngIf="data.id !== undefined" (click)="delete(data.id)"><mat-icon>delete</mat-icon></button>
+  <div class="spacer"></div>
+  <button mat-icon-button (click)="close()"><mat-icon>close</mat-icon></button>
 </mat-dialog-actions>
 <h2 mat-dialog-title>{{data.name}}</h2>
 <mat-dialog-content>
