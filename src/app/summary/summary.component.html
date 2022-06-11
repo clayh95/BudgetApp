@@ -40,11 +40,6 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
-              <mat-list-item>
-                <button mat-icon-button (click)="editCategory($event, incomeData.category);">
-                  <mat-icon class="editIcon">edit</mat-icon>
-                </button>
-              </mat-list-item>
               <mat-list-item *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
@@ -60,6 +55,21 @@
                 <p matLine>{{trans.description}} &nbsp;</p>
                 <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
               </mat-list-item>
+              <mat-divider style="margin-top:10px"></mat-divider>
+                <div class="category-footer">
+                  <div class="footer-title-line">
+                    <div class="title">Income</div>
+                    <button 
+                      mat-button
+                      class="edit-button"
+                      (click)="editCategory($event, incomeData.category);">
+                      Edit Category
+                    </button>
+                  </div>
+                  <div class="category-info">
+                    <p class="category-notes">{{incomeData.category.notes}}</p>
+                  </div>
+                </div>
             </mat-list>
           </mat-expansion-panel>
         </mat-accordion>
