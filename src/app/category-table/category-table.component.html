@@ -74,7 +74,11 @@
 
 <div card class="paginator">
     <mat-form-field class="controlsFilter">
-      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search">
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search" [(ngModel)]="searchValue">
+      <button *ngIf="searchValue != ''" matSuffix mat-icon-button aria-label="Clear" 
+        (click)="searchValue='';applyFilter(searchValue)">
+        <mat-icon>close</mat-icon>
+      </button>
     </mat-form-field>
     <mat-paginator #paginator
       [length]="CATsvc.categories.getValue().length"
@@ -83,8 +87,8 @@
       [pageSizeOptions]="[10, 25, 50]">
     </mat-paginator>
     <button 
-      class="controlsAddButton" 
-      mat-icon-button color="primary" 
+      class="add-button" 
+      mat-icon-button 
       matToolTop="Add new category"
       (click)="addCategory()">
       <mat-icon>add</mat-icon>

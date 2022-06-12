@@ -26,6 +26,7 @@ export class CategoryTableComponent implements AfterViewInit {
 
   displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
   filter = new BehaviorSubject<string>("");
+  searchValue: string = "";
 
   totalBudgeted: number;
   catsSub: Subscription;

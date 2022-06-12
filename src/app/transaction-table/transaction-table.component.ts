@@ -27,6 +27,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   bShowStartingBalances = new BehaviorSubject<boolean>(false);
   bOnlyUncategorized = new BehaviorSubject<boolean>(false);
   bToggleFilter = new BehaviorSubject<boolean>(false);
+  searchValue: string = "";
 
   constructor(public Tsvc: DbService,
               public dialog: MatDialog) {
