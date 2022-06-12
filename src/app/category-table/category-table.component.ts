@@ -80,13 +80,6 @@ export class CategoryTableComponent implements AfterViewInit {
       autoFocus: false})
   }
 
-  deleteCategory(category:ICategory) {
-    if (confirm(`Are you sure you want to delete Category: ${category.name}`)) {
-      this.CATsvc.deleteDocument(category, collectionType.categories);
-      this.updateRelatedTransactions(category.name, '')
-    }
-  }
-
   async updateRelatedTransactions(oldName:string, newName:string) {
     if (oldName == "") { return }
     var querySnap = await this.CATsvc.getQuerySnapshot(collectionType.transactions, "category", "==", oldName);

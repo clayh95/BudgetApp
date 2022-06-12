@@ -58,12 +58,6 @@ export class TransactionTableComponent implements AfterViewInit  {
     const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
   }
 
-  deleteTransaction(t:ITransaction) {
-    if (confirm('Are you sure you want to delete this transaction?')) {
-      this.Tsvc.deleteDocument(t, collectionType.transactions);
-    }
-  }
-
   editTransaction(t:ITransaction) {
     this.Tsvc.getTransactionsForEdit(t).then(modalData => {
       const dialogRef = this.dialog.open(
