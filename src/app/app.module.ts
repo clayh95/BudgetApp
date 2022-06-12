@@ -51,6 +51,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppLoginPageComponent } from './app-login-page/app-login-page.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CarryBalancesModalComponent } from './carry-balances-modal/carry-balances-modal.component';
+import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
 
 
 @NgModule({
@@ -70,7 +71,8 @@ import { CarryBalancesModalComponent } from './carry-balances-modal/carry-balanc
     SummaryComponent,
     CategoryModalComponent,
     AppLoginPageComponent,
-    CarryBalancesModalComponent
+    CarryBalancesModalComponent,
+    ConfirmModalComponent
   ],
   entryComponents: [
     CopyCategoriesComponent,

@@ -1,9 +1,10 @@
 import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { collectionType, ICategory } from '../core/dataTypes';
+import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-category-modal',
@@ -26,7 +27,8 @@ export class CategoryModalComponent {
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ICategory) {
+              @Inject(MAT_DIALOG_DATA) public data: ICategory,
+              public dialog: MatDialog) {
                 this.origName = this.data.name;
                 history.pushState(null, null, location.href);
                }
@@ -55,11 +57,35 @@ export class CategoryModalComponent {
   }
 
   delete() {
-    if (confirm('Are you sure you want to delete this category?')) {
-      this.CATsvc.deleteDocument(this.data, collectionType.categories);
-      this.updateRelatedTransactions('');
-      this.dialogRef.close();
+    let controlConfig: ConfirmModalConfig = {
+      title: "Delete Category?", 
+      message: "Are you sure you want to delete this category?", 
+      buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
+    };
+    let dialogConfig: MatDialogConfig = {
+      width: '500px',
+      height: '200px',
+      position: {
+        left: '',
+        top: ''
+      },
+      data: controlConfig,
+      autoFocus: false
     }
+    let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        alert('here');
+        // this.CATsvc.deleteDocument(this.data, collectionType.categories);
+        // this.updateRelatedTransactions('');
+        // this.dialogRef.close();
+      }
+    })
+    // if (confirm('Are you sure you want to delete this category?')) {
+    //   this.CATsvc.deleteDocument(this.data, collectionType.categories);
+    //   this.updateRelatedTransactions('');
+    //   this.dialogRef.close();
+    // }
   }
 
   async updateRelatedTransactions(newName:string) {

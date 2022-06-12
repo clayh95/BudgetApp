@@ -67,3 +67,16 @@ export enum saveState {
     error
 }
 
+export class ConfirmModalConfig {
+    title: string;
+    message: string;
+    buttons: Array<number>
+}
+
+export enum ConfirmModalButtons {
+    ok,
+    yes,
+    no,
+    cancel
+}
+
