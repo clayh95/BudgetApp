@@ -23,7 +23,6 @@ export class CategoryModalComponent {
   addOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   @ViewChild("chipInput") chipInput: ElementRef;
-  //CHIPS
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
@@ -57,35 +56,34 @@ export class CategoryModalComponent {
   }
 
   delete() {
+    const elem = document.getElementById("deleteButton");
+    const rect = elem.getBoundingClientRect();
+    const x:number = rect.right;
+    const y:number = rect.top;
     let controlConfig: ConfirmModalConfig = {
-      title: "Delete Category?", 
-      message: "Are you sure you want to delete this category?", 
+      title: "Delete Category?",
+      matIconName: "arrow_left",
+      message: "Delete this category?", 
       buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
     };
     let dialogConfig: MatDialogConfig = {
-      width: '500px',
-      height: '200px',
+      maxWidth: '55%',
       position: {
-        left: '',
-        top: ''
+        left: `${x.toString()}px`,
+        top: `${y.toString()}px`,
       },
       data: controlConfig,
-      autoFocus: false
+      autoFocus: false,
+      disableClose: true
     }
     let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        alert('here');
-        // this.CATsvc.deleteDocument(this.data, collectionType.categories);
-        // this.updateRelatedTransactions('');
-        // this.dialogRef.close();
+        this.CATsvc.deleteDocument(this.data, collectionType.categories);
+        this.updateRelatedTransactions('');
+        this.dialogRef.close();
       }
-    })
-    // if (confirm('Are you sure you want to delete this category?')) {
-    //   this.CATsvc.deleteDocument(this.data, collectionType.categories);
-    //   this.updateRelatedTransactions('');
-    //   this.dialogRef.close();
-    // }
+    });
   }
 
   async updateRelatedTransactions(newName:string) {

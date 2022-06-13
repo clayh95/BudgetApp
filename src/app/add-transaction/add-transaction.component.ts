@@ -1,11 +1,12 @@
 import { Component,  Inject } from '@angular/core';
-import { collectionType, ITransaction } from '../core/dataTypes'
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ITransaction } from '../core/dataTypes'
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { deleteEnterLeave } from '../animations/template.animations';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 export const MMDDYYYY_FORMAT = {
   parse: {
@@ -43,7 +44,8 @@ export class AddTransactionComponent {
 
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
+              @Inject(MAT_DIALOG_DATA) public data: ITransaction[],
+              public dialog: MatDialog) {
                 this.tmpDate = this.data.map(x => moment(x.date, "MM/DD/YYYY"));
                 // this.origTotal = +data[0].amount;
                 this.origTotal = parseFloat(data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
@@ -66,23 +68,59 @@ export class AddTransactionComponent {
     this.dialogRef.close();
   }
 
-  update() {
+  checkDeletesThenUpdate() {
     if (this.pendingDeletes.length > 0) {
       let list = this.pendingDeletes.map(t => `${t.description} - ${t.amount}`).join('\n');
-      if (!confirm(`Are you sure you want to delete the following transaction(s)?\n\n${list}`)) {
-        return;
+      
+      const elem = document.getElementById("updateButton");
+      const rect = elem.getBoundingClientRect();
+      const x:number = rect.right;
+      const y:number = rect.top;
+      let controlConfig: ConfirmModalConfig = {
+        title: "Delete Transactions?",
+        matIconName: "arrow_left",
+        message: `Delete transaction(s)?`, 
+        buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
+      };
+      let dialogConfig: MatDialogConfig = {
+        maxWidth: '60%',
+        position: {
+          left: `${x.toString()}px`,
+          top: `${y.toString()}px`,
+        },
+        data: controlConfig,
+        autoFocus: false,
+        disableClose: true
       }
+      let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.update();
+        }
+      });
     }
+    else {
+      this.update();
+    }
+  }
+
+  update() {
+    let bClose:boolean = true;
+
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY');
       let monthPK:string = this.ATsvc.getMonthPKFromMoment(this.tmpDate[index]);
 
-      // not sure this logic is totally sound
       if (this.movingMonthsCheck(this.tmpDate[index])) {
-        if (this.movingMonthsConfirm(this.tmpDate[index])) {
-          this.ATsvc.deleteDocument(tr, collectionType.transactions);
-          this.ATsvc.addDocument(tr, collectionType.transactions, monthPK);
-        }
+        bClose = false;
+        let monthConfirmDialogRef = this.movingMonthsConfirm(this.tmpDate[index]);
+        monthConfirmDialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.ATsvc.deleteDocument(tr, collectionType.transactions);
+            this.ATsvc.addDocument(tr, collectionType.transactions, monthPK);
+            this.dialogRef.close();
+          }
+        });
       }
       else if (tr.id.startsWith(tmpId)) {
         this.ATsvc.addDocument(tr, collectionType.transactions);
@@ -96,7 +134,7 @@ export class AddTransactionComponent {
         this.ATsvc.deleteDocument(tr, collectionType.transactions);
       }
     });
-    this.dialogRef.close();
+    if (bClose) this.dialogRef.close();
   }
 
   movingMonthsCheck(checkDate:_rollupMoment.Moment) {
@@ -104,12 +142,30 @@ export class AddTransactionComponent {
   }
 
   movingMonthsConfirm(checkDate:_rollupMoment.Moment) {
-    if (confirm(`Are you sure you want to move this transaction from 
-                  to ${moment(this.ATsvc.getMonthYearValue().substring(0,2), 'M').format('MMMM')}?
-                  ${checkDate.format('MMMM')}`)) {
-      return true;
+    const elem = document.getElementById("updateButton");
+    const rect = elem.getBoundingClientRect();
+    const x:number = rect.right;
+    const y:number = rect.top;
+    let controlConfig: ConfirmModalConfig = {
+      title: "Delete Transaction?",
+      matIconName: "arrow_left",
+      message: `Move this transaction from 
+                ${moment(this.ATsvc.getMonthYearValue().substring(0,2), 'M').format('MMMM')}
+                to ${checkDate.format('MMMM')}?`, 
+      buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
+    };
+    let dialogConfig: MatDialogConfig = {
+      maxWidth: '55%',
+      position: {
+        left: `${x.toString()}px`,
+        top: `${y.toString()}px`,
+      },
+      data: controlConfig,
+      autoFocus: false,
+      disableClose: true
     }
-    return false;
+    let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+    return dialogRef;
   }
 
   split() {

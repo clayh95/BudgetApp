@@ -70,7 +70,8 @@ export enum saveState {
 export class ConfirmModalConfig {
     title: string;
     message: string;
-    buttons: Array<number>
+    buttons: Array<number>;
+    matIconName: string;
 }
 
 export enum ConfirmModalButtons {

@@ -1,6 +1,6 @@
 <mat-dialog-actions class="actions">
   <button mat-icon-button *ngIf="isAdd()" (click)="add()"><mat-icon>save</mat-icon></button>
-  <button mat-icon-button *ngIf="!isAdd()" [disabled]="origTotal !== newTotal" (click)="update()"><mat-icon>save</mat-icon></button>
+  <button mat-icon-button id="updateButton" *ngIf="!isAdd()" [disabled]="origTotal !== newTotal" (click)="checkDeletesThenUpdate()"><mat-icon>save</mat-icon></button>
   <button mat-icon-button class="rotateIcon" *ngIf="!isAdd()" (click)="split()"><mat-icon>call_split</mat-icon></button>
   <div class="spacer"></div>
   <div class="splitTotal" *ngIf="isSplit()">
