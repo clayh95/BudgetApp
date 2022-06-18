@@ -83,7 +83,6 @@ export class AddTransactionComponent {
         buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
       };
       let dialogConfig: MatDialogConfig = {
-        maxWidth: '60%',
         position: {
           left: `${x.toString()}px`,
           top: `${y.toString()}px`,

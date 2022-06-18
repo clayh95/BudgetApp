@@ -67,7 +67,6 @@ export class CategoryModalComponent {
       buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
     };
     let dialogConfig: MatDialogConfig = {
-      maxWidth: '55%',
       position: {
         left: `${x.toString()}px`,
         top: `${y.toString()}px`,

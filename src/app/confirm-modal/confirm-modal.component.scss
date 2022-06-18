@@ -16,14 +16,15 @@
     padding-top: 4px !important;
     padding-bottom: 4px !important;
     font-size: 14px;
-    font-weight: bold;
     margin: 0px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    .message {
+        text-align: center;
+    }
     .indicator-icon {
         width: 10%;
-        margin-right: 15px;
     }
 }
