@@ -68,23 +68,31 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   applyFilter(filterValue: string) {
+    this.resetPageIndex();
     this.filter.next(filterValue.trim().toLowerCase())
   }
 
   togglePendingVisibility() {
+    this.resetPageIndex();
     this.bShowPending.next(!this.bShowPending.getValue());
   }
 
   toggleStartingBalanceVisibility() {
+    this.resetPageIndex();
     this.bShowStartingBalances.next(!this.bShowStartingBalances.getValue());
   }
 
   toggleUncategorizedFilter() {
+    this.resetPageIndex();
     this.bOnlyUncategorized.next(!this.bOnlyUncategorized.getValue());
   }
 
   toggleFilterMenu() {
     this.bToggleFilter.next(!this.bToggleFilter.getValue());
+  }
+
+  resetPageIndex() {
+    if (this.paginator.pageIndex != 0) this.paginator.pageIndex = 0;
   }
 
   filtersOn() {
