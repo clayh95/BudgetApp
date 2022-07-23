@@ -19,7 +19,7 @@ export class AppLoginPageComponent implements OnInit {
   }
 
   async checkLoginState() {
-    await this.delay(1000);
+    await this.delay(2000);
     this.bShowLoginButton.next(true);
   }
 
