@@ -129,9 +129,14 @@ export class CategoryTableComponent implements AfterViewInit {
   }
 
   applyFilter(filterValue: string) {
+    this.resetPageIndex();
     this.filter.next(filterValue.trim().toLowerCase())
   }
 
+  resetPageIndex() {
+    if (this.paginator.pageIndex != 0) this.paginator.pageIndex = 0;
+  }
+  
   getPercentage(budgeted:number):number {
     return (budgeted / this.totalBudgeted);
   }
