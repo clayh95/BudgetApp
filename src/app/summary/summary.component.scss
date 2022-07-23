@@ -64,19 +64,17 @@
 }
 
 .transaction-list-item {
-    mat-list-item {
-        mat-icon {
-            width: 16px;
-            height: unset;
-            max-height: 20px;
-            margin-right: 5px;
-        }
-        img {
-            margin-right: 8px;
-        }
+    mat-icon {
+        width: unset;
+        height: unset;
+        // max-height: 20px;
+        margin-right: 5px;
+    }
+    img {
+        margin-right: 8px;
     }
     .split-icon {
-        transform: rotate(90deg) translateY(7px) translateX(2px);
+        transform: rotate(90deg);
     }
     ::ng-deep .mat-list-text {
         border-left: 2px solid rgba(0, 0, 255, .5);
