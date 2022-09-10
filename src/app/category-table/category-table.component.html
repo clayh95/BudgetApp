@@ -39,6 +39,15 @@
               </td>
               <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
+
+            <!-- Notes Column -->
+            <ng-container matColumnDef="notes">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Notes</th>
+              <td mat-cell class="category-notes" *matCellDef="let row">
+                <span>{{row.notes}}</span>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
         
             <!-- Keyword Column -->
             <ng-container matColumnDef="keywords">

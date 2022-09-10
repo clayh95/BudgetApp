@@ -27,12 +27,17 @@
         width:15%;
         cursor: pointer;
     }
+    .category-notes {
+        width:15%;
+        font-style: italic;
+        font-size: smaller;
+    }
     .category-amount {
         width:5%;
         font-weight: bold;
     }
     .keyword-chip-list {
-        width:65%;
+        width:50%;
         mat-form-field {
             width:100%
         }
@@ -169,6 +174,10 @@ mat-card-title {
     
         .desktop {
             display: none;
+        }
+
+        .category-notes {
+            margin-top: 10px;
         }
     }
 

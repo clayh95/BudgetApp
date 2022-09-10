@@ -24,7 +24,7 @@ export class CategoryTableComponent implements AfterViewInit {
   @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: CategoryTableDataSource;
 
-  displayedColumns = ['id', 'category', 'budgeted', 'keywords'];
+  displayedColumns = ['id', 'category', 'budgeted', 'notes', 'keywords'];
   filter = new BehaviorSubject<string>("");
   searchValue: string = "";
 
