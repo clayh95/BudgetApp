@@ -125,6 +125,19 @@
     margin-right: 5px;
 }
 
+.no-data {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 35px;
+    mat-icon {
+        color: gray;
+        height: 1em;
+        font-size: 5em;
+        width: unset;
+    }
+}
 
 @media(max-width: 1000px) {
     .summary-card {

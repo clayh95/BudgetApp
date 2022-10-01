@@ -2,8 +2,11 @@
   
   <div class="app-summary-categories">
     <mat-card class="summary-card">
-
-      <div *ngIf="totalBudgeted !== 0" class="accordian-margin">
+      <div class="no-data" *ngIf="!totalBudgeted">
+        <mat-icon style="color:gray;font-size: 5em">segment</mat-icon>
+        <p>There are either no transactions or no categories yet for this month</p>
+      </div>
+      <div *ngIf="totalBudgeted" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel class="expansion-panel-round-all">
             <mat-expansion-panel-header>

@@ -40,6 +40,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
           if (cats.length === 0 || trans.length === 0) {
             this.reportCats = [];
             this.incomeData = undefined;
+            this.totalBudgeted = undefined;
+            this.actualIncome = undefined;
             return;
           }
 

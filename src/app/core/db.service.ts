@@ -99,7 +99,6 @@ export class DbService {
     this.monthsCollection.ref.doc(monthPK).get().then(snap => {
       if (!snap.exists) {
         this.monthsCollection.ref.doc(monthPK).set({'name': monthPK, 'summary': ''});
-        this.monthsCollection.doc(monthPK).ref.collection('categories').doc().set({});
       }
       else {
         if (snap.data()['summary'] === undefined) {
