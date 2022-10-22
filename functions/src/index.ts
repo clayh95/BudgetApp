@@ -181,11 +181,12 @@ function decrypt(encString:string) {
 
 function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransactionStatus, cats: QueryDocumentSnapshot[]): dataTypes.ITransaction {
     const desc:string = strTrans[2].replace(/\s\s+/g, ' ');
+    const category:string = status === dataTypes.ITransactionStatus.pending ? '' : SetCategoryFromKeywords(desc, cats);
     const t = {
         "date" : moment(strTrans[1], "MM/DD/YYYY").format("MM/DD/YYYY"),
         "amount" : strTrans[4].trim() === "" ? Currency(strTrans[3], "+") : Currency(strTrans[4], "-"),
         "description" : desc,
-        "category" : SetCategoryFromKeywords(desc, cats), //Not a great way to do this right now...SetCategoryFromKeywords(strTrans[2]),
+        "category" : category,
         "notes" : "",
         "status": status
     }
@@ -197,7 +198,7 @@ function SetCategoryFromKeywords(tDesc: string, cats: QueryDocumentSnapshot[]): 
     let ret = '';
     cats.map(qds => {
         if (qds.data().keywords) {
-            qds.data().keywords.map(k => {
+            qds.data().keywords.map((k: string) => {
                 if (desc.indexOf(k.toUpperCase()) >= 0) {
                     ret = qds.data().name;
                     return;
