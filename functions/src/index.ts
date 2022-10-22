@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as CryptoJS from 'crypto-js';
-import * as dataTypes from '../../src/app/core/dataTypes';
+import { ITransactionStatus, ITransaction } from '../../src/app/core/dataTypes';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import moment = require('moment');
 import { environment } from './environments/environments.prod';
@@ -58,12 +58,12 @@ export const autoImport = functions.https.onRequest(async (request, response) =>
     let previousMonthLatestDate:string
 
     const pendTrans = Object.keys(pendIn).reduce((obj, key, idx) => {
-        obj[idx] = ConvertScrapeToTransaction(pendIn[key], dataTypes.ITransactionStatus.pending, cats);
+        obj[idx] = ConvertScrapeToTransaction(pendIn[key], ITransactionStatus.pending, cats);
         return obj;
     }, []);
 
     const postTrans = Object.keys(postIn).reduce((obj, key, idx) => {
-        obj[idx] = ConvertScrapeToTransaction(postIn[key], dataTypes.ITransactionStatus.posted, cats);
+        obj[idx] = ConvertScrapeToTransaction(postIn[key], ITransactionStatus.posted, cats);
         return obj;
     }, []);
 
@@ -179,9 +179,9 @@ function decrypt(encString:string) {
     return testBytes.toString(CryptoJS.enc.Utf8);
 }
 
-function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransactionStatus, cats: QueryDocumentSnapshot[]): dataTypes.ITransaction {
+function ConvertScrapeToTransaction(strTrans: Object, status:ITransactionStatus, cats: QueryDocumentSnapshot[]): ITransaction {
     const desc:string = strTrans[2].replace(/\s\s+/g, ' ');
-    const category:string = status === dataTypes.ITransactionStatus.pending ? '' : SetCategoryFromKeywords(desc, cats);
+    const category:string = status === ITransactionStatus.pending ? '' : SetCategoryFromKeywords(desc, cats);
     const t = {
         "date" : moment(strTrans[1], "MM/DD/YYYY").format("MM/DD/YYYY"),
         "amount" : strTrans[4].trim() === "" ? Currency(strTrans[3], "+") : Currency(strTrans[4], "-"),
@@ -190,7 +190,7 @@ function ConvertScrapeToTransaction(strTrans: Object, status:dataTypes.ITransact
         "notes" : "",
         "status": status
     }
-    return <dataTypes.ITransaction>t;
+    return <ITransaction>t;
 }
 
 function SetCategoryFromKeywords(tDesc: string, cats: QueryDocumentSnapshot[]): string {

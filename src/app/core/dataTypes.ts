@@ -1,3 +1,5 @@
+import * as firebase from 'firebase/app';
+
 export interface ITransaction {
     id: string;
     date: string;
