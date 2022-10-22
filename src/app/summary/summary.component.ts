@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
-import { getIcon } from '../core/utilities';
+import { getIcon, getPosNegColor } from '../core/utilities';
 import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
 const moment = _rollupMoment
 
@@ -106,11 +106,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
 
   getColor(item) {
-    if (item.category.budgeted - item.category.spent < 0) {
-      return 'red'
-    } else {
-      return 'green'
-    }
+    return getPosNegColor(item.category.budgeted, item.category.spent);
   }
 
   getIncomeColor() {

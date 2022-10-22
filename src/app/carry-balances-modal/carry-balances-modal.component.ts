@@ -4,6 +4,7 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { collectionType, ITransaction } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
+import { getPosNegColor } from '../core/utilities';
 
 @Component({
   selector: 'app-carry-balances-modal',
@@ -28,6 +29,10 @@ export class CarryBalancesModalComponent {
       this.service.addDocument(t, collectionType.transactions, mPK);
     });
     this.dialogRef.close();
+  }
+
+  getColor(row:ITransaction) {
+    return getPosNegColor(+row.amount, 0);
   }
 
 }

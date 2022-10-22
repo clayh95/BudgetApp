@@ -25,4 +25,12 @@ export function getIcon(description:string):string {
       if (key.test(description)) ret = value;
     });
     return ret;
+}
+
+export function getPosNegColor(val1:number, val2:number) {
+  if (val1 - val2 < 0) {
+    return 'red'
+  } else {
+    return 'green'
   }
+}
