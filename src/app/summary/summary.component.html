@@ -1,18 +1,21 @@
 <div class="app-summary-component">
   
   <div class="app-summary-categories">
+
     <mat-card class="summary-card">
+
       <div class="no-data" *ngIf="!totalBudgeted">
         <mat-icon style="color:gray;font-size: 5em">segment</mat-icon>
         <p>There are either no transactions or no categories yet for this month</p>
       </div>
+
       <div *ngIf="totalBudgeted" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel class="expansion-panel-round-all">
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <button mat-icon-button>
-                  <span>{{getEmoji()[1]}}</span>
+                  <span style="font-size: 22px;">{{getEmoji()[1]}}</span>
                 </button>
                 <span style="padding-top: 5px;">Total Budgeted <br /> {{totalBudgeted | currency}}</span>
               </mat-panel-title>
@@ -35,7 +38,10 @@
         <mat-accordion>
           <mat-expansion-panel class="expansion-panel-round-all">
             <mat-expansion-panel-header>
-              <mat-panel-title>
+              <mat-panel-title>                    
+                <button mat-icon-button>
+                  <mat-icon style="color:green">attach_money</mat-icon>
+                </button>
                 <span style="padding-top: 5px;">Income <br /> {{incomeData.category.budgeted | currency}}</span>
               </mat-panel-title>
               <mat-panel-description>
@@ -69,7 +75,7 @@
                       Edit Category
                     </button>
                   </div>
-                  <div class="category-info">
+                  <div *ngIf="incomeData.category.notes && incomeData.category.notes.length > 0" class="category-info">
                     <p class="category-notes">{{incomeData.category.notes}}</p>
                   </div>
                 </div>
@@ -78,6 +84,44 @@
         </mat-accordion>
       </div>
 
+      <div *ngIf="pendingTransactions" class="accordian-margin">
+        <mat-accordion>
+          <mat-expansion-panel class="expansion-panel-round-all">
+            <mat-expansion-panel-header>
+              <mat-panel-title>                    
+                <button mat-icon-button>
+                  <mat-icon style="color:orange">error_outline</mat-icon>
+                </button>
+                <span style="padding-top: 5px;">Pending Transactions
+                  <br />
+                  {{totalPending | currency}}
+                </span>
+              </mat-panel-title>
+              <mat-panel-description>
+                <p style="font-weight: bold">{{pendingTransactions.length}}</p>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-list dense>
+              <mat-list-item class="transaction-list-item" *ngFor="let trans of pendingTransactions" (click)="editTransaction(trans)">
+                <p matLine>
+                  <span>{{trans.date}}</span>
+                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
+                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
+                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
+                    <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.4em">
+                      check_circle_outline
+                    </mat-icon>
+                    <mat-icon *ngIf="trans.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
+                    {{trans.amount | currency}}
+                  </span>
+                </p>
+                <p matLine>{{trans.description}} &nbsp;</p>
+                <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
+              </mat-list-item>
+            </mat-list>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
 
       <div *ngIf="reportCats" class="accordian-margin">
         <mat-accordion>
@@ -123,7 +167,7 @@
                       Edit Category
                     </button>
                   </div>
-                  <div class="category-info">
+                  <div *ngIf="item.category.notes && item.category.notes.length > 0" class="category-info">
                     <p class="category-notes">{{item.category.notes}}</p>
                   </div>
                 </div>
@@ -131,7 +175,9 @@
           </mat-expansion-panel>
         </mat-accordion>
       </div>
+
     </mat-card>
+
   </div>
 
   <div class="app-summary-notes">

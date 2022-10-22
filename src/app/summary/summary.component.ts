@@ -31,6 +31,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
   totalBudgeted: number;
   reportCats: reportCat[];
   incomeData: reportCat;
+  pendingTransactions: ITransaction[];
+  totalPending: number;
   expandedPanel: string;
 
   ngOnInit() {
@@ -49,14 +51,14 @@ export class SummaryComponent implements OnInit, OnDestroy {
           this.spent = 0;
 
           this.reportCats = new Array();
+          this.pendingTransactions = new Array();
+
+          const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: [], notes: ''}
+          this.createReportCat(uncategorized, trans);
 
           cats.map(c => {
             this.createReportCat(c, trans);
           });
-
-          const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: [], notes: ''}
-
-          this.createReportCat(uncategorized, trans);
 
           //Pull out the income category
           if (cats.length > 1) this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
@@ -65,6 +67,17 @@ export class SummaryComponent implements OnInit, OnDestroy {
             this.actualIncome = +tmpIncome.toFixed(2);
             this.reportCats.splice(this.reportCats.indexOf(this.incomeData), 1);
           }
+
+          // Pull out pending items
+          this.reportCats.map(rc => {
+            rc.transactions.map(t => {
+              if (t.status == ITransactionStatus.pending) {
+                this.pendingTransactions.push(t);
+                rc.transactions.splice(rc.transactions.indexOf(t), 1);
+              }
+            });
+          });
+          this.totalPending = this.pendingTransactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
 
           this.spent = this.reportCats.map(c => c.category.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
           this.spent = +this.spent.toFixed(2);
@@ -159,6 +172,9 @@ export class SummaryComponent implements OnInit, OnDestroy {
     return item.category.id;
   }
 
+  trackByIdPending(index, item) {
+    return item.id;
+  }
   carryAmounts() {
     // let tmp:number = 0;
     let list:Array<ITransaction> = [];
