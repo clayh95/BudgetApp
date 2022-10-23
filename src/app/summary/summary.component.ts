@@ -70,11 +70,16 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           // Pull out pending items
           this.reportCats.map(rc => {
+            var bPending:boolean = false;
             rc.transactions.map(t => {
-              if (t.status == ITransactionStatus.pending) {
+              if (t.status.toUpperCase() == ITransactionStatus.pending.toString().toUpperCase()) {
                 this.pendingTransactions.push(t);
-                rc.transactions.splice(rc.transactions.indexOf(t), 1);
+                bPending = true;
               }
+            });
+            if (!bPending) return;
+            this.pendingTransactions.map(t => {
+              rc.transactions.splice(rc.transactions.indexOf(t), 1);
             });
           });
           this.totalPending = this.pendingTransactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
