@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -24,6 +24,8 @@ export class CategoryModalComponent {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   @ViewChild("chipInput") chipInput: ElementRef;
 
+  showPicker: boolean;
+
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
               @Inject(MAT_DIALOG_DATA) public data: ICategory,
@@ -48,7 +50,8 @@ export class CategoryModalComponent {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords ?? [], 
-      budgeted: this.data.budgeted
+      budgeted: this.data.budgeted,
+      emoji: this.data.emoji ?? ''
     }
     await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
     this.updateRelatedTransactions(this.data.name);
@@ -103,6 +106,28 @@ export class CategoryModalComponent {
   
   removeKeyword(kw: string): void {
     this.data.keywords.splice(this.data.keywords.indexOf(kw));
+  }
+
+  addEmoji(event) {
+    this.data.emoji = event.emoji.native;
+  }
+
+  toggleEmojiPicker(event) {
+    event.stopPropagation();
+    this.showPicker = !this.showPicker;
+  }
+  
+  @HostListener('document:click', ['$event']) onDocumentClick(event) {
+    this.showPicker = false;
+  }
+
+  getPickerFieldClass() {
+    if (this.showPicker) {
+      return 'image-picker-selected';
+    }
+    else {
+      return 'image-picker-unselected';
+    }
   }
 
   close() {

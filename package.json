@@ -26,6 +26,7 @@
     "@angular/platform-browser-dynamic": "^11.0.2",
     "@angular/router": "^11.0.2",
     "@angular/service-worker": "^11.0.2",
+    "@ctrl/ngx-emoji-mart": "^5.1.2",
     "@ngtools/webpack": "^11.0.2",
     "@schematics/angular": "^9.1.0",
     "@types/chart.js": "^2.7.31",

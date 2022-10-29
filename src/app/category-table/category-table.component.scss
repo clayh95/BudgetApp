@@ -9,6 +9,7 @@
     .percent {
         .percentage {
             color: gray;
+            margin-left: 10px;
         }
         width: 2%;
         .visual {
@@ -35,6 +36,11 @@
     .category-amount {
         width:5%;
         font-weight: bold;
+    }
+    .category-image {
+        width:5%;
+        text-align: center;
+        font-size: 18px;
     }
     .keyword-chip-list {
         width:50%;
@@ -101,10 +107,10 @@ mat-card-title {
     }
     max-height: 70px;
     .copy-button {
-        color: darkorange;
+        color: #3b8d5f;
     }
     .add-button {
-        color: dodgerblue;
+        color: #3b8d5f;
     }
 }
 

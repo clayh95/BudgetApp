@@ -49,7 +49,7 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
-              <mat-list-item *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
+              <mat-list-item class="transaction-list-item" *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
                 <p matLine>
                   <span>{{trans.date}}</span>
                   <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
@@ -92,13 +92,12 @@
                 <button mat-icon-button>
                   <mat-icon style="color:orange">error_outline</mat-icon>
                 </button>
-                <span style="padding-top: 5px;">Pending Transactions
+                <span style="padding-top: 5px;">Pending Transactions ({{pendingTransactions.length}})
                   <br />
                   {{totalPending | currency}}
                 </span>
               </mat-panel-title>
               <mat-panel-description>
-                <p style="font-weight: bold">{{pendingTransactions.length}}</p>
               </mat-panel-description>
             </mat-expansion-panel-header>
             <mat-list dense>
@@ -130,6 +129,9 @@
             class="expansion-panel-round-ends">
             <mat-expansion-panel-header>
               <mat-panel-title>
+                <button mat-icon-button>
+                  <span style="font-size: 22px;">{{item.category.emoji}}</span>
+                </button>
                 <span style="padding-top: 5px;line-height:22px">{{item.category.name}} <br />
                   {{item.category.budgeted | currency}}</span>
               </mat-panel-title>
@@ -155,12 +157,11 @@
                 <p matLine>{{trans.description}} &nbsp;</p>
                 <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
               </mat-list-item>
-              <mat-divider style="margin-top:10px"></mat-divider>
-                <div class="category-footer">
-                  <div class="footer-title-line">
+                <div style="margin-top:10px" class="category-footer" *ngIf="item.category.name !== 'Uncategorized'">
+                  <mat-divider></mat-divider>
+                  <div style="margin-top:10px" class="footer-title-line">
                     <div class="title"><b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted</div>
                     <button 
-                      [disabled]="item.category.name === 'Uncategorized'" 
                       mat-button
                       class="edit-button"
                       (click)="editCategory($event, item.category);">

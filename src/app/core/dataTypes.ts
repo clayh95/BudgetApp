@@ -31,6 +31,7 @@ export interface ICategory {
     budgeted: number;
     spent: number;
     notes: string;
+    emoji?: string;
 }
 
 export interface IDocumentAction {

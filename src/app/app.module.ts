@@ -52,7 +52,7 @@ import { AppLoginPageComponent } from './app-login-page/app-login-page.component
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { CarryBalancesModalComponent } from './carry-balances-modal/carry-balances-modal.component';
 import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
-
+import { PickerModule } from '@ctrl/ngx-emoji-mart';
 
 @NgModule({
   declarations: [
@@ -112,6 +112,7 @@ import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
     MatGridListModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    PickerModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [

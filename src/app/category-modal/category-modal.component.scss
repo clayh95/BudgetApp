@@ -19,15 +19,17 @@
     padding: 0px 0px 32px 0px;
 }
 
-button {
-    margin-right: 5px;
-}
+// button {
+//     margin-right: 5px;
+// }  
 
 .categoryFields {
-    display: flex;
-    flex-direction: row;
-    width: 90%;
-}
+    flex-direction: column;
+    overflow: auto;
+    mat-form-field {
+        width: 90% !important;
+    }
+ }
 
 .actions {
     .spacer {
@@ -35,8 +37,28 @@ button {
     }
 }
 
+.emoji-picker-wrapper {    
+    transform: scale(0.75);
+    position: absolute;
+    background: white;
+    z-index: 3;
+    left: 1%;
+    top: 10%;
+}
+
+.image-picker-selected {
+    border: 3px solid dodgerblue;
+    border-radius: 25px;
+    margin-right: 10px;
+}
+
+.image-picker-unselected {
+    border: 3px solid transparent;
+    border-radius: 25px;
+    margin-right: 10px;
+}
+
 @media(max-width: 1000px) {
-    
     .categoryFields {
        flex-direction: column;
        overflow: auto;

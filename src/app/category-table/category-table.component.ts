@@ -24,7 +24,7 @@ export class CategoryTableComponent implements AfterViewInit {
   @ViewChild(MatSort, {static: false}) sort: MatSort;
   dataSource: CategoryTableDataSource;
 
-  displayedColumns = ['id', 'category', 'budgeted', 'notes', 'keywords'];
+  displayedColumns = ['id', 'emoji', 'category', 'budgeted', 'notes', 'keywords'];
   filter = new BehaviorSubject<string>("");
   searchValue: string = "";
 
@@ -75,7 +75,7 @@ export class CategoryTableComponent implements AfterViewInit {
 
   editCategory(c) {
     const catDialogRef = this.dialog.open(CategoryModalComponent, 
-      {width:'1600px', maxWidth:'90vw', 
+      {width:'500px', maxWidth:'90vw', 
       data: Object.assign({}, c), 
       autoFocus: false})
   }

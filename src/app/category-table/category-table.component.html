@@ -5,7 +5,7 @@
           <table mat-table #table [dataSource]="dataSource" class="categoryTable" matSort aria-label="Elements">
             <!-- id Column -->
             <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+                <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell class="desktop percent" *matCellDef="let row">
                   <span class="percentage" *ngIf="row.name.toLowerCase() != 'income'">{{getPercentage(+row.budgeted) | percent:'1.0-2'}}</span>
                   <!-- <div class="visual">
@@ -15,13 +15,22 @@
                 </td>
             </ng-container>
             
+            <!-- Image Column -->
+            <ng-container matColumnDef="emoji">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell class="desktop category-image" *matCellDef="let row">
+                <span>{{row.emoji}}</span>
+              </td>
+              <td mat-footer-cell *matFooterCellDef></td>
+            </ng-container>
+
             <!-- Category Column -->
             <ng-container matColumnDef="category">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
               <td mat-cell class="category-name" *matCellDef="let row" (click)="editCategory(row)">
                 <span class="desktop">{{row.name}}</span>
                 <div class="mobile header">
-                  <span>{{row.name}}</span>
+                  <span><span *ngIf="row.emoji">{{row.emoji}}&nbsp;&nbsp;</span>{{row.name}}</span>
                   <div>
                     <span class="percentage" *ngIf="row.name.toLowerCase() != 'income'">{{getPercentage(+row.budgeted) | percent:'1.0-2'}}</span>
                     <span class="budgeted">{{row.budgeted}}</span>

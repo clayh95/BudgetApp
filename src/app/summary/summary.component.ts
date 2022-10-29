@@ -11,11 +11,6 @@ import { getIcon, getPosNegColor } from '../core/utilities';
 import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
 const moment = _rollupMoment
 
-interface reportCat {
-  category: ICategory;
-  transactions: ITransaction[];
-}
-
 @Component({
   selector: 'app-summary',
   templateUrl: './summary.component.html',
@@ -29,8 +24,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
   actualIncome: number;
   spent: number;
   totalBudgeted: number;
-  reportCats: reportCat[];
-  incomeData: reportCat;
+  reportCats: IReportCategory[];
+  incomeData: IReportCategory;
   pendingTransactions: ITransaction[];
   totalPending: number;
   expandedPanel: string;
@@ -56,9 +51,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
           const uncategorized: ICategory = {id: '', name: '', budgeted: 0, spent: 0, keywords: [], notes: ''}
           this.createReportCat(uncategorized, trans);
 
-          cats.map(c => {
-            this.createReportCat(c, trans);
-          });
+          cats.map(c => this.createReportCat(c, trans));
 
           //Pull out the income category
           if (cats.length > 1) this.incomeData = this.reportCats.find(x => x.category.name.toUpperCase() === 'INCOME');
@@ -79,10 +72,15 @@ export class SummaryComponent implements OnInit, OnDestroy {
             });
             if (!bPending) return;
             this.pendingTransactions.map(t => {
-              rc.transactions.splice(rc.transactions.indexOf(t), 1);
+              if (rc.transactions.indexOf(t) > -1) {
+                rc.transactions.splice(rc.transactions.indexOf(t), 1);
+              }
             });
+            rc.category.spent = 0;
+            rc.transactions.map(t => this.calculateSpentAmount(t, rc.category));
+            // anything where we pulled out pending, we need to redo the total
           });
-          this.totalPending = this.pendingTransactions.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
+          this.totalPending = this.pendingTransactions.map(t => +t.amount).reduce((pv, v) => pv + v, 0);
 
           this.spent = this.reportCats.map(c => c.category.spent).reduce((pv, v) => +pv + +v, 0); //Everything remaining is SPENT
           this.spent = +this.spent.toFixed(2);
@@ -96,12 +94,14 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   private createReportCat(c: ICategory, trans: ITransaction[]) {
     c.spent = 0;
-    let cat: ICategory = c;
     let t: ITransaction[] = this.getTransactionsForCategory(trans, c);
-    cat.spent = +cat.spent.toFixed(2);
-    if (cat.name === '') { cat.name = 'Uncategorized'; }
+    c.spent = +c.spent.toFixed(2);
+    if (c.name === '') { 
+      c.name = 'Uncategorized'; 
+      c.emoji = '?'
+    }
     this.reportCats.push({
-      category: cat,
+      category: c,
       transactions: t
     });
   }
@@ -109,21 +109,23 @@ export class SummaryComponent implements OnInit, OnDestroy {
   private getTransactionsForCategory(trans: ITransaction[], c: ICategory): ITransaction[] {
     return trans
       .filter(t => t.category === c.name)
-      .map(t => {
-        if (c.name === 'INCOME') {
-          c.spent += (1 * +t.amount);
-        }
-        else {
-          c.spent += (-1 * +t.amount);
-        }
-        return t;
-      })
+      .map(t => this.calculateSpentAmount(t, c))
       .sort((a, b) => {
         return a.date > b.date ? 1 : -1;
       });
   }
 
-  getColor(item) {
+  private calculateSpentAmount(t: ITransaction, c: ICategory) {
+    if (c.name === 'INCOME') {
+      c.spent += (1 * +t.amount);
+    }
+    else {
+      c.spent += (-1 * +t.amount);
+    }
+    return t;
+  }
+
+  getColor(item: IReportCategory) {
     return getPosNegColor(item.category.budgeted, item.category.spent);
   }
 
@@ -166,7 +168,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   editCategory(event, c) {
     event.stopPropagation();
-    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'1600px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
+    const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'500px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
   }
 
   updateSummaryNotes(value:string) {
@@ -180,8 +182,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
   trackByIdPending(index, item) {
     return item.id;
   }
+  
   carryAmounts() {
-    // let tmp:number = 0;
     let list:Array<ITransaction> = [];
     this.reportCats.filter(c => (c.category.budgeted - c.category.spent) != 0).map(c => {
       let m = this.service.monthYear.getValue();
@@ -195,10 +197,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
           notes: "",
           status: "Posted"
         }
-      // tmp += +t.amount;
       list.push(t);
     });
-    // open the dialog
     const carryBalancesRef = this.dialog.open(
       CarryBalancesModalComponent, 
       {width:'1600px', maxWidth:'90vw', data: list, autoFocus: false}
@@ -212,5 +212,10 @@ export class SummaryComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.catsTrans.unsubscribe();
   }
+}
 
+
+interface IReportCategory {
+  category: ICategory;
+  transactions: ITransaction[];
 }
