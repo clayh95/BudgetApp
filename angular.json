@@ -13,7 +13,7 @@
           "styleext": "scss"
         }
       },
-      "architect": {
+      "targets": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
@@ -46,7 +46,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -60,18 +59,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "BudgetApp:build"
+            "buildTarget": "BudgetApp:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "BudgetApp:build:production"
+              "buildTarget": "BudgetApp:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "BudgetApp:build"
+            "buildTarget": "BudgetApp:build"
           }
         },
         "test": {
@@ -137,7 +136,6 @@
       }
     }
   },
-  "defaultProject": "BudgetApp",
   "cli": {
     "analytics": false
   }
