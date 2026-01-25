@@ -74,11 +74,6 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
     CarryBalancesModalComponent,
     ConfirmModalComponent
   ],
-  entryComponents: [
-    CopyCategoriesComponent,
-    AddTransactionComponent,
-    CategoryModalComponent
-  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
