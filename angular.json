@@ -137,5 +137,8 @@
       }
     }
   },
-  "defaultProject": "BudgetApp"
+  "defaultProject": "BudgetApp",
+  "cli": {
+    "analytics": false
+  }
 }
