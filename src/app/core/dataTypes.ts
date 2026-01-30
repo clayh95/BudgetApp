@@ -1,4 +1,5 @@
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/compat/app';
+import firestore from 'firebase/compat/app';
 
 export interface ITransaction {
     id: string;
@@ -39,8 +40,8 @@ export interface IDocumentAction {
     collectionPath: string;
     action: documentActionType;
     undoAction: documentActionType;
-    previousData?: firebase.firestore.DocumentData;
-    newData?: firebase.firestore.DocumentData;
+    previousData?: firestore.firestore.DocumentData;
+    newData?: firestore.firestore.DocumentData;
 }
 
 export enum documentActionType {

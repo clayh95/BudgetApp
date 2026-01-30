@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
@@ -14,11 +14,10 @@ import { getPosNegColor } from '../core/utilities';
 export class CarryBalancesModalComponent {
 
   newMonthDate:Moment;
+  data = inject<ITransaction[]>(MAT_DIALOG_DATA);
 
   constructor(public service: DbService, 
-              public dialogRef: MatDialogRef<CarryBalancesModalComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
-
+              public dialogRef: MatDialogRef<CarryBalancesModalComponent>) {
                 this.newMonthDate = moment(this.data[0].date);
   
   }

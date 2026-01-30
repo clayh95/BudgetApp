@@ -17,12 +17,13 @@ export class MainNavComponent {
   @ViewChild('drawer', {static: false}) drawer: MatSidenav;
 
   //can this be put into a service?
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches)
-    );
+  isHandset$: Observable<boolean>;
     
   constructor(private breakpointObserver: BreakpointObserver, router: Router, public service: DbService) {
+    this.isHandset$ = this.breakpointObserver.observe(Breakpoints.Handset)
+      .pipe(
+        map(result => result.matches)
+      );
     router.events.pipe(
       withLatestFrom(this.isHandset$),
       filter(([a, b]) => b && a instanceof NavigationEnd)

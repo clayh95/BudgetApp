@@ -34,18 +34,16 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   }
 
   connect(): Observable<ITransaction[]> {
-    const dataMutations = [
+    return combineLatest([
       this.service.transactions,
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith('0')),
-      this.filter,
-      this.bShowPending,
-      this.bShowStartingBalances,
-      this.bOnlyUncategorized
-    ];
-
-    return combineLatest(dataMutations).pipe(map((d) => {
-      let val = <ITransaction[]>d[0];
+      this.filter.asObservable(),
+      this.bShowPending.asObservable(),
+      this.bShowStartingBalances.asObservable(),
+      this.bOnlyUncategorized.asObservable()
+    ]).pipe(map((d) => {
+      let val = d[0] as unknown as ITransaction[];
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
       this.lastMY = this.service.getMonthYearValue();

@@ -15,14 +15,12 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
   }
 
   connect(): Observable<ICategory[]> {
-    const dataMutations = [
+    return combineLatest([
       this.categories,
       this.paginator.page.pipe(startWith(1)),
       this.sort.sortChange.pipe(startWith(0)),
       this.filter
-    ];
-
-    return combineLatest(...dataMutations).pipe(map((d) => {
+    ]).pipe(map((d) => {
       let val = <ICategory[]>d[0];
       let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3])
       this.paginator.length = val.length;

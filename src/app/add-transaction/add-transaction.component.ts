@@ -1,4 +1,4 @@
-import { Component,  Inject } from '@angular/core';
+import { Component,  inject } from '@angular/core';
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
@@ -41,14 +41,15 @@ export class AddTransactionComponent {
   newTotal:number;
   dummyCopy = new Array<ITransaction>();
   pendingDeletes: ITransaction[] = new Array<ITransaction>();
+  data = inject<ITransaction[]>(MAT_DIALOG_DATA);
+
 
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction[],
               public dialog: MatDialog) {
                 this.tmpDate = this.data.map(x => moment(x.date, "MM/DD/YYYY"));
                 // this.origTotal = +data[0].amount;
-                this.origTotal = parseFloat(data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
+                this.origTotal = parseFloat(this.data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
                 this.newTotal = +this.origTotal;
                 history.pushState(null, null, location.href);
               }

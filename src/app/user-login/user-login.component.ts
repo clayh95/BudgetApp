@@ -4,6 +4,7 @@ import { map } from '../../../node_modules/rxjs/operators';
 // import { bypassSanitizationTrustStyle } from '../../../node_modules/@angular/core/src/sanitization/bypass';
 import { DomSanitizer } from '@angular/platform-browser'
 import { DbService } from '../core/db.service';
+import firebase from 'firebase/compat/app';
 
 @Component({
   selector: 'app-user-login',

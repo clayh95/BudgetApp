@@ -13,6 +13,7 @@ import { CopyCategoriesComponent } from '../copy-categories/copy-categories.comp
 import * as firebase from 'firebase/app';
 import { collectionType, ICategory } from '../core/dataTypes';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
+import { firestore } from 'firebase-admin';
 
 @Component({
   selector: 'app-category-table',
@@ -108,7 +109,7 @@ export class CategoryTableComponent implements AfterViewInit {
       this.CATsvc.updateDocument(
         id, 
         collectionType.categories, 
-        {keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())}
+        {keywords: firestore.FieldValue.arrayUnion(value.trim())}
       );
     }
     if (input) {
@@ -120,7 +121,7 @@ export class CategoryTableComponent implements AfterViewInit {
     this.CATsvc.updateDocument(
       id, 
       collectionType.categories, 
-      {keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())}
+      {keywords: firestore.FieldValue.arrayRemove(kw.trim())}
     );
   }
 

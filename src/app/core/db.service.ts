@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from 'angularfire2/firestore';
+import { AngularFirestore, AngularFirestoreCollection, DocumentChangeAction } from '@angular/fire/compat/firestore';
+import firebase from 'firebase/compat/app';
 import { ITransaction, ICategory, IDocumentAction, documentActionType, editorActionType, collectionType, saveState } from './dataTypes';
 import { BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
 import {default as _rollupMoment} from 'moment';
-import firebase, { firestore } from 'firebase';
+import firestore from 'firebase/compat/app';
 const moment = _rollupMoment;
 
 export enum tAction {
@@ -73,7 +74,7 @@ export class DbService {
     });
   }
 
-  processTransactions(actions:DocumentChangeAction<firestore.DocumentData>[]) {
+  processTransactions(actions:DocumentChangeAction<firestore.firestore.DocumentData>[]) {
     const tmp = new Array();
       actions.map(a => {
         const data = <ITransaction>a.payload.doc.data();
@@ -83,7 +84,7 @@ export class DbService {
     this.transactions.next( tmp );
   }
 
-  processCategories(ref:DocumentChangeAction<firestore.DocumentData>[]) {
+  processCategories(ref:DocumentChangeAction<firestore.firestore.DocumentData>[]) {
     const tmp = new Array();
     if (ref.length === 0) { this.categories.next([]); }
     ref.forEach(a => {
@@ -176,8 +177,8 @@ export class DbService {
 
   async getQuerySnapshot(
     collection: collectionType, 
-    whereColumn: string, whereOp: firestore.WhereFilterOp, 
-    value: any): Promise<firestore.QuerySnapshot> {
+    whereColumn: string, whereOp: firestore.firestore.WhereFilterOp, 
+    value: any): Promise<firestore.firestore.QuerySnapshot> {
       var snap = await this.afs.collection(this.getCollectionPath(collection)).ref.where(whereColumn, whereOp, value).get();
       return snap;
   }

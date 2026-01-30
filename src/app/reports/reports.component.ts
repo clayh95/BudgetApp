@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Chart } from 'Chart.js'
+import { Chart } from 'chart.js'
 import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { ICategory, ITransaction } from '../core/dataTypes';

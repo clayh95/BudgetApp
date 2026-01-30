@@ -3,11 +3,12 @@ import { collectionType, IUser } from './dataTypes';
 import {Router} from '@angular/router';
 
 import { BehaviorSubject, Observable ,  of } from 'rxjs';
-import * as firebase from 'firebase/app';
-import { AngularFireAuth } from '../../../node_modules/angularfire2/auth';
-import { AngularFirestore, AngularFirestoreDocument } from '../../../node_modules/angularfire2/firestore';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/compat/firestore';
 import { DbService } from './db.service';
-import { map } from '../../../node_modules/rxjs/operators';
+import { map } from 'rxjs/operators';
 import { T } from '@angular/cdk/keycodes';
 
 @Injectable({
@@ -33,13 +34,13 @@ export class AuthService {
   }
 
   logOut() {
-    this.afAuth.auth.signOut().then(x => {
+    this.afAuth.signOut().then(x => {
       this.dbService.signOut();
     });
   }
 
   private oAuthLogin(provider: firebase.auth.AuthProvider) {
-    return this.afAuth.auth.signInWithPopup(provider)
+    return this.afAuth.signInWithPopup(provider)
       .then((credential) => {
         return this.checkUserState(credential.user);
       })

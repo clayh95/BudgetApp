@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef, HostListener, inject } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -25,10 +25,10 @@ export class CategoryModalComponent {
   @ViewChild("chipInput") chipInput: ElementRef;
 
   showPicker: boolean;
+  data = inject<ICategory>(MAT_DIALOG_DATA);
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ICategory,
               public dialog: MatDialog) {
                 this.origName = this.data.name;
                 history.pushState(null, null, location.href);
