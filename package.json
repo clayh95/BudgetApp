@@ -60,22 +60,15 @@
     "@angular/compiler-cli": "^21.1.1",
     "@angular/language-service": "^21.1.1",
     "@types/jasmine": "^3.3.12",
-    "@types/jasminewd2": "~2.0.3",
     "@types/lodash": "^4.14.126",
-    "@types/node": "^11.11.6",
-    "@types/puppeteer": "^1.12.3",
+    "@types/node": "^22.19.7",
     "jasmine-core": "^3.3.0",
-    "jasmine-spec-reporter": "^4.2.1",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "^2.0.0",
     "karma-coverage-istanbul-reporter": "~2.0.0",
     "karma-jasmine": "^2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0",
-    "protractor": "^7.0.0",
-    "rxjs-tslint": "^0.1.8",
-    "ts-node": "~5.0.1",
-    "typescript": "5.9.3",
-    "webpack": "^5.104.1"
+    "typescript": "5.9.3"
   }
 }
