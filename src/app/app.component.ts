@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ITransaction } from './core/dataTypes';
-import { AngularFirestore } from 'angularfire2/firestore';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
 import { DbService } from './core/db.service';
 import { AuthService } from './core/auth.service';

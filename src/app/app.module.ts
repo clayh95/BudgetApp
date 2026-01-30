@@ -29,8 +29,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClientModule } from '@angular/common/http';
 import { environment } from '../environments/environment';
-import { AngularFireModule } from 'angularfire2';
-import { AngularFirestore } from 'angularfire2/firestore';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { CsvImportComponent } from './csv-import/csv-import.component';
 import { CoreModule } from './core/core.module';
 import { TransactionTableComponent } from './transaction-table/transaction-table.component';
@@ -40,7 +40,7 @@ import { BasePageComponent } from './base-page/base-page.component';
 import { EditCategoriesComponent } from './edit-categories/edit-categories.component';
 import { CategoryTableComponent } from './category-table/category-table.component';
 import { MMYY_FORMAT } from './month-year-picker/month-year-picker.component';
-import { MomentDateModule } from '../../node_modules/@angular/material-moment-adapter';
+import { MomentDateModule } from '@angular/material-moment-adapter';
 import { MonthYearPickerComponent } from './month-year-picker/month-year-picker.component';
 import { CopyCategoriesComponent } from './copy-categories/copy-categories.component';
 import { AddTransactionComponent } from './add-transaction/add-transaction.component';
@@ -85,6 +85,7 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
     MatIconModule,
     MatListModule,
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
     CoreModule,
     MatTableModule,
     MatPaginatorModule,
@@ -111,7 +112,7 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
-    AngularFirestore,
+    // AngularFirestore is provided by AngularFirestoreModule
     {provide: MAT_DIALOG_DATA, useValue: {}}
   ],
   bootstrap: [AppComponent]
