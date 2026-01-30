@@ -16,6 +16,8 @@
 *.launch
 .settings/
 *.sublime-workspace
+*.cache
+.angular/cache
 
 # IDE - VSCode
 .vscode/*
