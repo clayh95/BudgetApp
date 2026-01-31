@@ -47,9 +47,9 @@
 
       <!-- description Column -->
       <ng-container matColumnDef="description">
-        <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
+        <th mat-header-cell class="description-header" *matHeaderCellDef mat-sort-header>Description</th>
         <td mat-cell (click)="editTransaction(row)" *matCellDef="let row">
-          <div class="description">
+          <div class="description-content">
             <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
             <span class="desktop-height">{{row.description}}</span>
           </div>
@@ -151,5 +151,4 @@
       <mat-icon>add</mat-icon>
   </button>
 </div>
-
 

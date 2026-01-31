@@ -33,7 +33,7 @@
         }
     }
 
-    .description {
+    .description-content {
         // width:45%;
         min-height: 48px;
         display: flex;
@@ -213,7 +213,7 @@
             align-items: flex-start;
             padding: 10px;
             width:93%;
-            .description {
+            .description-content {
               min-height: auto;
               overflow: hidden;
               display: -webkit-box;
