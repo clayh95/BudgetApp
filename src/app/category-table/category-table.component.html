@@ -63,18 +63,18 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Keywords</th>
               <td mat-cell class="keyword-chip-list" *matCellDef="let row">
                   <mat-form-field>
-                    <mat-chip-list #chipList>
-                      <mat-chip *ngFor="let keyword of row.keywords" [selectable]="selectable"
+                    <mat-chip-grid #chipList>
+                      <mat-chip-row *ngFor="let keyword of row.keywords" [selectable]="selectable"
                               [removable]="removable" (removed)="removeKeyword(keyword, row.id)">
                         {{keyword}}
                         <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-                      </mat-chip>
+                      </mat-chip-row>
                       <input placeholder="Keywords"
                             [matChipInputFor]="chipList"
                             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                             [matChipInputAddOnBlur]="addOnBlur"
                             (matChipInputTokenEnd)="addKeyword($event, row.id)">
-                    </mat-chip-list>
+                    </mat-chip-grid>
                   </mat-form-field>
         
                 </td>

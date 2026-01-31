@@ -38,7 +38,7 @@
       <input matInput placeholder="Budgeted" [(ngModel)]="data.budgeted" />
     </mat-form-field>
     <mat-form-field class="categoryModalChips">
-      <mat-chip-list #chipList>
+      <mat-chip-grid #chipList>
         <mat-chip *ngFor="let keyword of data.keywords" [selectable]="selectable"
                 [removable]="removable" (removed)="removeKeyword(keyword)">
           {{keyword}}
@@ -49,7 +49,7 @@
               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
               [matChipInputAddOnBlur]="addOnBlur"
               (matChipInputTokenEnd)="addKeyword($event)" />
-      </mat-chip-list>
+      </mat-chip-grid>
   </mat-form-field>
   </div>
 </mat-dialog-content>
