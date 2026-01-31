@@ -6,9 +6,14 @@ import { Router, NavigationEnd } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { DbService } from '../core/db.service';
 import { saveState } from '../core/dataTypes';
+import { SharedModule } from '../shared/shared.module';
+import { MonthYearPickerComponent } from '../month-year-picker/month-year-picker.component';
+import { UserLoginComponent } from '../user-login/user-login.component';
 
 @Component({
   selector: 'app-main-nav',
+  standalone: true,
+  imports: [SharedModule, MonthYearPickerComponent, UserLoginComponent],
   templateUrl: './main-nav.component.html',
   styleUrls: ['./main-nav.component.scss']
 })

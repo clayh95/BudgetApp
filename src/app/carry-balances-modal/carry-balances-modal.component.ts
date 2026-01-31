@@ -5,9 +5,12 @@ const moment = _rollupMoment
 import { collectionType, ITransaction } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
 import { getPosNegColor } from '../core/utilities';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-carry-balances-modal',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './carry-balances-modal.component.html',
   styleUrls: ['./carry-balances-modal.component.scss']
 })
@@ -35,4 +38,3 @@ export class CarryBalancesModalComponent {
   }
 
 }
-

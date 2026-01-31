@@ -6,6 +6,7 @@ import {MatDatepicker} from '@angular/material/datepicker';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { FormControl } from '@angular/forms';
+import { SharedModule } from '../shared/shared.module';
 
 export const MMYY_FORMAT = {
   parse: {
@@ -22,6 +23,8 @@ export const MMYY_FORMAT = {
 
 @Component({
   selector: 'app-month-year-picker',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './month-year-picker.component.html',
   styleUrls: ['./month-year-picker.component.scss'],
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMYY_FORMAT}]

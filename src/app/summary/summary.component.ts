@@ -10,9 +10,12 @@ import { CategoryModalComponent } from '../category-modal/category-modal.compone
 import { getIcon, getPosNegColor } from '../core/utilities';
 import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
 const moment = _rollupMoment
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-summary',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss']
 })

@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../core/auth.service';
+import { SharedModule } from '../shared/shared.module';
 
 
 @Component({
   selector: 'app-login-page',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './app-login-page.component.html',
   styleUrls: ['./app-login-page.component.scss']
 })

@@ -9,14 +9,17 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
+import { SharedModule } from '../shared/shared.module';
 
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/compat/app';
+import firestore from 'firebase/compat/app';
 import { collectionType, ICategory } from '../core/dataTypes';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
-import { firestore } from 'firebase-admin';
 
 @Component({
   selector: 'app-category-table',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './category-table.component.html',
   styleUrls: ['./category-table.component.scss']
 })
@@ -109,7 +112,7 @@ export class CategoryTableComponent implements AfterViewInit {
       this.CATsvc.updateDocument(
         id, 
         collectionType.categories, 
-        {keywords: firestore.FieldValue.arrayUnion(value.trim())}
+        {keywords: firestore.firestore.FieldValue.arrayUnion(value.trim())}
       );
     }
     if (input) {
@@ -121,7 +124,7 @@ export class CategoryTableComponent implements AfterViewInit {
     this.CATsvc.updateDocument(
       id, 
       collectionType.categories, 
-      {keywords: firestore.FieldValue.arrayRemove(kw.trim())}
+      {keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())}
     );
   }
 

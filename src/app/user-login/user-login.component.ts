@@ -5,9 +5,12 @@ import { map } from '../../../node_modules/rxjs/operators';
 import { DomSanitizer } from '@angular/platform-browser'
 import { DbService } from '../core/db.service';
 import firebase from 'firebase/compat/app';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-user-login',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './user-login.component.html',
   styleUrls: ['./user-login.component.scss']
 })

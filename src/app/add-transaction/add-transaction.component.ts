@@ -7,6 +7,7 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { deleteEnterLeave } from '../animations/template.animations';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { SharedModule } from '../shared/shared.module';
 
 export const MMDDYYYY_FORMAT = {
   parse: {
@@ -29,6 +30,8 @@ export interface addEditTrans {
 
 @Component({
   selector: 'app-add-transaction',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './add-transaction.component.html',
   styleUrls: ['./add-transaction.component.scss'],
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}],

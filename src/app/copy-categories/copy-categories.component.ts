@@ -8,9 +8,12 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { FormControl } from '@angular/forms';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-copy-categories',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './copy-categories.component.html',
   styleUrls: ['./copy-categories.component.scss'],
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMYY_FORMAT}]

@@ -5,9 +5,12 @@ import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angu
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-category-modal',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './category-modal.component.html',
   styleUrls: ['./category-modal.component.scss']
 })

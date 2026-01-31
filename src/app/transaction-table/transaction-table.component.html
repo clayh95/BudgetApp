@@ -48,9 +48,11 @@
       <!-- description Column -->
       <ng-container matColumnDef="description">
         <th mat-header-cell class="description" *matHeaderCellDef mat-sort-header>Description</th>
-        <td mat-cell class="description" (click)="editTransaction(row)" *matCellDef="let row">
-          <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
-          <span class="desktop-height">{{row.description}}</span>
+        <td mat-cell (click)="editTransaction(row)" *matCellDef="let row">
+          <div class="description">
+            <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
+            <span class="desktop-height">{{row.description}}</span>
+          </div>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>

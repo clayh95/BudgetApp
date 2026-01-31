@@ -1,9 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ConfirmModalConfig, ConfirmModalButtons } from '../core/dataTypes';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-confirm-modal',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './confirm-modal.component.html',
   styleUrls: ['./confirm-modal.component.scss']
 })

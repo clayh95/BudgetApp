@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { ITransaction } from './core/dataTypes';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Observable } from 'rxjs';
-import { DbService } from './core/db.service';
 import { AuthService } from './core/auth.service';
+import { AppLoginPageComponent } from './app-login-page/app-login-page.component';
+import { MainNavComponent } from './main-nav/main-nav.component';
+import { SharedModule } from './shared/shared.module';
+import { DbService } from './core/db.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [SharedModule, AppLoginPageComponent, MainNavComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
@@ -20,5 +22,3 @@ export class AppComponent implements OnInit {
   }
 
   }
-
-

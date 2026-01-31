@@ -5,6 +5,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { ICategory, ITransaction } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
+import { SharedModule } from '../shared/shared.module';
 
 
 export enum colors {
@@ -32,6 +33,8 @@ export enum colors {
 
 @Component({
   selector: 'app-reports',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss']
 })

@@ -5,10 +5,13 @@ import { DbService } from '../core/db.service';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
 import {default as _rollupMoment, Moment} from 'moment';
 import { BehaviorSubject } from 'rxjs';
+import { SharedModule } from '../shared/shared.module';
 const moment = _rollupMoment;
 
 @Component({
   selector: 'app-csv-import',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './csv-import.component.html',
   styleUrls: ['./csv-import.component.scss']
 })
