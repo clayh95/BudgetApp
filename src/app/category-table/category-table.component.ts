@@ -11,8 +11,7 @@ import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
 import { SharedModule } from '../shared/shared.module';
 
-import firebase from 'firebase/compat/app';
-import firestore from 'firebase/compat/app';
+import { arrayRemove, arrayUnion } from 'firebase/firestore';
 import { collectionType, ICategory } from '../core/dataTypes';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
 
@@ -112,7 +111,7 @@ export class CategoryTableComponent implements AfterViewInit {
       this.CATsvc.updateDocument(
         id, 
         collectionType.categories, 
-        {keywords: firestore.firestore.FieldValue.arrayUnion(value.trim())}
+        {keywords: arrayUnion(value.trim())}
       );
     }
     if (input) {
@@ -124,7 +123,7 @@ export class CategoryTableComponent implements AfterViewInit {
     this.CATsvc.updateDocument(
       id, 
       collectionType.categories, 
-      {keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())}
+      {keywords: arrayRemove(kw.trim())}
     );
   }
 

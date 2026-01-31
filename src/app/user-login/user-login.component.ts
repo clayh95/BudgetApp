@@ -4,7 +4,7 @@ import { map } from '../../../node_modules/rxjs/operators';
 // import { bypassSanitizationTrustStyle } from '../../../node_modules/@angular/core/src/sanitization/bypass';
 import { DomSanitizer } from '@angular/platform-browser'
 import { DbService } from '../core/db.service';
-import firebase from 'firebase/compat/app';
+import { User } from 'firebase/auth';
 import { SharedModule } from '../shared/shared.module';
 
 @Component({
@@ -17,7 +17,7 @@ import { SharedModule } from '../shared/shared.module';
 export class UserLoginComponent implements OnInit {
 
   constructor(public authService: AuthService, private sanitized: DomSanitizer, private db: DbService) {}
-  user:firebase.User;
+  user: User | null;
   image;
   balances;
   nonZeroBalance:boolean = false;
