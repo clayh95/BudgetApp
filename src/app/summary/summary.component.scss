@@ -72,7 +72,7 @@
 .expansion-panel-round-ends,
 .expansion-panel-round-all {
     .mat-expansion-panel-header-title {
-        font-size: 16px;
+        font-size: 15px;
         line-height: 20px;
     }
 
@@ -101,17 +101,18 @@
     .split-icon {
         transform: rotate(90deg);
     }
-    ::ng-deep .mat-list-text {
-        border-left: 2px solid #7b6ef6;
+    ::ng-deep .mdc-list-item__content {
+        border-left: 2px solid #7b6ef6 !important;
         padding-left: 12px !important;
-        cursor: pointer;
-        transition: 0.3s;
+        cursor: pointer !important;
+        transition: 0.3s !important;
     }
 
     p[matLine] {
         margin: 0 0 6px 0;
-        font-size: 14px;
-        line-height: 20px;
+        font-size: 12px;
+        line-height: 15px;
+        letter-spacing: 0px;
     }
 
     p[matLine]:nth-of-type(2) {
