@@ -14,6 +14,7 @@ import { SharedModule } from '../shared/shared.module';
 import { arrayRemove, arrayUnion } from 'firebase/firestore';
 import { collectionType, ICategory } from '../core/dataTypes';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
+import { parseMoney } from '../core/utilities';
 
 @Component({
   selector: 'app-category-table',
@@ -65,7 +66,7 @@ export class CategoryTableComponent implements AfterViewInit {
   }
 
   addCategory() {
-    let c = <ICategory>{name: "", keywords: [], budgeted: null}
+    let c = <ICategory>{name: "", keywords: [], budgeted: 0}
     const catDialogRef = this.dialog.open(
       CategoryModalComponent, 
       {
@@ -95,7 +96,16 @@ export class CategoryTableComponent implements AfterViewInit {
     let t = <ICategory>this.CATsvc.categories.getValue().filter(t => t.id === id)[0];
     if (newValue === t[columnName]) { return; }
     let update = {};
+    if (columnName.toLowerCase() === 'budgeted') {
+      const parsed = parseMoney(newValue);
+      if (parsed === null) {
+        window.alert('Please enter a valid budgeted amount.');
+        return;
+      }
+      update[columnName] = parsed;
+    } else {
     update[columnName] = newValue;
+    }
     await this.CATsvc.updateDocument(id, collectionType.categories, update);
     if (columnName.toLowerCase() == 'name') {
       // feels a bit hacky...

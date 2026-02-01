@@ -29,7 +29,7 @@
         </mat-form-field>
       </span>
       <mat-form-field class="addTransactionFieldShort">
-        <input matInput placeholder="Amount" (blur)="updateTotal(i)" [(ngModel)]="t.amount"/>
+        <input matInput type="number" step="0.01" placeholder="Amount" (blur)="updateTotal(i)" [(ngModel)]="t.amount"/>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
         <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>

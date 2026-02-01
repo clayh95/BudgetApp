@@ -34,3 +34,17 @@ export function getPosNegColor(val1:number, val2:number) {
     return 'green'
   }
 }
+
+export function parseMoney(value: unknown): number | null {
+  if (value === null || value === undefined) { return null; }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^0-9.-]/g, '');
+    if (cleaned.trim() === '') { return null; }
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}

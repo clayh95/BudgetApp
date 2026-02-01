@@ -6,6 +6,7 @@ import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ICategory } fr
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SharedModule } from '../shared/shared.module';
+import { parseMoney } from '../core/utilities';
 
 @Component({
   selector: 'app-category-modal',
@@ -38,22 +39,32 @@ export class CategoryModalComponent {
                }
 
   add() {
+    const budgeted = parseMoney(this.data.budgeted);
+    if (budgeted === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
     let doc = {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords, 
-      budgeted: this.data.budgeted
+      budgeted: budgeted
     }
     this.CATsvc.addDocument(doc, collectionType.categories);
     this.dialogRef.close();
   }
 
   async update() {
+    const budgeted = parseMoney(this.data.budgeted);
+    if (budgeted === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
     let doc = {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords ?? [], 
-      budgeted: this.data.budgeted,
+      budgeted: budgeted,
       emoji: this.data.emoji ?? ''
     }
     await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
@@ -68,7 +79,7 @@ export class CategoryModalComponent {
     const y:number = rect.top;
     let controlConfig: ConfirmModalConfig = {
       title: "Delete Category?",
-      matIconName: "arrow_left",
+      matIconName: "chevron_left",
       message: "Delete this category?", 
       buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
     };

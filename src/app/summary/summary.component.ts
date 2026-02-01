@@ -229,7 +229,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
       let dPlus = new Date(d.getFullYear(), d.getMonth() + 1, 1)
       let t = <ITransaction>{
           description: `${c.category.name} Starting Balance`, 
-          amount: (c.category.budgeted-c.category.spent).toFixed(2), 
+          amount: +(c.category.budgeted-c.category.spent).toFixed(2), 
           category: c.category.name, 
           date: moment(dPlus).format('MM/DD/YYYY'),
           notes: "",

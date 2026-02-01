@@ -19,6 +19,7 @@ import {
   where
 } from 'firebase/firestore';
 import { ITransaction, ICategory, IDocumentAction, documentActionType, editorActionType, collectionType, saveState } from './dataTypes';
+import { parseMoney } from './utilities';
 import { BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
 import {default as _rollupMoment} from 'moment';
 const moment = _rollupMoment;
@@ -99,6 +100,8 @@ export class DbService {
     const tmp = new Array();
     snapshot.docs.map(docSnap => {
         const data = <ITransaction>docSnap.data();
+        const parsedAmount = parseMoney((data as any).amount);
+        (data as any).amount = parsedAmount !== null ? parsedAmount : 0;
         const id = docSnap.id;
         tmp.push({ id, ...data });
     });
@@ -110,6 +113,8 @@ export class DbService {
     if (snapshot.empty) { this.categories.next([]); }
     snapshot.docs.forEach(docSnap => {
       const data = docSnap.data();
+      const parsedBudgeted = parseMoney((data as any).budgeted);
+      (data as any).budgeted = parsedBudgeted !== null ? parsedBudgeted : 0;
       const id = docSnap.id;
       tmp.push({ id, ...data });
     });
@@ -145,6 +150,7 @@ export class DbService {
   async updateDocument(id: string, collection: collectionType, data: DocumentData, monthPK?:string) {
     delete data['id']; // shouldn't ever need ID in document data
     delete data['changeAction']; // shouldn't ever need changeAction in document data
+    this.normalizeMoneyFields(collection, data);
     let documentAction: IDocumentAction = {
       id: id,
       collectionPath: this.getCollectionPath(collection, monthPK),
@@ -176,6 +182,7 @@ export class DbService {
   async addDocument(data: DocumentData, collection: collectionType, monthPK?:string) {
     delete data['id']; // No id should be present on a true add (we could have one from an undo or redo but that will be handled properly)
     delete data['changeAction']; // shouldn't ever need changeAction in document data
+    this.normalizeMoneyFields(collection, data);
     let documentAction: IDocumentAction = {
       id: "",
       collectionPath: this.getCollectionPath(collection, monthPK),
@@ -326,6 +333,21 @@ export class DbService {
       return `${collectionType.monthsPK}/${monthPK ?? this.getMonthPKValue()}/${collection}`
     } else {
       return collection;
+    }
+  }
+
+  private normalizeMoneyFields(collection: collectionType, data: DocumentData) {
+    if (collection === collectionType.transactions && data?.amount !== undefined) {
+      const parsed = parseMoney(data.amount);
+      if (parsed !== null) {
+        data.amount = parsed;
+      }
+    }
+    if (collection === collectionType.categories && data?.budgeted !== undefined) {
+      const parsed = parseMoney(data.budgeted);
+      if (parsed !== null) {
+        data.budgeted = parsed;
+      }
     }
   }
 

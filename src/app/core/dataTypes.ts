@@ -4,7 +4,7 @@ import firestore from 'firebase/compat/app';
 export interface ITransaction {
     id: string;
     date: string;
-    amount: string;
+    amount: number;
     description: string;
     category: string;
     notes?: string;
@@ -84,4 +84,3 @@ export enum ConfirmModalButtons {
     no,
     cancel
 }
-

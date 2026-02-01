@@ -57,7 +57,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   addTransaction() {
-    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:ITransactionStatus.posted}
+    let t = <ITransaction>{date:"", description:"", amount: 0, category:"", notes: "", status:ITransactionStatus.posted}
     const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
   }
 

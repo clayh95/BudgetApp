@@ -35,7 +35,7 @@
       <input matInput placeholder="Notes" [(ngModel)]="data.notes"/>
     </mat-form-field>
     <mat-form-field class="categoryModalField">
-      <input matInput placeholder="Budgeted" [(ngModel)]="data.budgeted" />
+      <input matInput type="number" step="0.01" placeholder="Budgeted" [(ngModel)]="data.budgeted" />
     </mat-form-field>
     <mat-form-field class="categoryModalChips">
       <mat-chip-grid #chipList>

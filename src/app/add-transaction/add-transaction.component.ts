@@ -7,6 +7,7 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { deleteEnterLeave } from '../animations/template.animations';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 
 export const MMDDYYYY_FORMAT = {
@@ -58,6 +59,7 @@ export class AddTransactionComponent {
               }
 
   add() {
+    if (!this.normalizeAndValidateAmounts()) { return; }
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY')
       if (this.movingMonthsCheck(this.tmpDate[index])) {
@@ -73,6 +75,7 @@ export class AddTransactionComponent {
   }
 
   checkDeletesThenUpdate() {
+    if (!this.normalizeAndValidateAmounts()) { return; }
     if (this.pendingDeletes.length > 0) {
       let list = this.pendingDeletes.map(t => `${t.description} - ${t.amount}`).join('\n');
       
@@ -178,7 +181,7 @@ export class AddTransactionComponent {
       id: `${tmpId}${this.data.length}`,
       date:this.data[0].date, 
       description:this.data[0].description, 
-      amount:"0.00", 
+      amount: 0, 
       category:"", 
       notes: "", 
       status: this.data[0].status,
@@ -191,12 +194,17 @@ export class AddTransactionComponent {
   updateTotal(idx:number) {
     if (this.data.length > 1) {
       if (idx !== null) {
+        const currentParsed = parseMoney(this.data[idx].amount);
+        if (currentParsed === null) { return; }
+        this.data[idx].amount = currentParsed;
+      }
+      if (idx !== null) {
         const newIdx:number = (idx + 1) % this.data.length;
         let tmp = new Array<ITransaction>();
         tmp.push(...this.data);
         tmp.splice(newIdx, 1);
         let remainingTAmount = tmp.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
-        this.data[newIdx].amount = (this.origTotal - remainingTAmount).toFixed(2);
+        this.data[newIdx].amount = +(this.origTotal - remainingTAmount).toFixed(2);
       }
       this.newTotal = parseFloat(this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
     }
@@ -206,7 +214,7 @@ export class AddTransactionComponent {
     this.data.splice(idx, 1);
     this.pendingDeletes.push(t);
     if (this.data.length == 0) return;
-    this.data[0].amount = (+this.data[0].amount + +t.amount).toFixed(2);
+    this.data[0].amount = +(this.data[0].amount + t.amount).toFixed(2);
     if (this.data.length == 1) {
       this.data[0].xId = null;
       this.data[0].xIndex = null;
@@ -283,6 +291,18 @@ export class AddTransactionComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  private normalizeAndValidateAmounts(): boolean {
+    for (const tr of this.data) {
+      const parsed = parseMoney(tr.amount);
+      if (parsed === null) {
+        window.alert('Please enter a valid amount for all transactions.');
+        return false;
+      }
+      tr.amount = parsed;
+    }
+    return true;
   }
 
 }

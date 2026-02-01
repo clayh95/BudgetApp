@@ -1,11 +1,11 @@
 import { Component, ViewChild, ElementRef  } from '@angular/core';
 import { collectionType, ITransaction, ITransactionStatus } from '../core/dataTypes';
-import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
 import {default as _rollupMoment, Moment} from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { SharedModule } from '../shared/shared.module';
+import { parseMoney } from '../core/utilities';
 const moment = _rollupMoment;
 
 @Component({
@@ -59,7 +59,9 @@ export class CsvImportComponent {
         let objs = line.split(',');
         if (objs.length > 1) {
           let t = this.ConvertCSVToTransaction(objs);
-          this.checkTransaction(t)
+          if (t) {
+            this.checkTransaction(t)
+          }
           }
       });
     }
@@ -90,10 +92,14 @@ export class CsvImportComponent {
   //Break if value returned
   //Might should put this in the service
 
-  ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
+  ConvertCSVToTransaction(stringTransaction: string[]): ITransaction | null {
+    const parsedAmount = parseMoney(stringTransaction[1]);
+    if (parsedAmount === null) {
+      return null;
+    }
     let t = {
         "date" : stringTransaction[0],
-        "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD').replace(/,/g,""),
+        "amount" : parsedAmount,
         "description" : stringTransaction[4],
         "category" : this.SetCategoryFromKeywords(stringTransaction[4]),
         "notes" : "",
