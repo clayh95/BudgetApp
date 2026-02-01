@@ -1,6 +1,8 @@
 .custom-dialog-confirm {
-    transform: translateX(-15px);
-    width: 110%;
+    transform: none;
+    width: 100%;
+    padding: 0 8px;
+    box-sizing: border-box;
 }
 
 .actions {
@@ -8,7 +10,7 @@
     justify-content: flex-end;
     padding-bottom: 5px;
     button {
-        transform: scale(.8);
+        transform: scale(.85);
     }
 }
 
@@ -25,6 +27,11 @@
         text-align: center;
     }
     .indicator-icon {
-        width: 10%;
+        width: auto;
+        margin-right: 6px;
     }
+}
+
+::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+    border-radius: 25px;
 }

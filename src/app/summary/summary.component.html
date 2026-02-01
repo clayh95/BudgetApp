@@ -161,12 +161,20 @@
                   <mat-divider></mat-divider>
                   <div style="margin-top:10px" class="footer-title-line">
                     <div class="title"><b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted</div>
-                    <button 
-                      mat-button
-                      class="edit-button"
-                      (click)="editCategory($event, item.category);">
-                      Edit Category
-                    </button>
+                    <div class="footer-actions">
+                      <button 
+                        mat-button
+                        class="balance-button"
+                        (click)="balanceFromUnbudgeted($event, item);">
+                        Balance from Unbudgeted
+                      </button>
+                      <button 
+                        mat-button
+                        class="edit-button"
+                        (click)="editCategory($event, item.category);">
+                        Edit Category
+                      </button>
+                    </div>
                   </div>
                   <div *ngIf="item.category.notes && item.category.notes.length > 0" class="category-info">
                     <p class="category-notes">{{item.category.notes}}</p>

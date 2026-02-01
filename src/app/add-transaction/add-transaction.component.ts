@@ -82,7 +82,7 @@ export class AddTransactionComponent {
       const y:number = rect.top;
       let controlConfig: ConfirmModalConfig = {
         title: "Delete Transactions?",
-        matIconName: "arrow_left",
+        matIconName: "chevron_left",
         message: `Delete transaction(s)?`, 
         buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
       };
@@ -151,7 +151,7 @@ export class AddTransactionComponent {
     const y:number = rect.top;
     let controlConfig: ConfirmModalConfig = {
       title: "Delete Transaction?",
-      matIconName: "arrow_left",
+      matIconName: "chevron_left",
       message: `Move this transaction from 
                 ${moment(this.ATsvc.getMonthYearValue().substring(0,2), 'M').format('MMMM')}
                 to ${checkDate.format('MMMM')}?`, 

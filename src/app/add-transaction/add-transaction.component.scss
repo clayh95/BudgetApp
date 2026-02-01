@@ -74,6 +74,17 @@ button {
     display: flex;
     flex-direction: row;
     transform-origin: left;
+    .mat-mdc-form-field {
+        --mat-form-field-container-height: 44px;
+        --mat-form-field-container-vertical-padding: 10px;
+        font-size: 14px;
+    }
+    .mat-mdc-input-element,
+    .mat-mdc-select-value,
+    .mat-mdc-form-field-infix {
+        font-size: 14px;
+        line-height: 20px;
+    }
     textarea {
         resize: none;
         height: 18px;

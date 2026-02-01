@@ -3,6 +3,10 @@
         padding:8px;
         border-bottom: none;
     } 
+    .mat-mdc-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
     ::ng-deep td.mat-cell:first-child, td.mat-footer-cell:first-child, th.mat-header-cell:first-child {
         padding:8px;
     }

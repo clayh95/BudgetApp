@@ -3,12 +3,14 @@ import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
 import { getIcon, getPosNegColor } from '../core/utilities';
 import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ConfirmModalButtons, ConfirmModalConfig } from '../core/dataTypes';
 const moment = _rollupMoment
 import { SharedModule } from '../shared/shared.module';
 
@@ -174,6 +176,39 @@ export class SummaryComponent implements OnInit, OnDestroy {
     const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'500px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
   }
 
+  balanceFromUnbudgeted(event, item: IReportCategory) {
+    event.stopPropagation();
+    if (!item?.category?.id) { return; }
+    const available = this.getUnbudgetedAmount();
+    const needed = +(item.category.spent - item.category.budgeted).toFixed(2);
+    if (available <= 0 || needed <= 0 || available < needed) { return; }
+
+    const message = `Balance this category with ${formatCurrency(needed, getLocaleId('en-US'), '', 'USD')} from unbudgeted?`;
+    const controlConfig: ConfirmModalConfig = {
+      title: 'Balance from Unbudgeted',
+      message,
+      buttons: [ConfirmModalButtons.yes, ConfirmModalButtons.no],
+      matIconName: 'chevron_left'
+    };
+    const target = event?.currentTarget as HTMLElement | null;
+    const rect = target?.getBoundingClientRect();
+    const dialogConfig: MatDialogConfig = {
+      data: controlConfig,
+      width: '400px',
+      autoFocus: false,
+      disableClose: true,
+      position: rect
+        ? { left: `${rect.right}px`, top: `${rect.top}px` }
+        : undefined
+    };
+    const dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) { return; }
+      const newBudgeted = +(Number(item.category.budgeted) + needed).toFixed(2);
+      this.service.updateDocument(item.category.id, collectionType.categories, { budgeted: newBudgeted });
+    });
+  }
+
   updateSummaryNotes(value:string) {
     this.service.updateDocument(this.service.getMonthPKValue(), collectionType.monthsPK, {'summary': value});
   }
@@ -210,6 +245,11 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   getPercentage(budgeted:number):number {
     return (budgeted / this.totalBudgeted);
+  }
+
+  getUnbudgetedAmount(): number {
+    if (this.actualIncome === undefined || this.totalBudgeted === undefined) { return 0; }
+    return +(this.actualIncome - this.totalBudgeted).toFixed(2);
   }
   
   ngOnDestroy() {
