@@ -251,6 +251,13 @@ export class SummaryComponent implements OnInit, OnDestroy {
     if (this.actualIncome === undefined || this.totalBudgeted === undefined) { return 0; }
     return +(this.actualIncome - this.totalBudgeted).toFixed(2);
   }
+
+  canBalanceCategory(item: IReportCategory): boolean {
+    if (!item?.category?.id) { return false; }
+    const available = this.getUnbudgetedAmount();
+    const needed = +(item.category.spent - item.category.budgeted).toFixed(2);
+    return !(available <= 0 || needed <= 0 || available < needed);
+  }
   
   ngOnDestroy() {
     this.catsTrans.unsubscribe();

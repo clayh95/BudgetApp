@@ -140,6 +140,27 @@
                   {{item.category.budgeted - item.category.spent | currency}}</p>
               </mat-panel-description>
             </mat-expansion-panel-header>
+            <div class="category-meta" *ngIf="item.category.name !== 'Uncategorized'">
+              <div class="meta-line">
+                <div class="title">
+                  <b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted
+                </div>
+                <div class="meta-actions">
+                  <button mat-icon-button matTooltip="Balance from unbudgeted"
+                    [disabled]="!canBalanceCategory(item)"
+                    (click)="balanceFromUnbudgeted($event, item);">
+                    <mat-icon>balance</mat-icon>
+                  </button>
+                  <button mat-icon-button matTooltip="Edit category" (click)="editCategory($event, item.category);">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="item.category.notes && item.category.notes.length > 0" class="category-info">
+                <p class="category-notes">{{item.category.notes}}</p>
+              </div>
+              <mat-divider></mat-divider>
+            </div>
             <mat-list dense>
               <mat-list-item class="transaction-list-item" *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
                 <p matLine>
@@ -157,29 +178,6 @@
                 <p matLine>{{trans.description}} &nbsp;</p>
                 <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
               </mat-list-item>
-                <div style="margin-top:10px" class="category-footer" *ngIf="item.category.name !== 'Uncategorized'">
-                  <mat-divider></mat-divider>
-                  <div style="margin-top:10px" class="footer-title-line">
-                    <div class="title"><b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted</div>
-                    <div class="footer-actions">
-                      <button 
-                        mat-button
-                        class="balance-button"
-                        (click)="balanceFromUnbudgeted($event, item);">
-                        Balance from Unbudgeted
-                      </button>
-                      <button 
-                        mat-button
-                        class="edit-button"
-                        (click)="editCategory($event, item.category);">
-                        Edit Category
-                      </button>
-                    </div>
-                  </div>
-                  <div *ngIf="item.category.notes && item.category.notes.length > 0" class="category-info">
-                    <p class="category-notes">{{item.category.notes}}</p>
-                  </div>
-                </div>
             </mat-list>
           </mat-expansion-panel>
         </mat-accordion>
