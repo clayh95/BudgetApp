@@ -1,11 +1,69 @@
 .sidenav {
   width: 70px;
+  .mat-nav-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   .mat-nav-list a.active {
-    background-color: #3b8d5f;
+    background-color: #3b8d5f !important;
     color: white;
+    mat-icon {
+      color: white !important;
+    }
   }
   .mat-nav-list a {
     color: black;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  ::ng-deep .mat-mdc-list-item {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
+  }
+  ::ng-deep .mat-mdc-list-item .mdc-list-item__content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  ::ng-deep .mat-mdc-list-item .mat-mdc-icon-button {
+    transform: translateX(2px);
+  }
+  .mat-nav-list a:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Remove circular icon-button hover state; keep list-item rectangle */
+  ::ng-deep .mat-mdc-icon-button .mat-mdc-button-persistent-ripple,
+  ::ng-deep .mat-mdc-icon-button .mat-mdc-button-ripple,
+  ::ng-deep .mat-mdc-icon-button .mdc-icon-button__ripple {
+    display: none !important;
+  }
+  ::ng-deep .mat-mdc-icon-button .mat-mdc-button-persistent-ripple::before,
+  ::ng-deep .mat-mdc-icon-button .mat-mdc-button-persistent-ripple::after,
+  ::ng-deep .mat-mdc-icon-button .mdc-icon-button__ripple::before,
+  ::ng-deep .mat-mdc-icon-button .mdc-icon-button__ripple::after {
+    background-color: transparent !important;
+    opacity: 0 !important;
+  }
+
+  /* Ensure the list item itself owns the hover/active rectangle */
+  ::ng-deep .mat-mdc-list-item.active {
+    background-color: #3b8d5f !important;
+    border-radius: 0 !important;
+  }
+  ::ng-deep .mat-mdc-list-item.active mat-icon {
+    color: white !important;
+  }
+  ::ng-deep .mat-mdc-list-item:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    border-radius: 0 !important;
+  }
+  ::ng-deep .mat-mdc-list-item.active:hover {
+    background-color: #3b8d5f !important;
   }
 }
 
