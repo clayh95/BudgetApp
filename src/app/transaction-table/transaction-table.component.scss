@@ -201,6 +201,9 @@
 
 
 @media(max-width: 1000px) {
+    .transactionTable{
+        letter-spacing: 0px;
+    }
 
     .tableTitle {
         display: none;
@@ -208,17 +211,23 @@
 
     .transactionTable{
 
-        .mat-header-row {
+        .mat-header-row,
+        .mat-mdc-header-row {
             display: none;
           }
         
-          tr { 
+          tr,
+          .mat-row,
+          .mat-mdc-row,
+          .mdc-data-table__row { 
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             padding: 10px;
             width:93%;
+            height: unset;
             .description-content {
+              letter-spacing: 0px;
               min-height: auto;
               overflow: hidden;
               display: -webkit-box;
@@ -228,12 +237,19 @@
             }
           }
       
-          .mat-cell {
+          .mat-cell,
+          .mat-mdc-cell {
               width: 100% !important;
               padding: 0px;
+              border-bottom: none;
           }
       
           .mat-form-field {
+              width: 100%;
+          }
+
+          .category mat-form-field,
+          .category .mat-mdc-form-field {
               width: 100%;
           }
       
