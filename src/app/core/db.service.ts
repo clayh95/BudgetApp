@@ -1,18 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Firestore } from '@angular/fire/firestore';
+import { Firestore, collectionData, docData } from '@angular/fire/firestore';
 import {
   CollectionReference,
   DocumentData,
   DocumentReference,
   QuerySnapshot,
-  Unsubscribe,
   WhereFilterOp,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
-  onSnapshot,
   query,
   setDoc,
   updateDoc,
@@ -40,9 +38,9 @@ export class DbService {
   private additionalDataCollection: CollectionReference<DocumentData>;
   
   private monthYearSub: Subscription;
-  private tranSub: Unsubscribe;
-  private catSub: Unsubscribe;
-  private monthSummarySub: Unsubscribe;
+  private tranSub: Subscription;
+  private catSub: Subscription;
+  private monthSummarySub: Subscription;
 
   monthYear: BehaviorSubject<string>;
   transactions = new BehaviorSubject<ITransaction[]>([]);
@@ -81,45 +79,40 @@ export class DbService {
         getDoc(monthDocRef).then(snap => {
           this.monthSummary.next(snap.data()?.['summary']);
         });
-        if (this.monthSummarySub) { this.monthSummarySub(); }
-        this.monthSummarySub = onSnapshot(monthDocRef, snap => {
-          this.monthSummary.next(snap.data()?.['summary']);
+        if (this.monthSummarySub) { this.monthSummarySub.unsubscribe(); }
+        this.monthSummarySub = docData(monthDocRef).subscribe(snap => {
+          this.monthSummary.next((snap as any)?.['summary']);
         });
 
         this.categoriesCollection = this.collection(this.getCollectionPath(collectionType.categories));
-        if (this.catSub) { this.catSub(); }
-        this.catSub = onSnapshot(this.categoriesCollection, snap => this.processCategories(snap));
+        if (this.catSub) { this.catSub.unsubscribe(); }
+        this.catSub = collectionData(this.categoriesCollection, { idField: 'id' })
+          .subscribe(data => this.processCategories(data as DocumentData[]));
 
         this.transactionCollection = this.collection(this.getCollectionPath(collectionType.transactions));
-        if (this.tranSub) { this.tranSub(); }
-        this.tranSub = onSnapshot(this.transactionCollection, snap => this.processTransactions(snap));
+        if (this.tranSub) { this.tranSub.unsubscribe(); }
+        this.tranSub = collectionData(this.transactionCollection, { idField: 'id' })
+          .subscribe(data => this.processTransactions(data as DocumentData[]));
     });
   }
 
-  processTransactions(snapshot: QuerySnapshot<DocumentData>) {
-    const tmp = new Array();
-    snapshot.docs.map(docSnap => {
-        const data = <ITransaction>docSnap.data();
-        const parsedAmount = parseMoney((data as any).amount);
-        (data as any).amount = parsedAmount !== null ? parsedAmount : 0;
-        const id = docSnap.id;
-        tmp.push({ id, ...data });
+  processTransactions(data: DocumentData[]) {
+    const tmp = data.map(d => {
+      const parsedAmount = parseMoney((d as any).amount);
+      (d as any).amount = parsedAmount !== null ? parsedAmount : 0;
+      return d as ITransaction;
     });
-    this.transactions.next( tmp );
+    this.transactions.next(tmp);
   }
 
-  processCategories(snapshot: QuerySnapshot<DocumentData>) {
-    const tmp = new Array();
-    if (snapshot.empty) { this.categories.next([]); }
-    snapshot.docs.forEach(docSnap => {
-      const data = docSnap.data();
-      const parsedBudgeted = parseMoney((data as any).budgeted);
-      (data as any).budgeted = parsedBudgeted !== null ? parsedBudgeted : 0;
-      const id = docSnap.id;
-      tmp.push({ id, ...data });
+  processCategories(data: DocumentData[]) {
+    if (!data || data.length === 0) { this.categories.next([]); return; }
+    const tmp = data.map(d => {
+      const parsedBudgeted = parseMoney((d as any).budgeted);
+      (d as any).budgeted = parsedBudgeted !== null ? parsedBudgeted : 0;
+      return d as ICategory;
     });
-    this.categories.next( tmp.sort((a, b) => {if (a.name > b.name) { return 1; } else {return -1; }}) );
-    // The reason we do snapshot is to get the doc id...valueChanges() does not do that, sadly
+    this.categories.next(tmp.sort((a, b) => {if (a.name > b.name) { return 1; } else {return -1; }}));
   }
 
   createMonthIfNotExists(monthPK:string) {
@@ -295,8 +288,8 @@ export class DbService {
   }
 
   signOut() {
-    if (this.tranSub) { this.tranSub(); }
-    if (this.catSub) { this.catSub(); }
+    if (this.tranSub) { this.tranSub.unsubscribe(); }
+    if (this.catSub) { this.catSub.unsubscribe(); }
     this.transactions.next([]);
     this.categories.next([]);
     console.log('Signed out');
