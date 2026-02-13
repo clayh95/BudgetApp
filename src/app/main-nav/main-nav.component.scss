@@ -1,10 +1,22 @@
 .sidenav {
   width: 70px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  .sidenav-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .mat-nav-list {
+    flex: 1 1 auto;
+  }
   .sidenav-user {
     display: flex;
     justify-content: center;
-    padding: 12px 0 8px 0;
+    padding: 8px 0 12px 0;
     width: 100%;
+    margin-top: auto;
     ::ng-deep .loginControls {
       justify-content: center;
     }
