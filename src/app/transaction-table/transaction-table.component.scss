@@ -11,6 +11,10 @@
         padding-top: 10px;
         padding-bottom: 10px;
     }
+    .mat-mdc-cell,
+    .mdc-data-table__cell {
+        border-bottom: none;
+    }
 
     .actions {
         width:2%;
@@ -152,6 +156,9 @@
     ::ng-deep .mat-paginator {
         background-color: transparent;
     }
+    ::ng-deep .mat-mdc-paginator-outer-container {
+        background-color: #fafafa;
+    }
     .controlsFilter {
         width: 35%;
     }
@@ -271,9 +278,10 @@
     }
 
     .paginator {
-        ::ng-deep .mat-paginator-page-size {
-            display: none !important;
-        }
+        ::ng-deep .mat-mdc-paginator-page-size,
+        ::ng-deep .mat-mdc-paginator-page-size-label,
+        ::ng-deep .mat-mdc-paginator-range-label,
+        ::ng-deep .mat-paginator-page-size,
         ::ng-deep .mat-paginator-range-label {
             display: none !important;
         }
