@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
@@ -23,7 +23,7 @@ import { SharedModule } from '../shared/shared.module';
 })
 export class SummaryComponent implements OnInit, OnDestroy {
 
-  constructor(public service: DbService, public dialog: MatDialog) { }
+  constructor(public service: DbService, public dialog: MatDialog, private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
   catsTrans: Subscription;
   actualIncome: number;
@@ -38,6 +38,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   ngOnInit() {
     
     this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
+      this.zone.run(() => {
 
           if (cats.length === 0 || trans.length === 0) {
             this.reportCats = [];
@@ -92,8 +93,9 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           let tmp: number = this.reportCats.map(c => c.category.budgeted).reduce((pv, v) => +pv + +v, 0);
           this.totalBudgeted = +tmp.toFixed(2);
-      }
-    );
+        this.cdr.markForCheck();
+      });
+    });
 
   }
 
