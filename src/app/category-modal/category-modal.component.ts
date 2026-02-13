@@ -30,11 +30,13 @@ export class CategoryModalComponent {
 
   showPicker: boolean;
   data = inject<ICategory>(MAT_DIALOG_DATA);
+  budgetedDisplay: string = '';
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
               public dialog: MatDialog) {
                 this.origName = this.data.name;
+                this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
                 history.pushState(null, null, location.href);
                }
 
@@ -146,6 +148,25 @@ export class CategoryModalComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  onBudgetedInput(value: string) {
+    this.budgetedDisplay = value;
+  }
+
+  commitBudgeted() {
+    const parsed = parseMoney(this.budgetedDisplay);
+    if (parsed === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
+    this.data.budgeted = parsed;
+    this.budgetedDisplay = parsed.toFixed(2);
+  }
+
+  private formatMoneyDisplay(value: unknown): string {
+    const parsed = parseMoney(value);
+    return parsed === null ? '' : parsed.toFixed(2);
   }
 
 

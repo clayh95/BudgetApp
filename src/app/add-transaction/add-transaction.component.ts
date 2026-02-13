@@ -1,4 +1,4 @@
-import { Component,  inject } from '@angular/core';
+import { Component, inject, AfterViewInit } from '@angular/core';
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
@@ -38,7 +38,7 @@ export interface addEditTrans {
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}],
   animations: [deleteEnterLeave]
 })
-export class AddTransactionComponent {
+export class AddTransactionComponent implements AfterViewInit {
 
   tmpDate:Moment[];
   origTotal:number;
@@ -46,6 +46,8 @@ export class AddTransactionComponent {
   dummyCopy = new Array<ITransaction>();
   pendingDeletes: ITransaction[] = new Array<ITransaction>();
   data = inject<ITransaction[]>(MAT_DIALOG_DATA);
+  disableDeleteAnimations = true;
+  amountDisplay: string[] = [];
 
 
   constructor(public ATsvc: DbService, 
@@ -55,8 +57,15 @@ export class AddTransactionComponent {
                 // this.origTotal = +data[0].amount;
                 this.origTotal = parseFloat(this.data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
                 this.newTotal = +this.origTotal;
+                this.refreshAmountDisplay();
                 history.pushState(null, null, location.href);
               }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.disableDeleteAnimations = false;
+    });
+  }
 
   add() {
     if (!this.normalizeAndValidateAmounts()) { return; }
@@ -189,6 +198,7 @@ export class AddTransactionComponent {
       xIndex: this.data.length
     }
     this.data.push(t);
+    this.refreshAmountDisplay();
   }
 
   updateTotal(idx:number) {
@@ -207,6 +217,7 @@ export class AddTransactionComponent {
         this.data[newIdx].amount = +(this.origTotal - remainingTAmount).toFixed(2);
       }
       this.newTotal = parseFloat(this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
+      this.refreshAmountDisplay();
     }
   }
 
@@ -215,6 +226,7 @@ export class AddTransactionComponent {
     this.pendingDeletes.push(t);
     if (this.data.length == 0) return;
     this.data[0].amount = +(this.data[0].amount + t.amount).toFixed(2);
+    this.refreshAmountDisplay();
     if (this.data.length == 1) {
       this.data[0].xId = null;
       this.data[0].xIndex = null;
@@ -242,6 +254,7 @@ export class AddTransactionComponent {
     this.updateTotal(t.xIndex);
     this.setXID();
     this.reassignIndexes();
+    this.refreshAmountDisplay();
 
     // // pendingDeletes has the original amount 
     // let dataTr = this.data.find(tr => tr.id == t.id);
@@ -293,6 +306,21 @@ export class AddTransactionComponent {
     this.dialogRef.close();
   }
 
+  onAmountInput(value: string, idx: number) {
+    this.amountDisplay[idx] = value;
+  }
+
+  commitAmount(idx: number) {
+    const parsed = parseMoney(this.amountDisplay[idx]);
+    if (parsed === null) {
+      window.alert('Please enter a valid amount.');
+      return;
+    }
+    this.data[idx].amount = parsed;
+    this.amountDisplay[idx] = parsed.toFixed(2);
+    this.updateTotal(idx);
+  }
+
   private normalizeAndValidateAmounts(): boolean {
     for (const tr of this.data) {
       const parsed = parseMoney(tr.amount);
@@ -302,7 +330,15 @@ export class AddTransactionComponent {
       }
       tr.amount = parsed;
     }
+    this.refreshAmountDisplay();
     return true;
+  }
+
+  private refreshAmountDisplay() {
+    this.amountDisplay = this.data.map(t => {
+      const parsed = parseMoney(t.amount);
+      return parsed === null ? '' : parsed.toFixed(2);
+    });
   }
 
 }
