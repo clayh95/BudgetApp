@@ -34,10 +34,19 @@
     <mat-form-field class="categoryModalField">
       <input matInput placeholder="Notes" [(ngModel)]="data.notes"/>
     </mat-form-field>
-    <mat-form-field class="categoryModalField">
+    <mat-form-field class="categoryModalField amount">
       <mat-label>Budgeted</mat-label>
       <span matPrefix class="money-prefix">$&nbsp;</span>
       <input matInput type="text" inputmode="decimal" (blur)="commitBudgeted()" [ngModel]="budgetedDisplay" (ngModelChange)="onBudgetedInput($event)" />
+      <mat-button-toggle-group
+        matSuffix
+        class="neg-toggle-group"
+        hideSingleSelectionIndicator
+        [value]="budgetedNegative ? 'neg' : 'pos'"
+        (change)="onBudgetedSignChange($event.value)">
+        <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
+        <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
+      </mat-button-toggle-group>
     </mat-form-field>
     <mat-form-field class="categoryModalChips">
       <mat-chip-grid #chipList>

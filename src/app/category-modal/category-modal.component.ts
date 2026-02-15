@@ -31,12 +31,14 @@ export class CategoryModalComponent {
   showPicker: boolean;
   data = inject<ICategory>(MAT_DIALOG_DATA);
   budgetedDisplay: string = '';
+  budgetedNegative: boolean = false;
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
               public dialog: MatDialog) {
                 this.origName = this.data.name;
                 this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
+                this.budgetedNegative = (parseMoney(this.data.budgeted) ?? 0) < 0;
                 history.pushState(null, null, location.href);
                }
 
@@ -160,13 +162,29 @@ export class CategoryModalComponent {
       window.alert('Please enter a valid budgeted amount.');
       return;
     }
-    this.data.budgeted = parsed;
-    this.budgetedDisplay = parsed.toFixed(2);
+    const signed = this.budgetedNegative ? -Math.abs(parsed) : Math.abs(parsed);
+    this.data.budgeted = signed;
+    const abs = Math.abs(parsed).toFixed(2);
+    this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
   }
 
   private formatMoneyDisplay(value: unknown): string {
     const parsed = parseMoney(value);
-    return parsed === null ? '' : parsed.toFixed(2);
+    if (parsed === null) { return ''; }
+    const abs = Math.abs(parsed).toFixed(2);
+    return parsed < 0 ? `-${abs}` : abs;
+  }
+
+  onBudgetedSignChange(value: 'neg' | 'pos') {
+    this.budgetedNegative = value === 'neg';
+    const current = parseMoney(this.budgetedDisplay);
+    if (current === null) {
+      this.budgetedDisplay = this.budgetedNegative ? '-0.00' : '0.00';
+    } else {
+      const abs = Math.abs(current).toFixed(2);
+      this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
+    }
+    this.commitBudgeted();
   }
 
 
