@@ -1,6 +1,5 @@
 
 import { fakeAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { MainNavComponent } from './main-nav.component';
 
 describe('MainNavComponent', () => {

@@ -8,7 +8,7 @@
         <mat-card-content>
                 <div *ngIf="isStart()" class="file-controls">
                     <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)" hidden/>
-                    <button matButton color="primary" (click)="fileUpload.click()">Choose CSV file</button>
+                    <button mat-raised-button color="primary" (click)="fileUpload.click()">Choose CSV file</button>
                 </div>
                 <div class="import-summary" *ngIf="isReview()">
                     <mat-selection-list class="import-list" role="list" #summary>

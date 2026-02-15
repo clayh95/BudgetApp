@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { ITransaction, ICategory, IDocumentAction, documentActionType, editorActionType, collectionType, saveState } from './dataTypes';
 import { parseMoney } from './utilities';
-import { BehaviorSubject, Subscription } from '../../../node_modules/rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import {default as _rollupMoment} from 'moment';
 const moment = _rollupMoment;
 

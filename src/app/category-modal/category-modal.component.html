@@ -50,11 +50,11 @@
     </mat-form-field>
     <mat-form-field class="categoryModalChips">
       <mat-chip-grid #chipList>
-        <mat-chip *ngFor="let keyword of data.keywords" [selectable]="selectable"
+        <mat-chip-row *ngFor="let keyword of data.keywords" [selectable]="selectable"
                 [removable]="removable" (removed)="removeKeyword(keyword)">
           {{keyword}}
           <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-        </mat-chip>
+        </mat-chip-row>
         <input #chipInput placeholder="Keywords"
               [matChipInputFor]="chipList"
               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"

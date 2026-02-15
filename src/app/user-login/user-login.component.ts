@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../core/auth.service';
-import { map } from '../../../node_modules/rxjs/operators';
-// import { bypassSanitizationTrustStyle } from '../../../node_modules/@angular/core/src/sanitization/bypass';
 import { DomSanitizer } from '@angular/platform-browser'
 import { DbService } from '../core/db.service';
 import { User } from 'firebase/auth';
