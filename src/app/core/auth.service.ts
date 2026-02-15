@@ -2,50 +2,61 @@ import { Injectable } from '@angular/core';
 import { collectionType, IUser } from './dataTypes';
 import {Router} from '@angular/router';
 
-import { BehaviorSubject, Observable ,  of } from 'rxjs';
-import * as firebase from 'firebase/app';
-import { AngularFireAuth } from '../../../node_modules/angularfire2/auth';
-import { AngularFirestore, AngularFirestoreDocument } from '../../../node_modules/angularfire2/firestore';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Auth, authState } from '@angular/fire/auth';
+import { GoogleAuthProvider, User, signInAnonymously, signInWithPopup, signOut } from 'firebase/auth';
 import { DbService } from './db.service';
-import { map } from '../../../node_modules/rxjs/operators';
+import { map } from 'rxjs/operators';
 import { T } from '@angular/cdk/keycodes';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  user: Observable<firebase.User>;
+  user: Observable<User | null>;
   loginState: BehaviorSubject<string>;
   
-  constructor(private afAuth: AngularFireAuth,
-              private afs: AngularFirestore,
+  constructor(private auth: Auth,
               private dbService: DbService,
               private router: Router) {
 
-     this.user = this.afAuth.authState;
+     this.user = authState(this.auth);
      this.loginState = new BehaviorSubject<string>("");
   }
 
   googleLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
     return this.oAuthLogin(provider);
   }
 
+  devLogin() {
+    return signInAnonymously(this.auth)
+      .then((credential) => {
+        return this.checkUserState(credential.user);
+      });
+  }
+
   logOut() {
-    this.afAuth.auth.signOut().then(x => {
+    signOut(this.auth).then(x => {
       this.dbService.signOut();
     });
   }
 
-  private oAuthLogin(provider: firebase.auth.AuthProvider) {
-    return this.afAuth.auth.signInWithPopup(provider)
+  private oAuthLogin(provider: GoogleAuthProvider) {
+    return signInWithPopup(this.auth, provider)
       .then((credential) => {
         return this.checkUserState(credential.user);
       })
   }
 
-  private checkUserState(user: firebase.User) {
+  private checkUserState(user: User) {
+    if (this.isEmulatorEnabled()) {
+      this.loginState.next("");
+      this.dbService.signIn();
+      return;
+    }
     this.dbService.getQuerySnapshot(collectionType.users, 'uid', "==", user.uid)
       .then(querySnapshot => {
         if (querySnapshot.docs.length == 0) {
@@ -59,6 +70,8 @@ export class AuthService {
       });
   }
 
+  isEmulatorEnabled(): boolean {
+    return !environment.production;
+  }
+
 }
-
-

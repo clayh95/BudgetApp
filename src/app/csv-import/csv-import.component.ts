@@ -1,14 +1,17 @@
-import { Component, ViewChild, ElementRef  } from '@angular/core';
+import { Component, ViewChild, ElementRef, NgZone, ChangeDetectorRef  } from '@angular/core';
 import { collectionType, ITransaction, ITransactionStatus } from '../core/dataTypes';
-import { formatCurrency, getLocaleId } from '@angular/common';
 import { DbService } from '../core/db.service';
 import { MMYY_FORMAT } from '../month-year-picker/month-year-picker.component';
 import {default as _rollupMoment, Moment} from 'moment';
 import { BehaviorSubject } from 'rxjs';
+import { SharedModule } from '../shared/shared.module';
+import { parseMoney } from '../core/utilities';
 const moment = _rollupMoment;
 
 @Component({
   selector: 'app-csv-import',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './csv-import.component.html',
   styleUrls: ['./csv-import.component.scss']
 })
@@ -35,7 +38,7 @@ export class CsvImportComponent {
   @ViewChild('summary')
   summaryList: ElementRef;
 
-  constructor(private service: DbService) {}
+  constructor(private service: DbService, private zone: NgZone, private cdr: ChangeDetectorRef) {}
 
   GetFiles(e) {
     this.status = importStatus.review;
@@ -50,14 +53,19 @@ export class CsvImportComponent {
     this.importSummary.title = `Selected file: ${this.selectedFile.name}`;
 
     fRdr.onload = (e) => {
-      let res: string = fRdr.result.toString();
-      let lines: Array<string> = res.replace(/"/g, "").split('\n');
-      lines.map(line => {
-        let objs = line.split(',');
-        if (objs.length > 1) {
-          let t = this.ConvertCSVToTransaction(objs);
-          this.checkTransaction(t)
-          }
+      this.zone.run(() => {
+        let res: string = fRdr.result.toString();
+        let lines: Array<string> = res.replace(/"/g, "").split('\n');
+        lines.map(line => {
+          let objs = line.split(',');
+          if (objs.length > 1) {
+            let t = this.ConvertCSVToTransaction(objs);
+            if (t) {
+              this.checkTransaction(t)
+            }
+            }
+        });
+        this.cdr.markForCheck();
       });
     }
     fRdr.readAsText(this.selectedFile);
@@ -71,15 +79,18 @@ export class CsvImportComponent {
     let pks = [this.service.getMonthYearValue().replace(/\//g,''), moment(d).add(-1, 'month').format(MMYY_FORMAT.display.noSlash)]
     pks.forEach(p => promiseArray.push(this.service.checkIfTransactionExists(p, t.description)));
     await Promise.all(promiseArray).then(res => {
-      for (let r of res) {
-        if (r.docs.length > 0){
-          this.importSummary.duplicateTransactions.push(t);
-          break;
+      this.zone.run(() => {
+        for (let r of res) {
+          if (r.docs.length > 0){
+            this.importSummary.duplicateTransactions.push(t);
+            break;
+          }
+          if (res.indexOf(r) == res.length - 1) {
+            this.importSummary.readyTransactions.push(t);
+          }
         }
-        if (res.indexOf(r) == res.length - 1) {
-          this.importSummary.readyTransactions.push(t);
-        }
-      }
+        this.cdr.detectChanges();
+      });
     });
   }
 
@@ -87,10 +98,14 @@ export class CsvImportComponent {
   //Break if value returned
   //Might should put this in the service
 
-  ConvertCSVToTransaction(stringTransaction: string[]): ITransaction {
+  ConvertCSVToTransaction(stringTransaction: string[]): ITransaction | null {
+    const parsedAmount = parseMoney(stringTransaction[1]);
+    if (parsedAmount === null) {
+      return null;
+    }
     let t = {
         "date" : stringTransaction[0],
-        "amount" :  formatCurrency(+stringTransaction[1], getLocaleId('en-US'), '','USD').replace(/,/g,""),
+        "amount" : parsedAmount,
         "description" : stringTransaction[4],
         "category" : this.SetCategoryFromKeywords(stringTransaction[4]),
         "notes" : "",

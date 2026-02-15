@@ -1,13 +1,14 @@
 
 <div class="import-csv-component">
 
-    <mat-card>
+    <mat-card class="import-csv-card">
         <mat-card-title>
             Import transactions from CSV
         </mat-card-title>
         <mat-card-content>
                 <div *ngIf="isStart()" class="file-controls">
-                    <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)"/>
+                    <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)" hidden/>
+                    <button mat-raised-button color="primary" (click)="fileUpload.click()">Choose CSV file</button>
                 </div>
                 <div class="import-summary" *ngIf="isReview()">
                     <mat-selection-list class="import-list" role="list" #summary>
@@ -66,6 +67,5 @@
     </mat-card>
 
 </div>
-
 
 

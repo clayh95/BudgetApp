@@ -1,13 +1,17 @@
-import { Component, Inject, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef, HostListener, inject } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { SharedModule } from '../shared/shared.module';
+import { parseMoney } from '../core/utilities';
 
 @Component({
   selector: 'app-category-modal',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './category-modal.component.html',
   styleUrls: ['./category-modal.component.scss']
 })
@@ -25,32 +29,46 @@ export class CategoryModalComponent {
   @ViewChild("chipInput") chipInput: ElementRef;
 
   showPicker: boolean;
+  data = inject<ICategory>(MAT_DIALOG_DATA);
+  budgetedDisplay: string = '';
+  budgetedNegative: boolean = false;
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ICategory,
               public dialog: MatDialog) {
                 this.origName = this.data.name;
+                this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
+                this.budgetedNegative = (parseMoney(this.data.budgeted) ?? 0) < 0;
                 history.pushState(null, null, location.href);
                }
 
   add() {
+    const budgeted = parseMoney(this.data.budgeted);
+    if (budgeted === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
     let doc = {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords, 
-      budgeted: this.data.budgeted
+      budgeted: budgeted
     }
     this.CATsvc.addDocument(doc, collectionType.categories);
     this.dialogRef.close();
   }
 
   async update() {
+    const budgeted = parseMoney(this.data.budgeted);
+    if (budgeted === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
     let doc = {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords ?? [], 
-      budgeted: this.data.budgeted,
+      budgeted: budgeted,
       emoji: this.data.emoji ?? ''
     }
     await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
@@ -65,7 +83,7 @@ export class CategoryModalComponent {
     const y:number = rect.top;
     let controlConfig: ConfirmModalConfig = {
       title: "Delete Category?",
-      matIconName: "arrow_left",
+      matIconName: "chevron_left",
       message: "Delete this category?", 
       buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
     };
@@ -132,6 +150,41 @@ export class CategoryModalComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  onBudgetedInput(value: string) {
+    this.budgetedDisplay = value;
+  }
+
+  commitBudgeted() {
+    const parsed = parseMoney(this.budgetedDisplay);
+    if (parsed === null) {
+      window.alert('Please enter a valid budgeted amount.');
+      return;
+    }
+    const signed = this.budgetedNegative ? -Math.abs(parsed) : Math.abs(parsed);
+    this.data.budgeted = signed;
+    const abs = Math.abs(parsed).toFixed(2);
+    this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
+  }
+
+  private formatMoneyDisplay(value: unknown): string {
+    const parsed = parseMoney(value);
+    if (parsed === null) { return ''; }
+    const abs = Math.abs(parsed).toFixed(2);
+    return parsed < 0 ? `-${abs}` : abs;
+  }
+
+  onBudgetedSignChange(value: 'neg' | 'pos') {
+    this.budgetedNegative = value === 'neg';
+    const current = parseMoney(this.budgetedDisplay);
+    if (current === null) {
+      this.budgetedDisplay = this.budgetedNegative ? '-0.00' : '0.00';
+    } else {
+      const abs = Math.abs(current).toFixed(2);
+      this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
+    }
+    this.commitBudgeted();
   }
 
 

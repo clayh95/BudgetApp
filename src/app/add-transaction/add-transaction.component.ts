@@ -1,4 +1,4 @@
-import { Component,  Inject } from '@angular/core';
+import { Component, inject, AfterViewInit } from '@angular/core';
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ITransaction } from '../core/dataTypes'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DbService, tAction } from '../core/db.service';
@@ -7,6 +7,8 @@ import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { deleteEnterLeave } from '../animations/template.animations';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { parseMoney } from '../core/utilities';
+import { SharedModule } from '../shared/shared.module';
 
 export const MMDDYYYY_FORMAT = {
   parse: {
@@ -29,31 +31,45 @@ export interface addEditTrans {
 
 @Component({
   selector: 'app-add-transaction',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './add-transaction.component.html',
   styleUrls: ['./add-transaction.component.scss'],
   providers: [{provide: MAT_DATE_FORMATS, useValue: MMDDYYYY_FORMAT}],
   animations: [deleteEnterLeave]
 })
-export class AddTransactionComponent {
+export class AddTransactionComponent implements AfterViewInit {
 
   tmpDate:Moment[];
   origTotal:number;
   newTotal:number;
   dummyCopy = new Array<ITransaction>();
   pendingDeletes: ITransaction[] = new Array<ITransaction>();
+  data = inject<ITransaction[]>(MAT_DIALOG_DATA);
+  disableDeleteAnimations = true;
+  amountDisplay: string[] = [];
+  amountNegative: boolean[] = [];
+
 
   constructor(public ATsvc: DbService, 
               public dialogRef: MatDialogRef<AddTransactionComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction[],
               public dialog: MatDialog) {
                 this.tmpDate = this.data.map(x => moment(x.date, "MM/DD/YYYY"));
                 // this.origTotal = +data[0].amount;
-                this.origTotal = parseFloat(data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
+                this.origTotal = parseFloat(this.data.map(x => x.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
                 this.newTotal = +this.origTotal;
+                this.refreshAmountDisplay();
                 history.pushState(null, null, location.href);
               }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.disableDeleteAnimations = false;
+    });
+  }
+
   add() {
+    if (!this.normalizeAndValidateAmounts()) { return; }
     this.data.map((tr, index) => {
       tr.date = this.tmpDate[index].format('MM/DD/YYYY')
       if (this.movingMonthsCheck(this.tmpDate[index])) {
@@ -69,6 +85,7 @@ export class AddTransactionComponent {
   }
 
   checkDeletesThenUpdate() {
+    if (!this.normalizeAndValidateAmounts()) { return; }
     if (this.pendingDeletes.length > 0) {
       let list = this.pendingDeletes.map(t => `${t.description} - ${t.amount}`).join('\n');
       
@@ -78,7 +95,7 @@ export class AddTransactionComponent {
       const y:number = rect.top;
       let controlConfig: ConfirmModalConfig = {
         title: "Delete Transactions?",
-        matIconName: "arrow_left",
+        matIconName: "chevron_left",
         message: `Delete transaction(s)?`, 
         buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
       };
@@ -147,7 +164,7 @@ export class AddTransactionComponent {
     const y:number = rect.top;
     let controlConfig: ConfirmModalConfig = {
       title: "Delete Transaction?",
-      matIconName: "arrow_left",
+      matIconName: "chevron_left",
       message: `Move this transaction from 
                 ${moment(this.ATsvc.getMonthYearValue().substring(0,2), 'M').format('MMMM')}
                 to ${checkDate.format('MMMM')}?`, 
@@ -174,7 +191,7 @@ export class AddTransactionComponent {
       id: `${tmpId}${this.data.length}`,
       date:this.data[0].date, 
       description:this.data[0].description, 
-      amount:"0.00", 
+      amount: 0, 
       category:"", 
       notes: "", 
       status: this.data[0].status,
@@ -182,19 +199,26 @@ export class AddTransactionComponent {
       xIndex: this.data.length
     }
     this.data.push(t);
+    this.refreshAmountDisplay();
   }
 
   updateTotal(idx:number) {
     if (this.data.length > 1) {
+      if (idx !== null) {
+        const currentParsed = parseMoney(this.data[idx].amount);
+        if (currentParsed === null) { return; }
+        this.data[idx].amount = currentParsed;
+      }
       if (idx !== null) {
         const newIdx:number = (idx + 1) % this.data.length;
         let tmp = new Array<ITransaction>();
         tmp.push(...this.data);
         tmp.splice(newIdx, 1);
         let remainingTAmount = tmp.map(t => t.amount).reduce((pv, v) => +pv + +v, 0);
-        this.data[newIdx].amount = (this.origTotal - remainingTAmount).toFixed(2);
+        this.data[newIdx].amount = +(this.origTotal - remainingTAmount).toFixed(2);
       }
       this.newTotal = parseFloat(this.data.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0).toFixed(2));
+      this.refreshAmountDisplay();
     }
   }
 
@@ -202,7 +226,8 @@ export class AddTransactionComponent {
     this.data.splice(idx, 1);
     this.pendingDeletes.push(t);
     if (this.data.length == 0) return;
-    this.data[0].amount = (+this.data[0].amount + +t.amount).toFixed(2);
+    this.data[0].amount = +(this.data[0].amount + t.amount).toFixed(2);
+    this.refreshAmountDisplay();
     if (this.data.length == 1) {
       this.data[0].xId = null;
       this.data[0].xIndex = null;
@@ -230,6 +255,7 @@ export class AddTransactionComponent {
     this.updateTotal(t.xIndex);
     this.setXID();
     this.reassignIndexes();
+    this.refreshAmountDisplay();
 
     // // pendingDeletes has the original amount 
     // let dataTr = this.data.find(tr => tr.id == t.id);
@@ -279,6 +305,63 @@ export class AddTransactionComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  onAmountInput(value: string, idx: number) {
+    this.amountDisplay[idx] = value;
+  }
+
+  onAmountSignChange(idx: number, value: 'neg' | 'pos') {
+    this.amountNegative[idx] = value === 'neg';
+    const current = parseMoney(this.amountDisplay[idx]);
+    if (current === null) {
+      this.amountDisplay[idx] = this.amountNegative[idx] ? '-0.00' : '0.00';
+    } else {
+      const abs = Math.abs(current).toFixed(2);
+      this.amountDisplay[idx] = this.amountNegative[idx] ? `-${abs}` : abs;
+    }
+    this.commitAmount(idx);
+  }
+
+  commitAmount(idx: number) {
+    const parsed = parseMoney(this.amountDisplay[idx]);
+    if (parsed === null) {
+      window.alert('Please enter a valid amount.');
+      return;
+    }
+    const signed = this.amountNegative[idx] ? -Math.abs(parsed) : Math.abs(parsed);
+    this.data[idx].amount = signed;
+    const displayAmount = Math.abs(parsed).toFixed(2);
+    this.amountDisplay[idx] = this.amountNegative[idx] ? `-${displayAmount}` : displayAmount;
+    this.updateTotal(idx);
+  }
+
+  private normalizeAndValidateAmounts(): boolean {
+    for (const tr of this.data) {
+      const parsed = parseMoney(tr.amount);
+      if (parsed === null) {
+        window.alert('Please enter a valid amount for all transactions.');
+        return false;
+      }
+      tr.amount = parsed;
+    }
+    this.refreshAmountDisplay();
+    return true;
+  }
+
+  private refreshAmountDisplay() {
+    this.amountDisplay = this.data.map(t => {
+      const parsed = parseMoney(t.amount);
+      if (parsed === null) { return ''; }
+      const abs = Math.abs(parsed).toFixed(2);
+      return parsed < 0 ? `-${abs}` : abs;
+    });
+    this.amountNegative = this.data.map(t => {
+      const parsed = parseMoney(t.amount);
+      if (parsed === null) { return true; }
+      if (parsed === 0 && (this.isAdd() || (t.id && t.id.startsWith(tmpId)))) { return true; }
+      return parsed < 0;
+    });
   }
 
 }

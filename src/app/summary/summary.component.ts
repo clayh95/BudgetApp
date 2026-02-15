@@ -1,24 +1,29 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { DbService, tAction } from '../core/db.service';
 import { combineLatest, Subscription } from 'rxjs';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import {default as _rollupMoment, Moment} from 'moment';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component';
 import { formatCurrency, getLocaleId } from '@angular/common';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
 import { getIcon, getPosNegColor } from '../core/utilities';
 import { CarryBalancesModalComponent } from '../carry-balances-modal/carry-balances-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ConfirmModalButtons, ConfirmModalConfig } from '../core/dataTypes';
 const moment = _rollupMoment
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-summary',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss']
 })
 export class SummaryComponent implements OnInit, OnDestroy {
 
-  constructor(public service: DbService, public dialog: MatDialog) { }
+  constructor(public service: DbService, public dialog: MatDialog, private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
   catsTrans: Subscription;
   actualIncome: number;
@@ -33,6 +38,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   ngOnInit() {
     
     this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
+      this.zone.run(() => {
 
           if (cats.length === 0 || trans.length === 0) {
             this.reportCats = [];
@@ -87,8 +93,9 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           let tmp: number = this.reportCats.map(c => c.category.budgeted).reduce((pv, v) => +pv + +v, 0);
           this.totalBudgeted = +tmp.toFixed(2);
-      }
-    );
+        this.cdr.markForCheck();
+      });
+    });
 
   }
 
@@ -171,6 +178,39 @@ export class SummaryComponent implements OnInit, OnDestroy {
     const catDialogRef = this.dialog.open(CategoryModalComponent, {width:'500px', maxWidth:'90vw', data: Object.assign({}, c), autoFocus: false})
   }
 
+  balanceFromUnbudgeted(event, item: IReportCategory) {
+    event.stopPropagation();
+    if (!item?.category?.id) { return; }
+    const available = this.getUnbudgetedAmount();
+    const needed = +(item.category.spent - item.category.budgeted).toFixed(2);
+    if (available <= 0 || needed <= 0 || available < needed) { return; }
+
+    const message = `Balance this category with ${formatCurrency(needed, getLocaleId('en-US'), '', 'USD')} from unbudgeted?`;
+    const controlConfig: ConfirmModalConfig = {
+      title: 'Balance from Unbudgeted',
+      message,
+      buttons: [ConfirmModalButtons.yes, ConfirmModalButtons.no],
+      matIconName: 'chevron_left'
+    };
+    const target = event?.currentTarget as HTMLElement | null;
+    const rect = target?.getBoundingClientRect();
+    const dialogConfig: MatDialogConfig = {
+      data: controlConfig,
+      width: '400px',
+      autoFocus: false,
+      disableClose: true,
+      position: rect
+        ? { left: `${rect.right}px`, top: `${rect.top}px` }
+        : undefined
+    };
+    const dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) { return; }
+      const newBudgeted = +(Number(item.category.budgeted) + needed).toFixed(2);
+      this.service.updateDocument(item.category.id, collectionType.categories, { budgeted: newBudgeted });
+    });
+  }
+
   updateSummaryNotes(value:string) {
     this.service.updateDocument(this.service.getMonthPKValue(), collectionType.monthsPK, {'summary': value});
   }
@@ -191,7 +231,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
       let dPlus = new Date(d.getFullYear(), d.getMonth() + 1, 1)
       let t = <ITransaction>{
           description: `${c.category.name} Starting Balance`, 
-          amount: (c.category.budgeted-c.category.spent).toFixed(2), 
+          amount: +(c.category.budgeted-c.category.spent).toFixed(2), 
           category: c.category.name, 
           date: moment(dPlus).format('MM/DD/YYYY'),
           notes: "",
@@ -207,6 +247,18 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   getPercentage(budgeted:number):number {
     return (budgeted / this.totalBudgeted);
+  }
+
+  getUnbudgetedAmount(): number {
+    if (this.actualIncome === undefined || this.totalBudgeted === undefined) { return 0; }
+    return +(this.actualIncome - this.totalBudgeted).toFixed(2);
+  }
+
+  canBalanceCategory(item: IReportCategory): boolean {
+    if (!item?.category?.id) { return false; }
+    const available = this.getUnbudgetedAmount();
+    const needed = +(item.category.spent - item.category.budgeted).toFixed(2);
+    return !(available <= 0 || needed <= 0 || available < needed);
   }
   
   ngOnDestroy() {

@@ -10,9 +10,12 @@ import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../
 import { getIcon } from '../core/utilities';
 import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
 import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-transaction-table',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './transaction-table.component.html',
   styleUrls: ['./transaction-table.component.scss'],
   animations: [rowsEnterLeave, rowsColor]
@@ -54,7 +57,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   addTransaction() {
-    let t = <ITransaction>{date:"", description:"", amount:"", category:"", notes: "", status:ITransactionStatus.posted}
+    let t = <ITransaction>{date:"", description:"", amount: 0, category:"", notes: "", status:ITransactionStatus.posted}
     const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
   }
 

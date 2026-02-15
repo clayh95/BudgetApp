@@ -1,14 +1,23 @@
 
 mat-form-field {
     padding: 10px;
+    width: 140px;
 }
 
 ::ng-deep .pickerDiv {
+    display: flex;
+    align-items: center;
     .material-icons {
         font-size:34px;
     }
     .mat-datepicker-toggle {
+        color: black;
+    }
+    .navigation-arrow mat-icon {
         color: white;
+    }
+    .mat-mdc-form-field-infix {
+        width: 6.5em;
     }
 }
 

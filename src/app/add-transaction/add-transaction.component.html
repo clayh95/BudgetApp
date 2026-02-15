@@ -12,7 +12,7 @@
 <h2 class="title" mat-dialog-title>{{getTitle()}}</h2>
 <br />
 <mat-dialog-content>
-    <div [@deleteEnterLeave] class="transactionFields" *ngFor="let t of data; index as i">
+    <div [@deleteEnterLeave] [@.disabled]="disableDeleteAnimations" class="transactionFields" *ngFor="let t of data; index as i">
       <button 
         mat-icon-button 
         class="delete-controls"
@@ -23,22 +23,37 @@
       <span class="title-span">
         <p class="item-index" *ngIf="t.xIndex != null">{{t.xIndex + 1}}</p>
         <mat-form-field class="addTransactionFieldHeader">
-          <input matInput [matDatepicker]="picker" placeholder="Date" [(ngModel)]="tmpDate[i]">
+          <mat-label>Date</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="tmpDate[i]">
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
       </span>
-      <mat-form-field class="addTransactionFieldShort">
-        <input matInput placeholder="Amount" (blur)="updateTotal(i)" [(ngModel)]="t.amount"/>
+      <mat-form-field class="addTransactionField amount">
+        <mat-label>Amount</mat-label>
+        <span matPrefix class="money-prefix">$&nbsp;</span>
+        <input matInput type="text" inputmode="decimal" (blur)="commitAmount(i)" [ngModel]="amountDisplay[i]" (ngModelChange)="onAmountInput($event, i)"/>
+        <mat-button-toggle-group
+          matSuffix
+          class="neg-toggle-group"
+          hideSingleSelectionIndicator
+          [value]="amountNegative[i] ? 'neg' : 'pos'"
+          (change)="onAmountSignChange(i, $event.value)">
+          <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
+          <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
+        </mat-button-toggle-group>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
-        <textarea matInput placeholder="Description" [(ngModel)]="t.description"></textarea>
+        <mat-label>Description</mat-label>
+        <textarea matInput [(ngModel)]="t.description"></textarea>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
-        <textarea matInput placeholder="Notes" [(ngModel)]="t.notes"></textarea>
+        <mat-label>Notes</mat-label>
+        <textarea matInput [(ngModel)]="t.notes"></textarea>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
-          <mat-select placeholder="Category" [(ngModel)]="t.category">
+          <mat-label>Category</mat-label>
+          <mat-select [(ngModel)]="t.category">
               <mat-option value=''></mat-option>
               <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
                 {{category.name}}
@@ -50,7 +65,7 @@
     <div class="pending-delete-section" *ngIf="pendingDeletes.length > 0">
       <hr class="hr"  />
       <h3>Pending Deletes</h3>
-      <div [@deleteEnterLeave] class="pending-deletes" *ngFor="let t of pendingDeletes; index as i">
+      <div [@deleteEnterLeave] [@.disabled]="disableDeleteAnimations" class="pending-deletes" *ngFor="let t of pendingDeletes; index as i">
         <button 
             mat-icon-button 
             class="delete-controls"

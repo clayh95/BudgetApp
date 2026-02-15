@@ -6,12 +6,13 @@
     [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isHandset$ | async) ? 'over' : 'side'"
     [opened]="!(isHandset$ | async)">
-    <mat-nav-list>
-      <a mat-list-item routerLink="/transactions" routerLinkActive="active"><button mat-icon-button matTooltip="Transaction List" [matTooltipPosition]="'right'"><mat-icon>view_list</mat-icon></button></a>
-      <a mat-list-item routerLink="/categories" routerLinkActive="active"><button mat-icon-button matTooltip="Categories" [matTooltipPosition]="'right'"><mat-icon>category</mat-icon></button></a>
-      <a mat-list-item routerLink="/csv" routerLinkActive="active"><button mat-icon-button matTooltip="Import From CSV" [matTooltipPosition]="'right'"><mat-icon>import_export</mat-icon></button></a>
+    <div class="sidenav-body">
+      <mat-nav-list>
+      <a mat-list-item routerLink="/transactions" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Transaction List" [matTooltipPosition]="'right'"><mat-icon>view_list</mat-icon></button></a>
+      <a mat-list-item routerLink="/categories" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Categories" [matTooltipPosition]="'right'"><mat-icon>category</mat-icon></button></a>
+      <a mat-list-item routerLink="/csv" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Import From CSV" [matTooltipPosition]="'right'"><mat-icon>import_export</mat-icon></button></a>
       <!-- <a mat-list-item routerLink="/reports"><button mat-icon-button matTooltip="Reports" [matTooltipPosition]="'right'"><mat-icon>show_chart</mat-icon></button></a> -->
-      <a mat-list-item routerLink="/summary" routerLinkActive="active"><button mat-icon-button matTooltip="Summary" [matTooltipPosition]="'right'"><mat-icon>assignment</mat-icon></button></a>
+      <a mat-list-item routerLink="/summary" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Summary" [matTooltipPosition]="'right'"><mat-icon>assignment</mat-icon></button></a>
       <hr />
       <button 
         mat-icon-button 
@@ -29,7 +30,11 @@
         (click)="redo()" >
         <mat-icon>redo</mat-icon>
       </button>
-    </mat-nav-list>
+      </mat-nav-list>
+      <div class="sidenav-user">
+        <app-user-login></app-user-login>
+      </div>
+    </div>
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary">
@@ -46,7 +51,6 @@
         <mat-spinner [diameter]="25" class="spinner" *ngIf="this.service.getSaveState() == 'saving'"></mat-spinner>
       </div>
       <span class="spacer-small"></span>
-      <app-user-login></app-user-login>
     </mat-toolbar>
     <div style="height:100%">
       <router-outlet></router-outlet>

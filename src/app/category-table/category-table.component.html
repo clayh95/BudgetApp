@@ -33,7 +33,7 @@
                   <span><span *ngIf="row.emoji">{{row.emoji}}&nbsp;&nbsp;</span>{{row.name}}</span>
                   <div>
                     <span class="percentage" *ngIf="row.name.toLowerCase() != 'income'">{{getPercentage(+row.budgeted) | percent:'1.0-2'}}</span>
-                    <span class="budgeted">{{row.budgeted}}</span>
+                    <span class="budgeted">{{row.budgeted | currency}}</span>
                   </div>
                 </div>
               </td>
@@ -44,7 +44,7 @@
             <ng-container matColumnDef="budgeted">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Budgeted</th>
               <td mat-cell class="desktop category-amount" *matCellDef="let row">
-                <span>{{row.budgeted}}</span>
+                <span>{{row.budgeted | currency}}</span>
               </td>
               <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
@@ -63,18 +63,18 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Keywords</th>
               <td mat-cell class="keyword-chip-list" *matCellDef="let row">
                   <mat-form-field>
-                    <mat-chip-list #chipList>
-                      <mat-chip *ngFor="let keyword of row.keywords" [selectable]="selectable"
+                    <mat-chip-grid #chipList>
+                      <mat-chip-row *ngFor="let keyword of row.keywords" [selectable]="selectable"
                               [removable]="removable" (removed)="removeKeyword(keyword, row.id)">
                         {{keyword}}
                         <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-                      </mat-chip>
+                      </mat-chip-row>
                       <input placeholder="Keywords"
                             [matChipInputFor]="chipList"
                             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                             [matChipInputAddOnBlur]="addOnBlur"
                             (matChipInputTokenEnd)="addKeyword($event, row.id)">
-                    </mat-chip-list>
+                    </mat-chip-grid>
                   </mat-form-field>
         
                 </td>

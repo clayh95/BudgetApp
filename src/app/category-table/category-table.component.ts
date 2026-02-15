@@ -9,13 +9,17 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { DbService } from '../core/db.service';
 import { CopyCategoriesComponent } from '../copy-categories/copy-categories.component'
+import { SharedModule } from '../shared/shared.module';
 
-import * as firebase from 'firebase/app';
+import { arrayRemove, arrayUnion } from 'firebase/firestore';
 import { collectionType, ICategory } from '../core/dataTypes';
 import { CategoryModalComponent } from '../category-modal/category-modal.component';
+import { parseMoney } from '../core/utilities';
 
 @Component({
   selector: 'app-category-table',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './category-table.component.html',
   styleUrls: ['./category-table.component.scss']
 })
@@ -62,7 +66,7 @@ export class CategoryTableComponent implements AfterViewInit {
   }
 
   addCategory() {
-    let c = <ICategory>{name: "", keywords: [], budgeted: null}
+    let c = <ICategory>{name: "", keywords: [], budgeted: 0}
     const catDialogRef = this.dialog.open(
       CategoryModalComponent, 
       {
@@ -92,7 +96,16 @@ export class CategoryTableComponent implements AfterViewInit {
     let t = <ICategory>this.CATsvc.categories.getValue().filter(t => t.id === id)[0];
     if (newValue === t[columnName]) { return; }
     let update = {};
+    if (columnName.toLowerCase() === 'budgeted') {
+      const parsed = parseMoney(newValue);
+      if (parsed === null) {
+        window.alert('Please enter a valid budgeted amount.');
+        return;
+      }
+      update[columnName] = parsed;
+    } else {
     update[columnName] = newValue;
+    }
     await this.CATsvc.updateDocument(id, collectionType.categories, update);
     if (columnName.toLowerCase() == 'name') {
       // feels a bit hacky...
@@ -108,7 +121,7 @@ export class CategoryTableComponent implements AfterViewInit {
       this.CATsvc.updateDocument(
         id, 
         collectionType.categories, 
-        {keywords: firebase.firestore.FieldValue.arrayUnion(value.trim())}
+        {keywords: arrayUnion(value.trim())}
       );
     }
     if (input) {
@@ -120,7 +133,7 @@ export class CategoryTableComponent implements AfterViewInit {
     this.CATsvc.updateDocument(
       id, 
       collectionType.categories, 
-      {keywords: firebase.firestore.FieldValue.arrayRemove(kw.trim())}
+      {keywords: arrayRemove(kw.trim())}
     );
   }
 

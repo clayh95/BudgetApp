@@ -16,6 +16,8 @@
 *.launch
 .settings/
 *.sublime-workspace
+*.cache
+.angular/cache
 
 # IDE - VSCode
 .vscode/*
@@ -43,3 +45,4 @@ functions/src/environments/environments.prod.ts
 ui-debug.log
 functions/budgetapp-fcb30-080432360201.json
 .firebase
+backups/

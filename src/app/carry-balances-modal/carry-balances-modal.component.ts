@@ -1,24 +1,26 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {default as _rollupMoment, Moment} from 'moment';
 const moment = _rollupMoment
 import { collectionType, ITransaction } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
 import { getPosNegColor } from '../core/utilities';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-carry-balances-modal',
+  standalone: true,
+  imports: [SharedModule],
   templateUrl: './carry-balances-modal.component.html',
   styleUrls: ['./carry-balances-modal.component.scss']
 })
 export class CarryBalancesModalComponent {
 
   newMonthDate:Moment;
+  data = inject<ITransaction[]>(MAT_DIALOG_DATA);
 
   constructor(public service: DbService, 
-              public dialogRef: MatDialogRef<CarryBalancesModalComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ITransaction[]) {
-
+              public dialogRef: MatDialogRef<CarryBalancesModalComponent>) {
                 this.newMonthDate = moment(this.data[0].date);
   
   }
@@ -36,4 +38,3 @@ export class CarryBalancesModalComponent {
   }
 
 }
-
