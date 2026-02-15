@@ -29,10 +29,19 @@
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
       </span>
-      <mat-form-field class="addTransactionFieldShort">
+      <mat-form-field class="addTransactionField amount">
         <mat-label>Amount</mat-label>
         <span matPrefix class="money-prefix">$&nbsp;</span>
         <input matInput type="text" inputmode="decimal" (blur)="commitAmount(i)" [ngModel]="amountDisplay[i]" (ngModelChange)="onAmountInput($event, i)"/>
+        <mat-button-toggle-group
+          matSuffix
+          class="neg-toggle-group"
+          hideSingleSelectionIndicator
+          [value]="amountNegative[i] ? 'neg' : 'pos'"
+          (change)="onAmountSignChange(i, $event.value)">
+          <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
+          <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
+        </mat-button-toggle-group>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
         <mat-label>Description</mat-label>

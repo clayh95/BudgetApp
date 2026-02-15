@@ -48,6 +48,7 @@ export class AddTransactionComponent implements AfterViewInit {
   data = inject<ITransaction[]>(MAT_DIALOG_DATA);
   disableDeleteAnimations = true;
   amountDisplay: string[] = [];
+  amountNegative: boolean[] = [];
 
 
   constructor(public ATsvc: DbService, 
@@ -310,14 +311,28 @@ export class AddTransactionComponent implements AfterViewInit {
     this.amountDisplay[idx] = value;
   }
 
+  onAmountSignChange(idx: number, value: 'neg' | 'pos') {
+    this.amountNegative[idx] = value === 'neg';
+    const current = parseMoney(this.amountDisplay[idx]);
+    if (current === null) {
+      this.amountDisplay[idx] = this.amountNegative[idx] ? '-0.00' : '0.00';
+    } else {
+      const abs = Math.abs(current).toFixed(2);
+      this.amountDisplay[idx] = this.amountNegative[idx] ? `-${abs}` : abs;
+    }
+    this.commitAmount(idx);
+  }
+
   commitAmount(idx: number) {
     const parsed = parseMoney(this.amountDisplay[idx]);
     if (parsed === null) {
       window.alert('Please enter a valid amount.');
       return;
     }
-    this.data[idx].amount = parsed;
-    this.amountDisplay[idx] = parsed.toFixed(2);
+    const signed = this.amountNegative[idx] ? -Math.abs(parsed) : Math.abs(parsed);
+    this.data[idx].amount = signed;
+    const displayAmount = Math.abs(parsed).toFixed(2);
+    this.amountDisplay[idx] = this.amountNegative[idx] ? `-${displayAmount}` : displayAmount;
     this.updateTotal(idx);
   }
 
@@ -337,7 +352,15 @@ export class AddTransactionComponent implements AfterViewInit {
   private refreshAmountDisplay() {
     this.amountDisplay = this.data.map(t => {
       const parsed = parseMoney(t.amount);
-      return parsed === null ? '' : parsed.toFixed(2);
+      if (parsed === null) { return ''; }
+      const abs = Math.abs(parsed).toFixed(2);
+      return parsed < 0 ? `-${abs}` : abs;
+    });
+    this.amountNegative = this.data.map(t => {
+      const parsed = parseMoney(t.amount);
+      if (parsed === null) { return true; }
+      if (parsed === 0 && (this.isAdd() || (t.id && t.id.startsWith(tmpId)))) { return true; }
+      return parsed < 0;
     });
   }
 

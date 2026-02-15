@@ -25,6 +25,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MomentDateModule } from '@angular/material-moment-adapter';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 
@@ -59,6 +60,7 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
     MatGridListModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    MatButtonToggleModule,
     PickerModule
   ],
   exports: [
@@ -91,6 +93,7 @@ import { PickerModule } from '@ctrl/ngx-emoji-mart';
     MatGridListModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    MatButtonToggleModule,
     PickerModule
   ]
 })
