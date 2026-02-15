@@ -6,6 +6,7 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
+    "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ES2022",

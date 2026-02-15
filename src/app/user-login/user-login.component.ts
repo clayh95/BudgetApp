@@ -4,6 +4,7 @@ import { DomSanitizer } from '@angular/platform-browser'
 import { DbService } from '../core/db.service';
 import { User } from 'firebase/auth';
 import { SharedModule } from '../shared/shared.module';
+import packageJson from '../../../package.json';
 
 @Component({
   selector: 'app-user-login',
@@ -19,6 +20,7 @@ export class UserLoginComponent implements OnInit {
   image;
   balances;
   nonZeroBalance:boolean = false;
+  appVersion = packageJson.version;
 
   ngOnInit() {
     this.authService.user.subscribe(async (u) => {

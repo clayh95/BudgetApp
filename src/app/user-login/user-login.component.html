@@ -20,4 +20,8 @@
         <span>{{balance.key}}: <b>{{balance.value}}</b></span>
         <mat-icon *ngIf="nonZeroBalance && balance.key == 'Credit Card'" style="color:orange;font-size: 1.2em">notification_important</mat-icon>
     </button>
+    <hr>
+    <button mat-menu-item disabled>
+        <span>Version v{{appVersion}}</span>
+    </button>
 </mat-menu>

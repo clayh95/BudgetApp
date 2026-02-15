@@ -64,8 +64,7 @@
 
 .mat-expansion-panel-header-title {
     font-weight: 600;
-    font-size: 16px;
-    line-height: 20px;
+    flex-grow: 4 !important;
 }
 
 /* Category panels: slightly smaller title and tighter header layout */
