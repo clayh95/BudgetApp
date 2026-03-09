@@ -1,0 +1,112 @@
+<div class="dashboard">
+  <div class="kpi-grid">
+    <mat-card class="kpi-card">
+      <div class="label">Unbudgeted</div>
+      <div class="value" [class.negative]="viewModel.stats.unbudgeted < 0">
+        {{viewModel.stats.unbudgeted | currency}}
+      </div>
+    </mat-card>
+    <mat-card class="kpi-card">
+      <div class="label">Pending Total</div>
+      <div class="value">{{viewModel.stats.pendingTotal | currency}}</div>
+      <button mat-stroked-button [routerLink]="['/transactions']" [queryParams]="{pending: true}">
+        Open
+      </button>
+    </mat-card>
+    <mat-card class="kpi-card">
+      <div class="label">Uncategorized</div>
+      <div class="value">{{viewModel.stats.uncategorizedNonPendingCount}}</div>
+      <button mat-stroked-button [routerLink]="['/transactions']" [queryParams]="{uncategorized: true}">
+        Open
+      </button>
+    </mat-card>
+  </div>
+
+  <div class="main-grid">
+    <mat-card>
+      <mat-card-title>Needs Attention</mat-card-title>
+      <mat-card-content>
+        <div class="section-title">
+          Watched Categories (Coming Soon)
+        </div>
+        <p class="muted watchlist-stub">Add categories you want quick visibility into right on the dashboard.</p>
+
+        <div class="section-title">
+          Over Budget Categories
+          <button mat-button [routerLink]="['/summary']">Open summary</button>
+        </div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.overBudgetCategories | slice:0:5; trackBy: trackByCategoryId">
+            <div class="row">
+              <span>{{item.category.name}}</span>
+              <span class="negative">{{item.overBy | currency}}</span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="viewModel.overBudgetCategories.length === 0">
+            <div class="muted">No over-budget categories.</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>This Month at a Glance</mat-card-title>
+      <mat-card-content>
+        <div class="section-title">Top Spending Categories</div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.topSpendingCategories; trackBy: trackByCategoryId">
+            <div class="row">
+              <span>{{item.category.name}}</span>
+              <span>{{item.spent | currency}}</span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="viewModel.topSpendingCategories.length === 0">
+            <div class="muted">Not enough data yet.</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>Balances & Risk</mat-card-title>
+      <mat-card-content>
+        <mat-list dense>
+          <mat-list-item *ngFor="let balance of balances">
+            <div class="row">
+              <span>{{balance.key}}</span>
+              <span>
+                {{balance.value}}
+                <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
+              </span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="balances.length === 0">
+            <div class="muted">No balances available.</div>
+          </mat-list-item>
+        </mat-list>
+        <div class="links">
+          <button mat-button [routerLink]="['/transactions']" [queryParams]="{startingBalances: true, search: 'starting balance'}">
+            Review starting balances
+          </button>
+          <button mat-button [routerLink]="['/transactions']" [queryParams]="{search: 'walmart'}">
+            Vendor drill-down (Walmart)
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>Quick Notes</mat-card-title>
+      <mat-card-content>
+        <mat-form-field class="notes-field">
+          <textarea
+            matInput
+            cdkTextareaAutosize
+            [value]="(service.monthSummary | async) || ''"
+            (change)="updateSummaryNotes($event.target.value)">
+          </textarea>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
