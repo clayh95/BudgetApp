@@ -20,11 +20,7 @@
 .angular/cache
 
 # IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+/.vscode/
 
 # misc
 /.sass-cache
@@ -41,6 +37,7 @@ testem.log
 Thumbs.db
 src/environments
 firebase-debug.log
+firestore-debug.log
 functions/src/environments/environments.prod.ts
 ui-debug.log
 functions/budgetapp-fcb30-080432360201.json
