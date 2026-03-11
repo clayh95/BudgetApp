@@ -1,8 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
-import { DbService } from '../core/db.service';
+import { DbService, IDashboardPreferences } from '../core/db.service';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { SharedModule } from '../shared/shared.module';
+import { MatDialog } from '@angular/material/dialog';
+import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
 
 export interface IDashboardStats {
   unbudgeted: number;
@@ -15,6 +17,7 @@ export interface IOverBudgetCategory {
   category: ICategory;
   spent: number;
   overBy: number;
+  remaining: number;
 }
 
 export interface ITopCategorySpend {
@@ -22,14 +25,31 @@ export interface ITopCategorySpend {
   spent: number;
 }
 
+export interface IWatchedCategoryResolved {
+  category: ICategory;
+  spent: number;
+  remaining: number;
+}
+
+export interface IWatchedCategoryMissing {
+  key: string;
+  displayName: string;
+}
+
 export interface IDashboardViewModel {
   stats: IDashboardStats;
   overBudgetCategories: IOverBudgetCategory[];
   topSpendingCategories: ITopCategorySpend[];
+  watchedCategoriesResolved: IWatchedCategoryResolved[];
+  watchedCategoriesMissing: IWatchedCategoryMissing[];
 }
 
 function roundMoney(value: number): number {
   return +((value ?? 0).toFixed(2));
+}
+
+export function normalizeCategoryKey(value: string): string {
+  return (value || '').trim().toLowerCase();
 }
 
 function toMoney(value: any): number {
@@ -44,9 +64,14 @@ function toMoney(value: any): number {
 export function buildDashboardViewModel(
   categories: ICategory[],
   transactions: ITransaction[],
-  monthYear: string
+  monthYear: string,
+  watchedCategoryKeys: string[] = []
 ): IDashboardViewModel {
   void monthYear;
+  const normalizedWatchKeys = Array.from(new Set((watchedCategoryKeys || [])
+    .map(k => normalizeCategoryKey(k))
+    .filter(k => k.length > 0)));
+
   const postedTransactions = transactions.filter(t => (t.status || '').toUpperCase() !== ITransactionStatus.pending.toUpperCase());
   const pendingTransactions = transactions
     .filter(t => (t.status || '').toUpperCase() === ITransactionStatus.pending.toUpperCase())
@@ -78,7 +103,8 @@ export function buildDashboardViewModel(
       return {
         category,
         spent,
-        overBy: roundMoney(spent - (category.budgeted || 0))
+        overBy: roundMoney(spent - (category.budgeted || 0)),
+        remaining: roundMoney((category.budgeted || 0) - spent)
       };
     })
     .filter(row => row.overBy > 0)
@@ -92,6 +118,33 @@ export function buildDashboardViewModel(
     .filter(row => row.spent > 0)
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 5);
+
+  const categoryByNormalizedName = new Map<string, ICategory>();
+  categories.forEach(c => {
+    const key = normalizeCategoryKey(c.name);
+    if (key.length > 0 && !categoryByNormalizedName.has(key)) {
+      categoryByNormalizedName.set(key, c);
+    }
+  });
+
+  const watchedCategoriesResolved: IWatchedCategoryResolved[] = [];
+  const watchedCategoriesMissing: IWatchedCategoryMissing[] = [];
+  normalizedWatchKeys.forEach(key => {
+    const category = categoryByNormalizedName.get(key);
+    if (category) {
+      const spent = roundMoney(spentByCategory.get(category.name) || 0);
+      watchedCategoriesResolved.push({
+        category,
+        spent,
+        remaining: roundMoney((category.budgeted || 0) - spent)
+      });
+    } else {
+      watchedCategoriesMissing.push({
+        key,
+        displayName: key.replace(/\b\w/g, char => char.toUpperCase())
+      });
+    }
+  });
 
   const actualIncome = roundMoney(
     postedTransactions
@@ -110,7 +163,9 @@ export function buildDashboardViewModel(
       overBudgetCount: overBudgetCategories.length
     },
     overBudgetCategories,
-    topSpendingCategories
+    topSpendingCategories,
+    watchedCategoriesResolved,
+    watchedCategoriesMissing
   };
 }
 
@@ -124,17 +179,30 @@ export function buildDashboardViewModel(
 export class DashboardComponent implements OnInit, OnDestroy {
   private dataSub: Subscription;
 
-  viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '');
+  viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
+  watchedCategoryKeys: string[] = [];
+  availableWatchOptions: ICategory[] = [];
 
-  constructor(public service: DbService) {}
+  private categories: ICategory[] = [];
+  private transactions: ITransaction[] = [];
+  private monthYear = '';
+
+  constructor(public service: DbService, public dialog: MatDialog) {}
 
   ngOnInit() {
     this.dataSub = combineLatest([this.service.categories, this.service.transactions, this.service.monthYear])
       .subscribe(([categories, transactions, monthYear]) => {
-        this.viewModel = buildDashboardViewModel(categories, transactions, monthYear);
+        this.categories = categories || [];
+        this.transactions = transactions || [];
+        this.monthYear = monthYear || '';
+        this.availableWatchOptions = this.categories
+          .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
+          .sort((a, b) => a.name.localeCompare(b.name));
+        this.rebuildViewModel();
       });
     this.loadBalances();
+    this.loadDashboardPreferences();
   }
 
   ngOnDestroy() {
@@ -145,6 +213,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async loadBalances() {
     this.balances = await this.service.getBalances();
+  }
+
+  async loadDashboardPreferences() {
+    const prefs = await this.service.getDashboardPreferences();
+    this.watchedCategoryKeys = Array.from(new Set((prefs?.watchedCategoryKeys || []).map(normalizeCategoryKey)));
+    this.rebuildViewModel();
+  }
+
+  private rebuildViewModel() {
+    this.viewModel = buildDashboardViewModel(
+      this.categories,
+      this.transactions,
+      this.monthYear,
+      this.watchedCategoryKeys
+    );
   }
 
   updateSummaryNotes(value: string) {
@@ -160,5 +243,67 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   trackByCategoryId(index: number, item: IOverBudgetCategory | ITopCategorySpend) {
     return item.category.id;
+  }
+
+  trackByWatchedResolved(index: number, item: IWatchedCategoryResolved) {
+    return item.category.id;
+  }
+
+  trackByWatchedMissing(index: number, item: IWatchedCategoryMissing) {
+    return item.key;
+  }
+
+  getTransactionQueryParamsForCategory(categoryName: string) {
+    return { category: categoryName };
+  }
+
+  getSummaryQueryParamsForCategory(category: ICategory) {
+    return { focusCategoryId: category.id, focusCategoryName: category.name };
+  }
+
+  openAddWatchedCategoryModal() {
+    const categoryOptions = this.availableWatchOptions
+      .map(c => c.name)
+      .filter(name => !this.watchedCategoryKeys.includes(normalizeCategoryKey(name)));
+    const dialogRef = this.dialog.open(DashboardWatchCategoryModalComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      autoFocus: false,
+      data: { categoryOptions }
+    });
+    dialogRef.afterClosed().subscribe((categoryName: string | undefined) => {
+      if (!categoryName) { return; }
+      this.addWatchedCategory(categoryName);
+    });
+  }
+
+  async addWatchedCategory(categoryName: string) {
+    const key = normalizeCategoryKey(categoryName);
+    if (!key) { return; }
+    if (this.watchedCategoryKeys.includes(key)) { return; }
+    this.watchedCategoryKeys = [...this.watchedCategoryKeys, key];
+    await this.persistWatchedPreferences();
+    this.rebuildViewModel();
+  }
+
+  async removeWatchedCategoryByName(categoryName: string) {
+    const key = normalizeCategoryKey(categoryName);
+    if (!key) { return; }
+    this.watchedCategoryKeys = this.watchedCategoryKeys.filter(k => k !== key);
+    await this.persistWatchedPreferences();
+    this.rebuildViewModel();
+  }
+
+  async removeWatchedMissing(key: string) {
+    this.watchedCategoryKeys = this.watchedCategoryKeys.filter(k => k !== key);
+    await this.persistWatchedPreferences();
+    this.rebuildViewModel();
+  }
+
+  private async persistWatchedPreferences() {
+    const preferences: IDashboardPreferences = {
+      watchedCategoryKeys: this.watchedCategoryKeys
+    };
+    await this.service.saveDashboardPreferences(preferences);
   }
 }

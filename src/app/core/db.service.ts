@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collectionData, docData } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 import {
   CollectionReference,
   DocumentData,
@@ -25,6 +26,11 @@ const moment = _rollupMoment;
 export enum tAction {
   add = 1,
   update = 2
+}
+
+export interface IDashboardPreferences {
+  watchedCategoryKeys: string[];
+  updatedAt?: string;
 }
 
 @Injectable({
@@ -55,7 +61,7 @@ export class DbService {
   // TODO: update save state for copy categories and carry balances
   saveState = new BehaviorSubject<saveState>(saveState.done);
 
-  constructor(private firestore: Firestore) {
+  constructor(private firestore: Firestore, private auth: Auth) {
     this.init();
   }
 
@@ -398,5 +404,46 @@ export class DbService {
       modalData  = [Object.assign({}, selectedTrans)];
     }
     return modalData;
+  }
+
+  private getCurrentUserUid(): string | null {
+    return this.auth.currentUser?.uid ?? null;
+  }
+
+  private normalizeCategoryKey(name: string): string {
+    return (name || '').trim().toLowerCase();
+  }
+
+  private getDashboardPreferencesDocRef(uid: string) {
+    return doc(this.firestore, `users/${uid}/userPreferences/dashboardPreferences`);
+  }
+
+  async getDashboardPreferences(): Promise<IDashboardPreferences> {
+    const uid = this.getCurrentUserUid();
+    if (!uid) {
+      return { watchedCategoryKeys: [] };
+    }
+    const snap = await getDoc(this.getDashboardPreferencesDocRef(uid));
+    const keys = Array.isArray(snap.data()?.['watchedCategoryKeys'])
+      ? (snap.data()?.['watchedCategoryKeys'] as any[])
+          .map(k => this.normalizeCategoryKey(`${k}`))
+          .filter(k => k.length > 0)
+      : [];
+    return { watchedCategoryKeys: Array.from(new Set(keys)) };
+  }
+
+  async saveDashboardPreferences(preferences: IDashboardPreferences): Promise<void> {
+    const uid = this.getCurrentUserUid();
+    if (!uid) { return; }
+    const watchedCategoryKeys = Array.from(
+      new Set((preferences?.watchedCategoryKeys || [])
+        .map(k => this.normalizeCategoryKey(k))
+        .filter(k => k.length > 0))
+    );
+    await setDoc(
+      this.getDashboardPreferencesDocRef(uid),
+      { watchedCategoryKeys, updatedAt: new Date().toISOString() },
+      { merge: true }
+    );
   }
 }

@@ -62,7 +62,20 @@
   align-items: center;
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   width: 100%;
+}
+
+.row-actions {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.amount-inline {
+  margin-left: 8px;
 }
 
 .projection {
@@ -94,12 +107,12 @@
   color: #d93025;
 }
 
-.muted {
-  color: #777;
+.positive {
+  color: #188038;
 }
 
-.watchlist-stub {
-  margin: 0 0 12px;
+.muted {
+  color: #777;
 }
 
 @media (max-width: 1200px) {

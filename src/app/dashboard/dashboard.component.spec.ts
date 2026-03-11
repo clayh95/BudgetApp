@@ -1,4 +1,4 @@
-import { buildDashboardViewModel } from './dashboard.component';
+import { buildDashboardViewModel, normalizeCategoryKey } from './dashboard.component';
 
 describe('buildDashboardViewModel', () => {
   it('calculates pending and non-pending uncategorized counts', () => {
@@ -28,5 +28,25 @@ describe('buildDashboardViewModel', () => {
 
     expect(vm.stats.overBudgetCount).toBe(1);
     expect(vm.overBudgetCategories[0].overBy).toBe(40);
+    expect(vm.overBudgetCategories[0].remaining).toBe(-40);
+  });
+
+  it('resolves watched categories by normalized names', () => {
+    const vm = buildDashboardViewModel(
+      [{ id: '1', name: 'Groceries', keywords: [], budgeted: 200, spent: 0, notes: '' }],
+      [],
+      '01/2026',
+      ['  GROCERIES  ', 'utilities']
+    );
+
+    expect(vm.watchedCategoriesResolved.length).toBe(1);
+    expect(vm.watchedCategoriesResolved[0].category.name).toBe('Groceries');
+    expect(vm.watchedCategoriesResolved[0].remaining).toBe(200);
+    expect(vm.watchedCategoriesMissing.length).toBe(1);
+    expect(vm.watchedCategoriesMissing[0].key).toBe('utilities');
+  });
+
+  it('normalizes watch keys', () => {
+    expect(normalizeCategoryKey('  Groceries  ')).toBe('groceries');
   });
 });

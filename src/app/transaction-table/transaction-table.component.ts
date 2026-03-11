@@ -18,6 +18,7 @@ export interface ITransactionRouteInitState {
   pending?: boolean;
   startingBalances?: boolean;
   uncategorized?: boolean;
+  category?: string;
   search?: string;
   page?: number;
   sort?: 'date' | 'amount' | 'description' | 'category' | 'notes';
@@ -47,6 +48,11 @@ export function parseTransactionRouteInitState(params: { get: (name: string) => 
   const uncategorized = parseBool(params.get('uncategorized'));
   if (uncategorized !== undefined) {
     state.uncategorized = uncategorized;
+  }
+
+  const category = params.get('category');
+  if (category !== null && category.trim().length > 0) {
+    state.category = category.trim();
   }
 
   const search = params.get('search');
@@ -90,6 +96,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   bShowPending = new BehaviorSubject<boolean>(false);
   bShowStartingBalances = new BehaviorSubject<boolean>(false);
   bOnlyUncategorized = new BehaviorSubject<boolean>(false);
+  categoryFilter = new BehaviorSubject<string>('');
   bToggleFilter = new BehaviorSubject<boolean>(false);
   searchValue: string = "";
 
@@ -105,7 +112,8 @@ export class TransactionTableComponent implements AfterViewInit  {
       this.filter,
       this.bShowPending,
       this.bShowStartingBalances,
-      this.bOnlyUncategorized);
+      this.bOnlyUncategorized,
+      this.categoryFilter);
     this.sort.direction = "desc";
     this.sort.active = "date";
 
@@ -124,6 +132,9 @@ export class TransactionTableComponent implements AfterViewInit  {
     }
     if (state.uncategorized !== undefined) {
       this.bOnlyUncategorized.next(state.uncategorized);
+    }
+    if (state.category !== undefined) {
+      this.categoryFilter.next(state.category);
     }
     if (state.search !== undefined) {
       this.searchValue = state.search;

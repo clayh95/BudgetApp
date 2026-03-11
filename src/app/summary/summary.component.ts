@@ -13,6 +13,8 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { ConfirmModalButtons, ConfirmModalConfig } from '../core/dataTypes';
 const moment = _rollupMoment
 import { SharedModule } from '../shared/shared.module';
+import { ActivatedRoute } from '@angular/router';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-summary',
@@ -23,7 +25,13 @@ import { SharedModule } from '../shared/shared.module';
 })
 export class SummaryComponent implements OnInit, OnDestroy {
 
-  constructor(public service: DbService, public dialog: MatDialog, private cdr: ChangeDetectorRef, private zone: NgZone) { }
+  constructor(
+    public service: DbService,
+    public dialog: MatDialog,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone,
+    private route: ActivatedRoute
+  ) { }
 
   catsTrans: Subscription;
   actualIncome: number;
@@ -34,8 +42,15 @@ export class SummaryComponent implements OnInit, OnDestroy {
   pendingTransactions: ITransaction[];
   totalPending: number;
   expandedPanel: string;
+  private focusCategoryId: string | null = null;
+  private focusCategoryName: string | null = null;
+  private focusApplied = false;
 
   ngOnInit() {
+    this.route.queryParamMap.pipe(take(1)).subscribe(params => {
+      this.focusCategoryId = params.get('focusCategoryId');
+      this.focusCategoryName = params.get('focusCategoryName');
+    });
     
     this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
       this.zone.run(() => {
@@ -93,6 +108,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
           let tmp: number = this.reportCats.map(c => c.category.budgeted).reduce((pv, v) => +pv + +v, 0);
           this.totalBudgeted = +tmp.toFixed(2);
+          this.applyFocusCategoryIfNeeded();
         this.cdr.markForCheck();
       });
     });
@@ -162,6 +178,35 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   SetExpandedPanel(id: string) {
     this.expandedPanel = id;
+  }
+
+  private applyFocusCategoryIfNeeded() {
+    if (this.focusApplied) { return; }
+    if (!this.focusCategoryId && !this.focusCategoryName) {
+      this.focusApplied = true;
+      return;
+    }
+    if (!this.reportCats || this.reportCats.length === 0) { return; }
+
+    let match: IReportCategory = null;
+    if (this.focusCategoryId) {
+      match = this.reportCats.find(rc => rc.category.id === this.focusCategoryId);
+    }
+    if (!match && this.focusCategoryName) {
+      const targetName = this.focusCategoryName.trim().toLowerCase();
+      match = this.reportCats.find(rc => (rc.category.name || '').trim().toLowerCase() === targetName);
+    }
+    this.focusApplied = true;
+    if (!match) { return; }
+
+    this.expandedPanel = match.category.id;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      const el = document.getElementById(`summary-category-${match.category.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 0);
   }
   
   editTransaction(t:ITransaction) {

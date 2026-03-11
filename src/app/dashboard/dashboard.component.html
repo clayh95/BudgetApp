@@ -27,19 +27,75 @@
       <mat-card-title>Needs Attention</mat-card-title>
       <mat-card-content>
         <div class="section-title">
-          Watched Categories (Coming Soon)
+          Watched Categories
+          <button mat-icon-button matTooltip="Add watched category" (click)="openAddWatchedCategoryModal()">
+            <mat-icon>add</mat-icon>
+          </button>
         </div>
-        <p class="muted watchlist-stub">Add categories you want quick visibility into right on the dashboard.</p>
+
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesResolved; trackBy: trackByWatchedResolved">
+            <div class="row">
+              <span>
+                {{item.category.name}}
+                <span class="amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
+                  {{item.remaining | currency}}
+                </span>
+              </span>
+              <span class="row-actions">
+                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                  <mat-icon>view_list</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                  <mat-icon>assignment</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Remove watched category" (click)="removeWatchedCategoryByName(item.category.name)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesMissing; trackBy: trackByWatchedMissing">
+            <div class="row">
+              <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
+              <span class="row-actions">
+                <button mat-icon-button disabled>
+                  <mat-icon>view_list</mat-icon>
+                </button>
+                <button mat-icon-button disabled>
+                  <mat-icon>assignment</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Remove watched category" (click)="removeWatchedMissing(item.key)">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngIf="viewModel.watchedCategoriesResolved.length === 0 && viewModel.watchedCategoriesMissing.length === 0">
+            <div class="muted">No watched categories yet.</div>
+          </mat-list-item>
+        </mat-list>
 
         <div class="section-title">
           Over Budget Categories
-          <button mat-button [routerLink]="['/summary']">Open summary</button>
         </div>
         <mat-list dense>
           <mat-list-item *ngFor="let item of viewModel.overBudgetCategories | slice:0:5; trackBy: trackByCategoryId">
             <div class="row">
-              <span>{{item.category.name}}</span>
-              <span class="negative">{{item.overBy | currency}}</span>
+              <span>
+                {{item.category.name}}
+                <span class="negative amount-inline">{{item.remaining | currency}}</span>
+              </span>
+              <span class="row-actions">
+                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                  <mat-icon>view_list</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                  <mat-icon>assignment</mat-icon>
+                </button>
+              </span>
             </div>
           </mat-list-item>
           <mat-list-item *ngIf="viewModel.overBudgetCategories.length === 0">
@@ -56,8 +112,18 @@
         <mat-list dense>
           <mat-list-item *ngFor="let item of viewModel.topSpendingCategories; trackBy: trackByCategoryId">
             <div class="row">
-              <span>{{item.category.name}}</span>
-              <span>{{item.spent | currency}}</span>
+              <span>
+                {{item.category.name}}
+                <span class="amount-inline">{{item.spent | currency}}</span>
+              </span>
+              <span class="row-actions">
+                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                  <mat-icon>view_list</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                  <mat-icon>assignment</mat-icon>
+                </button>
+              </span>
             </div>
           </mat-list-item>
           <mat-list-item *ngIf="viewModel.topSpendingCategories.length === 0">

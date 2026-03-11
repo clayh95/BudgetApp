@@ -125,6 +125,7 @@
       <div *ngIf="reportCats" class="accordian-margin">
         <mat-accordion>
           <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID"
+            [attr.id]="'summary-category-' + item.category.id"
             [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)"
             class="expansion-panel-round-ends">
             <mat-expansion-panel-header>
