@@ -12,18 +12,23 @@
     <mat-card class="kpi-card">
       <div class="label">Pending Total</div>
       <div
-        class="metric-chip"
-        [class.positive]="viewModel.stats.pendingTotal >= 0"
-        [class.negative]="viewModel.stats.pendingTotal < 0">
-        {{viewModel.stats.pendingTotal | currency}}
+        class="kpi-click-row row-clickable"
+        role="button"
+        tabindex="0"
+        [matMenuTriggerFor]="pendingKpiActions"
+        [attr.aria-label]="'Actions for pending total'">
+        <span
+          class="metric-chip"
+          [class.positive]="viewModel.stats.pendingTotal >= 0"
+          [class.negative]="viewModel.stats.pendingTotal < 0">
+          {{viewModel.stats.pendingTotal | currency}}
+        </span>
+        <span class="row-actions">
+          <span class="row-chevron" aria-hidden="true">
+            <mat-icon>chevron_right</mat-icon>
+          </span>
+        </span>
       </div>
-      <button
-        mat-icon-button
-        class="kpi-overflow"
-        matTooltip="Open actions"
-        [matMenuTriggerFor]="pendingKpiActions">
-        <mat-icon>more_vert</mat-icon>
-      </button>
       <mat-menu #pendingKpiActions="matMenu">
         <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{pending: true}">
           <mat-icon>view_list</mat-icon>
@@ -38,18 +43,23 @@
     <mat-card class="kpi-card">
       <div class="label">Uncategorized</div>
       <div
-        class="metric-chip"
-        [class.positive]="viewModel.stats.uncategorizedNonPendingCount > 0"
-        [class.negative]="viewModel.stats.uncategorizedNonPendingCount < 0">
-        {{viewModel.stats.uncategorizedNonPendingCount}}
+        class="kpi-click-row row-clickable"
+        role="button"
+        tabindex="0"
+        [matMenuTriggerFor]="uncategorizedKpiActions"
+        [attr.aria-label]="'Actions for uncategorized total'">
+        <span
+          class="metric-chip"
+          [class.positive]="viewModel.stats.uncategorizedNonPendingCount > 0"
+          [class.negative]="viewModel.stats.uncategorizedNonPendingCount < 0">
+          {{viewModel.stats.uncategorizedNonPendingCount}}
+        </span>
+        <span class="row-actions">
+          <span class="row-chevron" aria-hidden="true">
+            <mat-icon>chevron_right</mat-icon>
+          </span>
+        </span>
       </div>
-      <button
-        mat-icon-button
-        class="kpi-overflow"
-        matTooltip="Open actions"
-        [matMenuTriggerFor]="uncategorizedKpiActions">
-        <mat-icon>more_vert</mat-icon>
-      </button>
       <mat-menu #uncategorizedKpiActions="matMenu">
         <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{uncategorized: true}">
           <mat-icon>view_list</mat-icon>
@@ -76,7 +86,12 @@
 
         <mat-list dense>
           <mat-list-item *ngFor="let item of viewModel.watchedCategoriesResolved; trackBy: trackByWatchedResolved">
-            <div class="row">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
               <span>
                 {{item.category.name}}
                 <span class="metric-chip amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
@@ -84,9 +99,6 @@
                 </span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="watchedActionsMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
                 <mat-menu #watchedActionsMenu="matMenu">
                   <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
                     <mat-icon>view_list</mat-icon>
@@ -101,17 +113,22 @@
                     <span>Remove watched category</span>
                   </button>
                 </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
               </span>
             </div>
           </mat-list-item>
 
           <mat-list-item *ngFor="let item of viewModel.watchedCategoriesMissing; trackBy: trackByWatchedMissing">
-            <div class="row">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedMissingActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.displayName">
               <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="watchedMissingActionsMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
                 <mat-menu #watchedMissingActionsMenu="matMenu">
                   <button mat-menu-item disabled>
                     <mat-icon>view_list</mat-icon>
@@ -126,6 +143,9 @@
                     <span>Remove watched category</span>
                   </button>
                 </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
               </span>
             </div>
           </mat-list-item>
@@ -140,15 +160,17 @@
         </div>
         <mat-list dense>
           <mat-list-item *ngFor="let item of viewModel.overBudgetCategories | slice:0:5; trackBy: trackByCategoryId">
-            <div class="row">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="overBudgetActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
               <span>
                 {{item.category.name}}
                 <span class="metric-chip amount-inline negative">{{item.remaining | currency}}</span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="overBudgetActionsMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
                 <mat-menu #overBudgetActionsMenu="matMenu">
                   <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
                     <mat-icon>view_list</mat-icon>
@@ -159,6 +181,9 @@
                     <span>Open summary</span>
                   </button>
                 </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
               </span>
             </div>
           </mat-list-item>
@@ -175,15 +200,17 @@
         <div class="section-title">Top Spending Categories</div>
         <mat-list dense>
           <mat-list-item *ngFor="let item of viewModel.topSpendingCategories; trackBy: trackByCategoryId">
-            <div class="row">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="topSpendActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
               <span>
                 {{item.category.name}}
                 <span class="metric-chip amount-inline negative">{{-item.spent | currency}}</span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="topSpendActionsMenu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
                 <mat-menu #topSpendActionsMenu="matMenu">
                   <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
                     <mat-icon>view_list</mat-icon>
@@ -194,6 +221,9 @@
                     <span>Open summary</span>
                   </button>
                 </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
               </span>
             </div>
           </mat-list-item>

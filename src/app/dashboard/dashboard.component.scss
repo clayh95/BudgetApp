@@ -31,12 +31,6 @@
   margin-top: 6px;
 }
 
-.kpi-overflow {
-  align-self: flex-start;
-  margin-left: 0;
-  margin-top: 6px;
-}
-
 .metric-chip {
   align-items: center;
   background: rgba(128, 134, 139, 0.07);
@@ -51,6 +45,17 @@
   padding: 4px 11px;
   white-space: nowrap;
   align-self: flex-start;
+}
+
+.kpi-click-row {
+  align-items: center;
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.kpi-click-row .metric-chip {
+  margin-top: 0;
 }
 
 .metric-chip.negative {
@@ -100,12 +105,42 @@
   width: 100%;
 }
 
+.row-clickable {
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 2px 4px;
+}
+
+.row-clickable:hover .row-chevron,
+.row-clickable:focus-visible .row-chevron {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.row-clickable:focus-visible {
+  outline: 2px solid rgba(63, 81, 181, 0.25);
+  outline-offset: 2px;
+}
+
 .row-actions {
   align-items: center;
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
   justify-content: flex-end;
+}
+
+.row-chevron {
+  align-items: center;
+  display: inline-flex;
+  opacity: 0.25;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.row-chevron mat-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
 }
 
 .amount-inline {
