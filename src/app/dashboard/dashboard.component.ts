@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
-import { DbService, IDashboardPreferences } from '../core/db.service';
+import { DbService } from '../core/db.service';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
@@ -181,28 +181,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
-  watchedCategoryKeys: string[] = [];
   availableWatchOptions: ICategory[] = [];
 
-  private categories: ICategory[] = [];
-  private transactions: ITransaction[] = [];
-  private monthYear = '';
-
-  constructor(public service: DbService, public dialog: MatDialog) {}
+  constructor(
+    public service: DbService,
+    public dialog: MatDialog,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.dataSub = combineLatest([this.service.categories, this.service.transactions, this.service.monthYear])
-      .subscribe(([categories, transactions, monthYear]) => {
-        this.categories = categories || [];
-        this.transactions = transactions || [];
-        this.monthYear = monthYear || '';
-        this.availableWatchOptions = this.categories
+    this.dataSub = combineLatest([
+      this.service.categories,
+      this.service.transactions,
+      this.service.monthYear,
+      this.service.dashboardPreferences
+    ]).subscribe(([categories, transactions, monthYear, preferences]) => {
+      this.zone.run(() => {
+        const cats = categories || [];
+        const trans = transactions || [];
+        const my = monthYear || '';
+        this.availableWatchOptions = cats
           .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
           .sort((a, b) => a.name.localeCompare(b.name));
-        this.rebuildViewModel();
+        this.viewModel = buildDashboardViewModel(
+          cats,
+          trans,
+          my,
+          preferences?.watchedCategoryKeys || []
+        );
+        this.cdr.markForCheck();
       });
+    });
     this.loadBalances();
-    this.loadDashboardPreferences();
   }
 
   ngOnDestroy() {
@@ -212,22 +223,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async loadBalances() {
-    this.balances = await this.service.getBalances();
-  }
-
-  async loadDashboardPreferences() {
-    const prefs = await this.service.getDashboardPreferences();
-    this.watchedCategoryKeys = Array.from(new Set((prefs?.watchedCategoryKeys || []).map(normalizeCategoryKey)));
-    this.rebuildViewModel();
-  }
-
-  private rebuildViewModel() {
-    this.viewModel = buildDashboardViewModel(
-      this.categories,
-      this.transactions,
-      this.monthYear,
-      this.watchedCategoryKeys
-    );
+    const balances = await this.service.getBalances();
+    this.zone.run(() => {
+      this.balances = balances;
+      this.cdr.markForCheck();
+    });
   }
 
   updateSummaryNotes(value: string) {
@@ -262,9 +262,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   openAddWatchedCategoryModal() {
+    const watchedCategoryKeys = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
     const categoryOptions = this.availableWatchOptions
       .map(c => c.name)
-      .filter(name => !this.watchedCategoryKeys.includes(normalizeCategoryKey(name)));
+      .filter(name => !watchedCategoryKeys.includes(normalizeCategoryKey(name)));
     const dialogRef = this.dialog.open(DashboardWatchCategoryModalComponent, {
       width: '450px',
       maxWidth: '90vw',
@@ -280,30 +281,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async addWatchedCategory(categoryName: string) {
     const key = normalizeCategoryKey(categoryName);
     if (!key) { return; }
-    if (this.watchedCategoryKeys.includes(key)) { return; }
-    this.watchedCategoryKeys = [...this.watchedCategoryKeys, key];
-    await this.persistWatchedPreferences();
-    this.rebuildViewModel();
+    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
+    if (current.includes(key)) { return; }
+    await this.persistWatchedPreferences([...current, key]);
   }
 
   async removeWatchedCategoryByName(categoryName: string) {
     const key = normalizeCategoryKey(categoryName);
     if (!key) { return; }
-    this.watchedCategoryKeys = this.watchedCategoryKeys.filter(k => k !== key);
-    await this.persistWatchedPreferences();
-    this.rebuildViewModel();
+    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
+    await this.persistWatchedPreferences(current.filter(k => k !== key));
   }
 
   async removeWatchedMissing(key: string) {
-    this.watchedCategoryKeys = this.watchedCategoryKeys.filter(k => k !== key);
-    await this.persistWatchedPreferences();
-    this.rebuildViewModel();
+    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
+    await this.persistWatchedPreferences(current.filter(k => k !== key));
   }
 
-  private async persistWatchedPreferences() {
-    const preferences: IDashboardPreferences = {
-      watchedCategoryKeys: this.watchedCategoryKeys
-    };
-    await this.service.saveDashboardPreferences(preferences);
+  private async persistWatchedPreferences(watchedCategoryKeys: string[]) {
+    await this.service.saveDashboardPreferences({
+      watchedCategoryKeys
+    });
   }
 }

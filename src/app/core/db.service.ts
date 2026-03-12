@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collectionData, docData } from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
+import { Auth, authState } from '@angular/fire/auth';
 import {
   CollectionReference,
   DocumentData,
@@ -47,11 +47,15 @@ export class DbService {
   private tranSub: Subscription;
   private catSub: Subscription;
   private monthSummarySub: Subscription;
+  private dashboardPreferencesSub: Subscription | null = null;
+  private authStateSub: Subscription;
+  private dashboardPreferencesUid: string | null = null;
 
   monthYear: BehaviorSubject<string>;
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
+  dashboardPreferences = new BehaviorSubject<IDashboardPreferences>({ watchedCategoryKeys: [] });
 
   // TODO: put in chrome storage (maybe?)
   actionStack: IDocumentAction[] = new Array<IDocumentAction>();
@@ -62,6 +66,9 @@ export class DbService {
   saveState = new BehaviorSubject<saveState>(saveState.done);
 
   constructor(private firestore: Firestore, private auth: Auth) {
+    this.authStateSub = authState(this.auth).subscribe(user => {
+      this.handleAuthStateChange(user?.uid ?? null);
+    });
     this.init();
   }
 
@@ -100,6 +107,7 @@ export class DbService {
         this.tranSub = collectionData(this.transactionCollection, { idField: 'id' })
           .subscribe(data => this.processTransactions(data as DocumentData[]));
     });
+
   }
 
   processTransactions(data: DocumentData[]) {
@@ -296,13 +304,17 @@ export class DbService {
   signOut() {
     if (this.tranSub) { this.tranSub.unsubscribe(); }
     if (this.catSub) { this.catSub.unsubscribe(); }
+    if (this.dashboardPreferencesSub) { this.dashboardPreferencesSub.unsubscribe(); }
+    this.dashboardPreferencesSub = null;
+    this.dashboardPreferencesUid = null;
+    this.dashboardPreferences.next({ watchedCategoryKeys: [] });
     this.transactions.next([]);
     this.categories.next([]);
     console.log('Signed out');
   }
 
   signIn() {
-    this.init()
+    this.init();
   }
 
   checkIfTransactionExists(monthYear:string, desc:string): Promise<any> {
@@ -418,18 +430,35 @@ export class DbService {
     return doc(this.firestore, `users/${uid}/userPreferences/dashboardPreferences`);
   }
 
-  async getDashboardPreferences(): Promise<IDashboardPreferences> {
-    const uid = this.getCurrentUserUid();
-    if (!uid) {
-      return { watchedCategoryKeys: [] };
-    }
-    const snap = await getDoc(this.getDashboardPreferencesDocRef(uid));
-    const keys = Array.isArray(snap.data()?.['watchedCategoryKeys'])
-      ? (snap.data()?.['watchedCategoryKeys'] as any[])
-          .map(k => this.normalizeCategoryKey(`${k}`))
-          .filter(k => k.length > 0)
+  private parseDashboardPreferences(data: any): IDashboardPreferences {
+    const keys = Array.isArray(data?.['watchedCategoryKeys'])
+      ? (data?.['watchedCategoryKeys'] as any[])
+        .map(k => this.normalizeCategoryKey(`${k}`))
+        .filter(k => k.length > 0)
       : [];
     return { watchedCategoryKeys: Array.from(new Set(keys)) };
+  }
+
+  private handleAuthStateChange(uid: string | null) {
+    if (!uid) {
+      this.dashboardPreferences.next({ watchedCategoryKeys: [] });
+      if (this.dashboardPreferencesSub) {
+        this.dashboardPreferencesSub.unsubscribe();
+        this.dashboardPreferencesSub = null;
+      }
+      this.dashboardPreferencesUid = null;
+      return;
+    }
+    if (this.dashboardPreferencesSub && this.dashboardPreferencesUid === uid) {
+      return;
+    }
+    if (this.dashboardPreferencesSub) {
+      this.dashboardPreferencesSub.unsubscribe();
+    }
+    this.dashboardPreferencesUid = uid;
+    this.dashboardPreferencesSub = docData(this.getDashboardPreferencesDocRef(uid)).subscribe(snap => {
+      this.dashboardPreferences.next(this.parseDashboardPreferences(snap));
+    });
   }
 
   async saveDashboardPreferences(preferences: IDashboardPreferences): Promise<void> {
@@ -445,5 +474,6 @@ export class DbService {
       { watchedCategoryKeys, updatedAt: new Date().toISOString() },
       { merge: true }
     );
+    this.dashboardPreferences.next({ watchedCategoryKeys });
   }
 }
