@@ -44,12 +44,16 @@ export class SummaryComponent implements OnInit, OnDestroy {
   expandedPanel: string;
   private focusCategoryId: string | null = null;
   private focusCategoryName: string | null = null;
+  private focusSection: 'pending' | 'uncategorized' | null = null;
   private focusApplied = false;
+  summaryPendingPanelId = 'summary-section-pending-transactions';
 
   ngOnInit() {
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
       this.focusCategoryId = params.get('focusCategoryId');
       this.focusCategoryName = params.get('focusCategoryName');
+      const section = params.get('focusSection');
+      this.focusSection = section === 'pending' || section === 'uncategorized' ? section : null;
     });
     
     this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
@@ -182,31 +186,50 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   private applyFocusCategoryIfNeeded() {
     if (this.focusApplied) { return; }
-    if (!this.focusCategoryId && !this.focusCategoryName) {
+    if (!this.focusCategoryId && !this.focusCategoryName && !this.focusSection) {
       this.focusApplied = true;
       return;
     }
     if (!this.reportCats || this.reportCats.length === 0) { return; }
 
     let match: IReportCategory = null;
-    if (this.focusCategoryId) {
-      match = this.reportCats.find(rc => rc.category.id === this.focusCategoryId);
+    let targetPanelId: string | null = null;
+    if (this.focusSection === 'pending') {
+      targetPanelId = this.summaryPendingPanelId;
+      this.expandedPanel = targetPanelId;
     }
-    if (!match && this.focusCategoryName) {
+    else if (this.focusSection === 'uncategorized') {
+      match = this.reportCats.find(rc => (rc.category.name || '').trim().toLowerCase() === 'uncategorized');
+      if (match) { targetPanelId = this.getSummaryPanelId(match); this.expandedPanel = targetPanelId; }
+    }
+    else if (this.focusCategoryId) {
+      match = this.reportCats.find(rc => rc.category.id === this.focusCategoryId);
+      if (match) { targetPanelId = this.getSummaryPanelId(match); this.expandedPanel = targetPanelId; }
+    }
+    else if (!match && this.focusCategoryName) {
       const targetName = this.focusCategoryName.trim().toLowerCase();
       match = this.reportCats.find(rc => (rc.category.name || '').trim().toLowerCase() === targetName);
+      if (match) { targetPanelId = this.getSummaryPanelId(match); this.expandedPanel = targetPanelId; }
     }
     this.focusApplied = true;
-    if (!match) { return; }
+    if (!targetPanelId) { return; }
 
-    this.expandedPanel = match.category.id;
     this.cdr.detectChanges();
     setTimeout(() => {
-      const el = document.getElementById(`summary-category-${match.category.id}`);
+      const el = document.getElementById(targetPanelId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 0);
+  }
+
+  getSummaryPanelId(item: IReportCategory): string {
+    const fallbackId = (item?.category?.name || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `summary-category-${item?.category?.id || fallbackId || 'untitled'}`;
   }
   
   editTransaction(t:ITransaction) {

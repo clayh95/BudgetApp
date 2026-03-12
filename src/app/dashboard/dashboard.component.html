@@ -2,23 +2,64 @@
   <div class="kpi-grid">
     <mat-card class="kpi-card">
       <div class="label">Unbudgeted</div>
-      <div class="value" [class.negative]="viewModel.stats.unbudgeted < 0">
+      <div
+        class="metric-chip"
+        [class.negative]="viewModel.stats.unbudgeted < 0"
+        [class.positive]="viewModel.stats.unbudgeted >= 0">
         {{viewModel.stats.unbudgeted | currency}}
       </div>
     </mat-card>
     <mat-card class="kpi-card">
       <div class="label">Pending Total</div>
-      <div class="value">{{viewModel.stats.pendingTotal | currency}}</div>
-      <button mat-stroked-button [routerLink]="['/transactions']" [queryParams]="{pending: true}">
-        Open
+      <div
+        class="metric-chip"
+        [class.positive]="viewModel.stats.pendingTotal >= 0"
+        [class.negative]="viewModel.stats.pendingTotal < 0">
+        {{viewModel.stats.pendingTotal | currency}}
+      </div>
+      <button
+        mat-icon-button
+        class="kpi-overflow"
+        matTooltip="Open actions"
+        [matMenuTriggerFor]="pendingKpiActions">
+        <mat-icon>more_vert</mat-icon>
       </button>
+      <mat-menu #pendingKpiActions="matMenu">
+        <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{pending: true}">
+          <mat-icon>view_list</mat-icon>
+          <span>Open transactions</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForSection('pending')">
+          <mat-icon>view_agenda</mat-icon>
+          <span>Open summary</span>
+        </button>
+      </mat-menu>
     </mat-card>
     <mat-card class="kpi-card">
       <div class="label">Uncategorized</div>
-      <div class="value">{{viewModel.stats.uncategorizedNonPendingCount}}</div>
-      <button mat-stroked-button [routerLink]="['/transactions']" [queryParams]="{uncategorized: true}">
-        Open
+      <div
+        class="metric-chip"
+        [class.positive]="viewModel.stats.uncategorizedNonPendingCount > 0"
+        [class.negative]="viewModel.stats.uncategorizedNonPendingCount < 0">
+        {{viewModel.stats.uncategorizedNonPendingCount}}
+      </div>
+      <button
+        mat-icon-button
+        class="kpi-overflow"
+        matTooltip="Open actions"
+        [matMenuTriggerFor]="uncategorizedKpiActions">
+        <mat-icon>more_vert</mat-icon>
       </button>
+      <mat-menu #uncategorizedKpiActions="matMenu">
+        <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{uncategorized: true}">
+          <mat-icon>view_list</mat-icon>
+          <span>Open transactions</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForSection('uncategorized')">
+          <mat-icon>view_agenda</mat-icon>
+          <span>Open summary</span>
+        </button>
+      </mat-menu>
     </mat-card>
   </div>
 
@@ -38,20 +79,28 @@
             <div class="row">
               <span>
                 {{item.category.name}}
-                <span class="amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
+                <span class="metric-chip amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
                   {{item.remaining | currency}}
                 </span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
-                  <mat-icon>view_list</mat-icon>
+                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="watchedActionsMenu">
+                  <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
-                  <mat-icon>view_agenda</mat-icon>
-                </button>
-                <button mat-icon-button matTooltip="Remove watched category" (click)="removeWatchedCategoryByName(item.category.name)">
-                  <mat-icon>close</mat-icon>
-                </button>
+                <mat-menu #watchedActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedCategoryByName(item.category.name)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched category</span>
+                  </button>
+                </mat-menu>
               </span>
             </div>
           </mat-list-item>
@@ -60,15 +109,23 @@
             <div class="row">
               <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
               <span class="row-actions">
-                <button mat-icon-button disabled>
-                  <mat-icon>view_list</mat-icon>
+                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="watchedMissingActionsMenu">
+                  <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-icon-button disabled>
-                  <mat-icon>view_agenda</mat-icon>
-                </button>
-                <button mat-icon-button matTooltip="Remove watched category" (click)="removeWatchedMissing(item.key)">
-                  <mat-icon>close</mat-icon>
-                </button>
+                <mat-menu #watchedMissingActionsMenu="matMenu">
+                  <button mat-menu-item disabled>
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item disabled>
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedMissing(item.key)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched category</span>
+                  </button>
+                </mat-menu>
               </span>
             </div>
           </mat-list-item>
@@ -86,15 +143,22 @@
             <div class="row">
               <span>
                 {{item.category.name}}
-                <span class="negative amount-inline">{{item.remaining | currency}}</span>
+                <span class="metric-chip amount-inline negative">{{item.remaining | currency}}</span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
-                  <mat-icon>view_list</mat-icon>
+                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="overBudgetActionsMenu">
+                  <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
-                  <mat-icon>view_agenda</mat-icon>
-                </button>
+                <mat-menu #overBudgetActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                </mat-menu>
               </span>
             </div>
           </mat-list-item>
@@ -114,15 +178,22 @@
             <div class="row">
               <span>
                 {{item.category.name}}
-                <span class="amount-inline">{{item.spent | currency}}</span>
+                <span class="metric-chip amount-inline negative">{{-item.spent | currency}}</span>
               </span>
               <span class="row-actions">
-                <button mat-icon-button matTooltip="Open transactions" [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
-                  <mat-icon>view_list</mat-icon>
+                <button mat-icon-button matTooltip="Open actions" [matMenuTriggerFor]="topSpendActionsMenu">
+                  <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-icon-button matTooltip="Open summary" [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
-                  <mat-icon>view_agenda</mat-icon>
-                </button>
+                <mat-menu #topSpendActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                </mat-menu>
               </span>
             </div>
           </mat-list-item>
@@ -139,10 +210,14 @@
         <mat-list dense>
           <mat-list-item *ngFor="let balance of balances">
             <div class="row">
-              <span>{{balance.key}}</span>
-              <span>
+              <span class="balance-key">
+                <span class="balance-risk-space">
+                  <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
+                </span>
+                <span class="balance-label">{{balance.key}}</span>
+              </span>
+              <span class="balance-value-wrap">
                 {{balance.value}}
-                <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
               </span>
             </div>
           </mat-list-item>

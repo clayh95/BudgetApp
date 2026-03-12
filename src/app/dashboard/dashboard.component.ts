@@ -224,8 +224,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async loadBalances() {
     const balances = await this.service.getBalances();
+    const sortedBalances = balances.sort((a, b) => (a.key || '').localeCompare(b.key || ''));
     this.zone.run(() => {
-      this.balances = balances;
+      this.balances = sortedBalances;
       this.cdr.markForCheck();
     });
   }
@@ -259,6 +260,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getSummaryQueryParamsForCategory(category: ICategory) {
     return { focusCategoryId: category.id, focusCategoryName: category.name };
+  }
+
+  getSummaryQueryParamsForSection(section: 'pending' | 'uncategorized') {
+    return { focusSection: section };
   }
 
   openAddWatchedCategoryModal() {

@@ -31,6 +31,40 @@
   margin-top: 6px;
 }
 
+.kpi-overflow {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-top: 6px;
+}
+
+.metric-chip {
+  align-items: center;
+  background: rgba(128, 134, 139, 0.07);
+  border: 1px solid rgba(128, 134, 139, 0.3);
+  border-radius: 999px;
+  color: #5f6368;
+  display: inline-flex;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-top: 6px;
+  padding: 4px 11px;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.metric-chip.negative {
+  background: rgba(217, 48, 37, 0.08);
+  border-color: rgba(217, 48, 37, 0.32);
+  color: #d93025;
+}
+
+.metric-chip.positive {
+  background: rgba(24, 128, 56, 0.08);
+  border-color: rgba(24, 128, 56, 0.32);
+  color: #188038;
+}
+
 .main-grid {
   display: grid;
   gap: 12px;
@@ -97,10 +131,30 @@
   width: 100%;
 }
 
+.balance-value-wrap {
+  align-items: center;
+  display: inline-flex;
+  line-height: 1.15;
+  gap: 0;
+}
+
+.balance-key {
+  align-items: center;
+  display: inline-flex;
+}
+
+.balance-risk-space {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 20px;
+  width: 20px;
+}
+
 .risk-icon {
   color: orange;
-  font-size: 1.1rem;
-  margin-left: 4px;
+  font-size: 1rem;
+  line-height: 1;
+  margin: 0;
 }
 
 .negative {
