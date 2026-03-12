@@ -156,7 +156,6 @@
     (opened)="onSearchPanelOpened()"
     (closed)="onSearchPanelClosed()"
     panelClass="transaction-search-panel">
-    <mat-option *ngIf="showSearchHints" disabled>Type to search transactions, or choose a filter/category.</mat-option>
 
     <mat-option class="search-filter-options-row">
       <button type="button" mat-icon-button (click)="togglePendingVisibility(); $event.stopPropagation();"
@@ -172,6 +171,8 @@
         <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
       </button>
     </mat-option>
+
+    <mat-option *ngIf="showSearchHints" disabled>Search transactions or categories...</mat-option>
 
     <ng-container *ngIf="!showSearchHints">
       <mat-option *ngIf="suggestedCategories.length === 0" disabled>

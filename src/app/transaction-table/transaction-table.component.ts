@@ -221,6 +221,8 @@ export class TransactionTableComponent implements AfterViewInit  {
   onCategoryOptionSelected(category: ICategory) {
     this.resetPageIndex();
     this.categoryFilter.next(category.name);
+    this.searchValue = '';
+    this.applyFilter(this.searchValue);
   }
 
   get showSearchHints(): boolean {
