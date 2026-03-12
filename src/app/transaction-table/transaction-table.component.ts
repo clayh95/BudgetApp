@@ -97,8 +97,9 @@ export class TransactionTableComponent implements AfterViewInit  {
   bShowStartingBalances = new BehaviorSubject<boolean>(false);
   bOnlyUncategorized = new BehaviorSubject<boolean>(false);
   categoryFilter = new BehaviorSubject<string>('');
-  bToggleFilter = new BehaviorSubject<boolean>(false);
   searchValue: string = "";
+  searchFocused = false;
+  searchPanelOpen = false;
 
   constructor(public Tsvc: DbService,
               public dialog: MatDialog,
@@ -191,6 +192,65 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.filter.next(filterValue.trim().toLowerCase())
   }
 
+  onSearchInput(value: string) {
+    this.searchValue = value || '';
+    this.applyFilter(this.searchValue);
+  }
+
+  onSearchFocus() {
+    this.searchFocused = true;
+  }
+
+  onSearchBlur() {
+    this.searchFocused = false;
+  }
+
+  onSearchPanelOpened() {
+    this.searchPanelOpen = true;
+  }
+
+  onSearchPanelClosed() {
+    this.searchPanelOpen = false;
+  }
+
+  onClearSearch() {
+    this.searchValue = '';
+    this.applyFilter(this.searchValue);
+  }
+
+  onCategoryOptionSelected(category: ICategory) {
+    this.resetPageIndex();
+    this.categoryFilter.next(category.name);
+  }
+
+  get showSearchHints(): boolean {
+    const hasSearchValue = (this.searchValue || '').trim().length > 0;
+    return (this.searchFocused || this.searchPanelOpen) && !hasSearchValue;
+  }
+
+  get suggestedCategories(): ICategory[] {
+    const query = (this.searchValue || '').toLowerCase().trim();
+    const categories = this.Tsvc.categories.getValue() || [];
+
+    if (!query) { return categories; }
+
+    return categories.filter((category) =>
+      (category.name || '').toLowerCase().indexOf(query) >= 0
+    );
+  }
+
+  get activeCategory(): ICategory | null {
+    const categoryFilter = (this.categoryFilter.getValue() || '').trim().toLowerCase();
+    if (!categoryFilter) { return null; }
+    const categories = this.Tsvc.categories.getValue() || [];
+    return categories.find(category => (category.name || '').toLowerCase() === categoryFilter) ?? null;
+  }
+
+  clearCategoryFilter() {
+    this.categoryFilter.next('');
+    this.resetPageIndex();
+  }
+
   togglePendingVisibility() {
     this.resetPageIndex();
     this.bShowPending.next(!this.bShowPending.getValue());
@@ -206,20 +266,8 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.bOnlyUncategorized.next(!this.bOnlyUncategorized.getValue());
   }
 
-  toggleFilterMenu() {
-    this.bToggleFilter.next(!this.bToggleFilter.getValue());
-  }
-
   resetPageIndex() {
     if (this.paginator.pageIndex != 0) this.paginator.pageIndex = 0;
-  }
-
-  filtersOn() {
-    return (
-      this.bShowPending.getValue()
-      || this.bShowStartingBalances.getValue()
-      || this.bOnlyUncategorized.getValue()
-    );
   }
 
   trackById(index, item) {

@@ -107,36 +107,87 @@
 
 
 <div class="paginator">
-  <div class="filters-wrapper">
-    <div [class]="'filter-options ' + (bToggleFilter.getValue() ? 'filter-options-show' : 'filter-options-hide')">
-      <button mat-icon-button (click)="togglePendingVisibility()"
-      [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'" matTooltipPosition="after">
-          <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
-      </button>
-    
-      <button mat-icon-button (click)="toggleStartingBalanceVisibility()" 
-      [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'" matTooltipPosition="after">
-          <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">account_balance_wallet</mat-icon>
-      </button>
-    
-      <button mat-icon-button (click)="toggleUncategorizedFilter()" 
-      [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized') " matTooltipPosition="after">
-          <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
-      </button>
-    </div>
-  
-    <button class="filters-menu-button" mat-icon-button (click)="toggleFilterMenu()" 
-    [matTooltip]="(bToggleFilter.getValue() ? 'Hide' : 'Show') + ' filters'" matTooltipPosition="after">
-        <mat-icon [style.color]="filtersOn() ? 'darkorange' : 'gray'">filter_alt</mat-icon>
-    </button>
-  </div>
-
   <mat-form-field class="controlsFilter">
-    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search" [(ngModel)]="searchValue">
-    <button *ngIf="searchValue != ''" matSuffix mat-icon-button aria-label="Clear" (click)="searchValue='';applyFilter(searchValue)">
+    <mat-chip-grid #searchChipGrid>
+      <mat-chip-row *ngIf="bShowPending.getValue()" class="search-filter-chip">
+        <mat-icon>error_outline</mat-icon>
+        <span>Pending</span>
+        <button matChipRemove (click)="togglePendingVisibility(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-chip-row>
+      <mat-chip-row *ngIf="bShowStartingBalances.getValue()" class="search-filter-chip">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>Starting Balance</span>
+        <button matChipRemove (click)="toggleStartingBalanceVisibility(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-chip-row>
+      <mat-chip-row *ngIf="bOnlyUncategorized.getValue()" class="search-filter-chip">
+        <mat-icon>scatter_plot</mat-icon>
+        <span>Uncategorized</span>
+        <button matChipRemove (click)="toggleUncategorizedFilter(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-chip-row>
+      <mat-chip-row *ngIf="activeCategory" class="search-filter-chip">
+        <span class="category-chip-emoji" *ngIf="activeCategory?.emoji">{{activeCategory?.emoji}}</span>
+        <mat-icon *ngIf="!activeCategory?.emoji">category</mat-icon>
+        <span>{{activeCategory?.name}}</span>
+        <button matChipRemove (click)="clearCategoryFilter(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-chip-row>
+    </mat-chip-grid>
+
+    <input matInput placeholder="Search"
+      (input)="onSearchInput(($any($event.target).value))"
+      (focus)="onSearchFocus()"
+      (blur)="onSearchBlur()"
+      [value]="searchValue"
+      [matAutocomplete]="transactionSearchAutocomplete">
+
+    <button *ngIf="searchValue != ''" matSuffix mat-icon-button aria-label="Clear" (click)="onClearSearch()">
       <mat-icon>close</mat-icon>
     </button>
   </mat-form-field>
+
+  <mat-autocomplete #transactionSearchAutocomplete="matAutocomplete"
+    (opened)="onSearchPanelOpened()"
+    (closed)="onSearchPanelClosed()"
+    panelClass="transaction-search-panel">
+    <mat-option *ngIf="showSearchHints" disabled>Type to search transactions, or choose a filter/category.</mat-option>
+
+    <mat-option class="search-filter-options-row">
+      <button type="button" mat-icon-button (click)="togglePendingVisibility(); $event.stopPropagation();"
+        [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'" matTooltipPosition="after">
+        <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
+      </button>
+      <button type="button" mat-icon-button (click)="toggleStartingBalanceVisibility(); $event.stopPropagation();"
+        [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'" matTooltipPosition="after">
+        <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">account_balance_wallet</mat-icon>
+      </button>
+      <button type="button" mat-icon-button (click)="toggleUncategorizedFilter(); $event.stopPropagation();"
+        [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized')" matTooltipPosition="after">
+        <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
+      </button>
+    </mat-option>
+
+    <ng-container *ngIf="!showSearchHints">
+      <mat-option *ngIf="suggestedCategories.length === 0" disabled>
+        No categories found
+      </mat-option>
+      <mat-option *ngFor="let category of suggestedCategories" [value]="category.name" (click)="onCategoryOptionSelected(category)">
+        <span class="category-option-emoji" *ngIf="category.emoji">{{category.emoji}}</span>
+        <span class="category-option-no-emoji" *ngIf="!category.emoji">
+          <mat-icon>category</mat-icon>
+        </span>
+        <span>{{category.name}}</span>
+      </mat-option>
+    </ng-container>
+  </mat-autocomplete>
+
+  
 
   <div class="total desktop" [style.background]="this.getTotalColor()">{{getTotal() | currency}}</div>
 
@@ -151,4 +202,3 @@
       <mat-icon>add</mat-icon>
   </button>
 </div>
-

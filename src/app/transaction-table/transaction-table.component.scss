@@ -152,8 +152,9 @@
 
 .paginator {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
+    gap: 0.75rem;
     ::ng-deep .mat-paginator {
         background-color: transparent;
     }
@@ -161,52 +162,77 @@
         background-color: #fafafa;
     }
     .controlsFilter {
-        width: 35%;
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto;
+        max-width: none;
     }
     max-height: 70px;
-    .filters-menu-button { 
-        display: unset;
-        z-index: 500;
+    .search-filter-chip {
+        height: 1.9em;
+        font-size: 12px;
     }
 
-    .filters-wrapper {
-        display: flex;
-        flex-direction: column;
+    .search-filter-chip .category-chip-emoji,
+    .category-option-emoji {
+        margin-right: 4px;
+        line-height: 1;
+        font-size: 14px;
     }
 
-    .filter-options-show {
-        opacity: 1;
-        transform:scale(1);
-    }
-
-    .filter-options-hide {
-        opacity: 0;
-        transform: scale(0);
-    }
-
-    .filter-options {
-        transition:all 0.3s ease;
-        transform-origin: 50% 100%;
-        display: flex;
-        align-items: flex-start;
-        flex-direction: column;
-        border-radius: 15px;
-        position: absolute;
-        bottom: 75px;
-        backdrop-filter: blur(1em)
-    }
-
-    .total  {
-        font-family: Roboto, "Helvetica Neue", sans-serif;
-        border-radius: 25px;
-        color: white;
-        padding: 5px 10px 5px 10px;
-    }
-    .add-button {
-        color: green;
-    }
+  .search-filter-options-row {
+      display: flex !important;
+      justify-content: space-around;
+      border-bottom: 1px solid #ececec;
+      margin: 0 0 4px 0;
+      padding: 4px 8px;
+      width: 100%;
+      min-height: 44px;
   }
 
+  .search-filter-options-row button {
+      flex: 1;
+  }
+
+  .category-option-no-emoji {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 5px;
+  }
+
+  .total  {
+      font-family: Roboto, "Helvetica Neue", sans-serif;
+      border-radius: 25px;
+      color: white;
+      padding: 5px 10px 5px 10px;
+  }
+  .add-button {
+      color: green;
+  }
+}
+
+:host ::ng-deep .transaction-search-panel .mat-mdc-option {
+    .mdc-list-item__primary-text {
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+}
+
+:host ::ng-deep .transaction-search-panel .mat-mdc-option[disabled],
+:host ::ng-deep .transaction-search-panel .mat-mdc-option-disabled {
+    color: #777;
+}
+
+:host ::ng-deep .transaction-search-panel .search-filter-options-row.mat-mdc-option {
+    min-height: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: #fafafa;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 @media(max-width: 1000px) {
     .transactionTable{
