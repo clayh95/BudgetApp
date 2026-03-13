@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angula
 import { combineLatest, Subscription } from 'rxjs';
 import { DbService } from '../core/db.service';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
+import { parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
@@ -50,15 +51,6 @@ function roundMoney(value: number): number {
 
 export function normalizeCategoryKey(value: string): string {
   return (value || '').trim().toLowerCase();
-}
-
-function toMoney(value: any): number {
-  if (typeof value === 'number') {
-    return value;
-  }
-  const normalized = `${value ?? ''}`.replace(/[^0-9.-]+/g, '');
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 export function buildDashboardViewModel(
@@ -239,7 +231,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!balance || balance.key !== 'Credit Card') {
       return false;
     }
-    return toMoney(balance.value) > 0;
+    return (parseMoney(balance.value) ?? 0) > 0;
   }
 
   trackByCategoryId(index: number, item: IOverBudgetCategory | ITopCategorySpend) {

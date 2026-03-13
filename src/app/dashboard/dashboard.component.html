@@ -1,7 +1,7 @@
 <div class="dashboard">
   <div class="kpi-grid">
     <mat-card class="kpi-card">
-      <div class="label">Unbudgeted</div>
+      <mat-card-title>Available</mat-card-title>
       <div
         class="metric-chip"
         [class.negative]="viewModel.stats.unbudgeted < 0"
@@ -10,7 +10,7 @@
       </div>
     </mat-card>
     <mat-card class="kpi-card">
-      <div class="label">Pending Total</div>
+      <mat-card-title>Pending Total</mat-card-title >
       <div
         class="kpi-click-row row-clickable"
         role="button"
@@ -41,7 +41,7 @@
       </mat-menu>
     </mat-card>
     <mat-card class="kpi-card">
-      <div class="label">Uncategorized</div>
+      <mat-card-title>Uncategorized</mat-card-title>
       <div
         class="kpi-click-row row-clickable"
         role="button"
@@ -255,14 +255,6 @@
             <div class="muted">No balances available.</div>
           </mat-list-item>
         </mat-list>
-        <div class="links">
-          <button mat-button [routerLink]="['/transactions']" [queryParams]="{startingBalances: true, search: 'starting balance'}">
-            Review starting balances
-          </button>
-          <button mat-button [routerLink]="['/transactions']" [queryParams]="{search: 'walmart'}">
-            Vendor drill-down (Walmart)
-          </button>
-        </div>
       </mat-card-content>
     </mat-card>
 
