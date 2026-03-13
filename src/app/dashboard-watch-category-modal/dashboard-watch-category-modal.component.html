@@ -1,0 +1,22 @@
+<mat-dialog-actions class="actions">
+  <button mat-icon-button [disabled]="!selectedCategoryName" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+  <div class="spacer"></div>
+  <button mat-icon-button (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-dialog-actions>
+
+<h2 mat-dialog-title>Add Watched Category</h2>
+
+<mat-dialog-content>
+  <mat-form-field class="watch-field">
+    <mat-label>Category</mat-label>
+    <mat-select [(ngModel)]="selectedCategoryName">
+      <mat-option *ngFor="let categoryName of data.categoryOptions" [value]="categoryName">
+        {{categoryName}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>

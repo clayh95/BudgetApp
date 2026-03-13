@@ -84,9 +84,12 @@
         </mat-accordion>
       </div>
 
-      <div *ngIf="pendingTransactions" class="accordian-margin">
+          <div *ngIf="pendingTransactions" class="accordian-margin">
         <mat-accordion>
-          <mat-expansion-panel class="expansion-panel-round-all">
+          <mat-expansion-panel
+            class="expansion-panel-round-all"
+            [id]="summaryPendingPanelId"
+            [expanded]="expandedPanel === summaryPendingPanelId">
             <mat-expansion-panel-header>
               <mat-panel-title>                    
                 <button mat-icon-button>
@@ -123,9 +126,10 @@
       </div>
 
       <div *ngIf="reportCats" class="accordian-margin">
-        <mat-accordion>
+            <mat-accordion>
           <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID"
-            [expanded]="expandedPanel === item.category.id" (opened)="SetExpandedPanel(item.category.id)"
+            [attr.id]="getSummaryPanelId(item)"
+            [expanded]="expandedPanel === getSummaryPanelId(item)" (opened)="SetExpandedPanel(getSummaryPanelId(item))"
             class="expansion-panel-round-ends">
             <mat-expansion-panel-header>
               <mat-panel-title>

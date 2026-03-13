@@ -1,0 +1,275 @@
+<div class="dashboard">
+  <div class="kpi-grid">
+    <mat-card class="kpi-card">
+      <mat-card-title>Available</mat-card-title>
+      <div
+        class="metric-chip"
+        [class.negative]="viewModel.stats.unbudgeted < 0"
+        [class.positive]="viewModel.stats.unbudgeted >= 0">
+        {{viewModel.stats.unbudgeted | currency}}
+      </div>
+    </mat-card>
+    <mat-card class="kpi-card">
+      <mat-card-title>Pending Total</mat-card-title >
+      <div
+        class="kpi-click-row row-clickable"
+        role="button"
+        tabindex="0"
+        [matMenuTriggerFor]="pendingKpiActions"
+        [attr.aria-label]="'Actions for pending total'">
+        <span
+          class="metric-chip"
+          [class.positive]="viewModel.stats.pendingTotal >= 0"
+          [class.negative]="viewModel.stats.pendingTotal < 0">
+          {{viewModel.stats.pendingTotal | currency}}
+        </span>
+        <span class="row-actions">
+          <span class="row-chevron" aria-hidden="true">
+            <mat-icon>chevron_right</mat-icon>
+          </span>
+        </span>
+      </div>
+      <mat-menu #pendingKpiActions="matMenu">
+        <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{pending: true}">
+          <mat-icon>view_list</mat-icon>
+          <span>Open transactions</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForSection('pending')">
+          <mat-icon>view_agenda</mat-icon>
+          <span>Open summary</span>
+        </button>
+      </mat-menu>
+    </mat-card>
+    <mat-card class="kpi-card">
+      <mat-card-title>Uncategorized</mat-card-title>
+      <div
+        class="kpi-click-row row-clickable"
+        role="button"
+        tabindex="0"
+        [matMenuTriggerFor]="uncategorizedKpiActions"
+        [attr.aria-label]="'Actions for uncategorized total'">
+        <span
+          class="metric-chip"
+          [class.positive]="viewModel.stats.uncategorizedNonPendingCount > 0"
+          [class.negative]="viewModel.stats.uncategorizedNonPendingCount < 0">
+          {{viewModel.stats.uncategorizedNonPendingCount}}
+        </span>
+        <span class="row-actions">
+          <span class="row-chevron" aria-hidden="true">
+            <mat-icon>chevron_right</mat-icon>
+          </span>
+        </span>
+      </div>
+      <mat-menu #uncategorizedKpiActions="matMenu">
+        <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="{uncategorized: true}">
+          <mat-icon>view_list</mat-icon>
+          <span>Open transactions</span>
+        </button>
+        <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForSection('uncategorized')">
+          <mat-icon>view_agenda</mat-icon>
+          <span>Open summary</span>
+        </button>
+      </mat-menu>
+    </mat-card>
+  </div>
+
+  <div class="main-grid">
+    <mat-card>
+      <mat-card-title>Needs Attention</mat-card-title>
+      <mat-card-content>
+        <div class="section-title">
+          Watched Categories
+          <button mat-icon-button matTooltip="Add watched category" (click)="openAddWatchedCategoryModal()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesResolved; trackBy: trackByWatchedResolved">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
+              <span>
+                {{item.category.name}}
+                <span class="metric-chip amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
+                  {{item.remaining | currency}}
+                </span>
+              </span>
+              <span class="row-actions">
+                <mat-menu #watchedActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedCategoryByName(item.category.name)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched category</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesMissing; trackBy: trackByWatchedMissing">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedMissingActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.displayName">
+              <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
+              <span class="row-actions">
+                <mat-menu #watchedMissingActionsMenu="matMenu">
+                  <button mat-menu-item disabled>
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item disabled>
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedMissing(item.key)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched category</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngIf="viewModel.watchedCategoriesResolved.length === 0 && viewModel.watchedCategoriesMissing.length === 0">
+            <div class="muted">No watched categories yet.</div>
+          </mat-list-item>
+        </mat-list>
+
+        <div class="section-title">
+          Over Budget Categories
+        </div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.overBudgetCategories | slice:0:5; trackBy: trackByCategoryId">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="overBudgetActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
+              <span>
+                {{item.category.name}}
+                <span class="metric-chip amount-inline negative">{{item.remaining | currency}}</span>
+              </span>
+              <span class="row-actions">
+                <mat-menu #overBudgetActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="viewModel.overBudgetCategories.length === 0">
+            <div class="muted">No over-budget categories.</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>This Month at a Glance</mat-card-title>
+      <mat-card-content>
+        <div class="section-title">Top Spending Categories</div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.topSpendingCategories; trackBy: trackByCategoryId">
+            <div
+              class="row row-clickable"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="topSpendActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.category.name">
+              <span>
+                {{item.category.name}}
+                <span class="metric-chip amount-inline negative">{{-item.spent | currency}}</span>
+              </span>
+              <span class="row-actions">
+                <mat-menu #topSpendActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+                    <mat-icon>view_agenda</mat-icon>
+                    <span>Open summary</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="viewModel.topSpendingCategories.length === 0">
+            <div class="muted">Not enough data yet.</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>Balances & Risk</mat-card-title>
+      <mat-card-content>
+        <mat-list dense>
+          <mat-list-item *ngFor="let balance of balances">
+            <div class="row">
+              <span class="balance-key">
+                <span class="balance-risk-space">
+                  <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
+                </span>
+                <span class="balance-label">{{balance.key}}</span>
+              </span>
+              <span class="balance-value-wrap">
+                {{balance.value}}
+              </span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="balances.length === 0">
+            <div class="muted">No balances available.</div>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-title>Quick Notes</mat-card-title>
+      <mat-card-content>
+        <mat-form-field class="notes-field">
+          <textarea
+            matInput
+            cdkTextareaAutosize
+            [value]="(service.monthSummary | async) || ''"
+            (change)="updateSummaryNotes($event.target.value)">
+          </textarea>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

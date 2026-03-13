@@ -4,6 +4,7 @@ import { AppLoginPageComponent } from './app-login-page/app-login-page.component
 import { MainNavComponent } from './main-nav/main-nav.component';
 import { SharedModule } from './shared/shared.module';
 import { DbService } from './core/db.service';
+import { MatIconRegistry } from '@angular/material/icon';
 
 @Component({
   selector: 'app-root',
@@ -13,8 +14,8 @@ import { DbService } from './core/db.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  constructor(service: DbService, public authService: AuthService) {
-
+  constructor(service: DbService, public authService: AuthService, iconRegistry: MatIconRegistry) {
+    iconRegistry.setDefaultFontSetClass('material-symbols-outlined');
   }
 
   ngOnInit() {

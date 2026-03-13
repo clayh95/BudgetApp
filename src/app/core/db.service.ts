@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collectionData, docData } from '@angular/fire/firestore';
+import { Auth, authState } from '@angular/fire/auth';
 import {
   CollectionReference,
   DocumentData,
@@ -27,6 +28,11 @@ export enum tAction {
   update = 2
 }
 
+export interface IDashboardPreferences {
+  watchedCategoryKeys: string[];
+  updatedAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,11 +47,15 @@ export class DbService {
   private tranSub: Subscription;
   private catSub: Subscription;
   private monthSummarySub: Subscription;
+  private dashboardPreferencesSub: Subscription | null = null;
+  private authStateSub: Subscription;
+  private dashboardPreferencesUid: string | null = null;
 
   monthYear: BehaviorSubject<string>;
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
+  dashboardPreferences = new BehaviorSubject<IDashboardPreferences>({ watchedCategoryKeys: [] });
 
   // TODO: put in chrome storage (maybe?)
   actionStack: IDocumentAction[] = new Array<IDocumentAction>();
@@ -55,7 +65,10 @@ export class DbService {
   // TODO: update save state for copy categories and carry balances
   saveState = new BehaviorSubject<saveState>(saveState.done);
 
-  constructor(private firestore: Firestore) {
+  constructor(private firestore: Firestore, private auth: Auth) {
+    this.authStateSub = authState(this.auth).subscribe(user => {
+      this.handleAuthStateChange(user?.uid ?? null);
+    });
     this.init();
   }
 
@@ -94,6 +107,7 @@ export class DbService {
         this.tranSub = collectionData(this.transactionCollection, { idField: 'id' })
           .subscribe(data => this.processTransactions(data as DocumentData[]));
     });
+
   }
 
   processTransactions(data: DocumentData[]) {
@@ -290,13 +304,21 @@ export class DbService {
   signOut() {
     if (this.tranSub) { this.tranSub.unsubscribe(); }
     if (this.catSub) { this.catSub.unsubscribe(); }
+    if (this.dashboardPreferencesSub) { this.dashboardPreferencesSub.unsubscribe(); }
+    if (this.monthYearSub) { this.monthYearSub.unsubscribe(); }
+    if (this.monthSummarySub) { this.monthSummarySub.unsubscribe(); }
+    this.dashboardPreferencesSub = null;
+    this.monthYearSub = null;
+    this.monthSummarySub = null;
+    this.dashboardPreferencesUid = null;
+    this.dashboardPreferences.next({ watchedCategoryKeys: [] });
     this.transactions.next([]);
     this.categories.next([]);
     console.log('Signed out');
   }
 
   signIn() {
-    this.init()
+    this.init();
   }
 
   checkIfTransactionExists(monthYear:string, desc:string): Promise<any> {
@@ -398,5 +420,64 @@ export class DbService {
       modalData  = [Object.assign({}, selectedTrans)];
     }
     return modalData;
+  }
+
+  private getCurrentUserUid(): string | null {
+    return this.auth.currentUser?.uid ?? null;
+  }
+
+  private normalizeCategoryKey(name: string): string {
+    return (name || '').trim().toLowerCase();
+  }
+
+  private getDashboardPreferencesDocRef(uid: string) {
+    return doc(this.firestore, `users/${uid}/userPreferences/dashboardPreferences`);
+  }
+
+  private parseDashboardPreferences(data: any): IDashboardPreferences {
+    const keys = Array.isArray(data?.['watchedCategoryKeys'])
+      ? (data?.['watchedCategoryKeys'] as any[])
+        .map(k => this.normalizeCategoryKey(`${k}`))
+        .filter(k => k.length > 0)
+      : [];
+    return { watchedCategoryKeys: Array.from(new Set(keys)) };
+  }
+
+  private handleAuthStateChange(uid: string | null) {
+    if (!uid) {
+      this.dashboardPreferences.next({ watchedCategoryKeys: [] });
+      if (this.dashboardPreferencesSub) {
+        this.dashboardPreferencesSub.unsubscribe();
+        this.dashboardPreferencesSub = null;
+      }
+      this.dashboardPreferencesUid = null;
+      return;
+    }
+    if (this.dashboardPreferencesSub && this.dashboardPreferencesUid === uid) {
+      return;
+    }
+    if (this.dashboardPreferencesSub) {
+      this.dashboardPreferencesSub.unsubscribe();
+    }
+    this.dashboardPreferencesUid = uid;
+    this.dashboardPreferencesSub = docData(this.getDashboardPreferencesDocRef(uid)).subscribe(snap => {
+      this.dashboardPreferences.next(this.parseDashboardPreferences(snap));
+    });
+  }
+
+  async saveDashboardPreferences(preferences: IDashboardPreferences): Promise<void> {
+    const uid = this.getCurrentUserUid();
+    if (!uid) { return; }
+    const watchedCategoryKeys = Array.from(
+      new Set((preferences?.watchedCategoryKeys || [])
+        .map(k => this.normalizeCategoryKey(k))
+        .filter(k => k.length > 0))
+    );
+    await setDoc(
+      this.getDashboardPreferencesDocRef(uid),
+      { watchedCategoryKeys, updatedAt: new Date().toISOString() },
+      { merge: true }
+    );
+    this.dashboardPreferences.next({ watchedCategoryKeys });
   }
 }
