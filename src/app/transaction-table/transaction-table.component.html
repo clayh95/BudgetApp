@@ -178,7 +178,7 @@
       <mat-option *ngIf="suggestedCategories.length === 0" disabled>
         No categories found
       </mat-option>
-      <mat-option *ngFor="let category of suggestedCategories" [value]="category.name" (click)="onCategoryOptionSelected(category)">
+      <mat-option *ngFor="let category of suggestedCategories" [value]="category.name" (onSelectionChange)="$event.isUserInput && onCategoryOptionSelected(category)">
         <span class="category-option-emoji" *ngIf="category.emoji">{{category.emoji}}</span>
         <span class="category-option-no-emoji" *ngIf="!category.emoji">
           <mat-icon>category</mat-icon>
