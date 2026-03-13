@@ -305,7 +305,11 @@ export class DbService {
     if (this.tranSub) { this.tranSub.unsubscribe(); }
     if (this.catSub) { this.catSub.unsubscribe(); }
     if (this.dashboardPreferencesSub) { this.dashboardPreferencesSub.unsubscribe(); }
+    if (this.monthYearSub) { this.monthYearSub.unsubscribe(); }
+    if (this.monthSummarySub) { this.monthSummarySub.unsubscribe(); }
     this.dashboardPreferencesSub = null;
+    this.monthYearSub = null;
+    this.monthSummarySub = null;
     this.dashboardPreferencesUid = null;
     this.dashboardPreferences.next({ watchedCategoryKeys: [] });
     this.transactions.next([]);
