@@ -60,9 +60,12 @@ export function parseTransactionRouteInitState(params: { get: (name: string) => 
     state.search = search;
   }
 
-  const page = Number(params.get('page'));
-  if (Number.isInteger(page) && page >= 0) {
-    state.page = page;
+  const pageParam = params.get('page');
+  if (pageParam !== null) {
+    const page = Number(pageParam);
+    if (Number.isInteger(page) && page >= 0) {
+      state.page = page;
+    }
   }
 
   const sort = params.get('sort');
