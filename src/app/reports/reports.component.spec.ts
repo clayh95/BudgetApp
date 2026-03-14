@@ -8,7 +8,7 @@ describe('ReportsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ReportsComponent ]
+      imports: [ ReportsComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('ReportsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ReportsComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

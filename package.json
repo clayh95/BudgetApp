@@ -5,7 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
@@ -59,16 +61,13 @@
     "@angular/cli": "^21.1.1",
     "@angular/compiler-cli": "^21.1.1",
     "@angular/language-service": "^21.1.1",
-    "@types/jasmine": "^3.3.12",
+    "@analogjs/vite-plugin-angular": "^2.3.1",
+    "@analogjs/vitest-angular": "^1.21.0",
     "@types/lodash": "^4.14.126",
     "@types/node": "^22.19.7",
-    "jasmine-core": "^3.3.0",
-    "karma": "^6.4.4",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-cli": "^2.0.0",
-    "karma-coverage-istanbul-reporter": "~2.0.0",
-    "karma-jasmine": "^2.0.1",
-    "karma-jasmine-html-reporter": "^1.4.0",
+    "@vitest/coverage-v8": "^4.0.8",
+    "jsdom": "^27.0.1",
+    "vitest": "^4.0.8",
     "typescript": "5.9.3"
   }
 }

@@ -1,15 +1,8 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "./",
-    "importHelpers": true,
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "declaration": false,
-    "resolveJsonModule": true,
-    "moduleResolution": "bundler",
-    "module": "ESNext",
-    "target": "ES2022",
-    "lib": ["ES2022", "dom"]
-  }
+  "files": [],
+  "references": [
+    { "path": "./src/tsconfig.app.json" },
+    { "path": "./src/tsconfig.spec.json" },
+    { "path": "./e2e/tsconfig.e2e.json" }
+  ]
 }

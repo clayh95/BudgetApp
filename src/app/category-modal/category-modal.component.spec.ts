@@ -8,7 +8,7 @@ describe('CategoryModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ CategoryModalComponent ]
+      imports: [ CategoryModalComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('CategoryModalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CategoryModalComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

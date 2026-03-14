@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { ConfirmModalComponent } from './confirm-modal.component';
 
@@ -8,7 +9,11 @@ describe('ConfirmModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ConfirmModalComponent ]
+      imports: [ ConfirmModalComponent ],
+      providers: [
+        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+        { provide: MAT_DIALOG_DATA, useValue: { matIconName: '', message: '', buttons: [] } }
+      ]
     })
     .compileComponents();
   });
@@ -16,7 +21,6 @@ describe('ConfirmModalComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfirmModalComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

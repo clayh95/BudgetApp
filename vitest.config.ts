@@ -1,0 +1,23 @@
+/// <reference types="vitest" />
+import { defineConfig } from 'vite';
+import angular from '@analogjs/vite-plugin-angular';
+
+export default defineConfig(({ mode }) => ({
+  plugins: [angular({ tsconfig: 'src/tsconfig.spec.json' })],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['src/test-setup.ts'],
+    include: ['src/**/*.spec.ts'],
+    reporters: ['default'],
+    server: {
+      deps: {
+        inline: ['rxfire', '@angular/fire'],
+        fallbackCJS: true
+      }
+    }
+  },
+  define: {
+    'import.meta.vitest': mode !== 'production'
+  }
+}));

@@ -8,7 +8,7 @@ describe('UserLoginComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ UserLoginComponent ]
+      imports: [ UserLoginComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('UserLoginComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(UserLoginComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

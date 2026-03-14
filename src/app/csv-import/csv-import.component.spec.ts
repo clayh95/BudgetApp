@@ -8,7 +8,7 @@ describe('CsvImportComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ CsvImportComponent ]
+      imports: [ CsvImportComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('CsvImportComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CsvImportComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
