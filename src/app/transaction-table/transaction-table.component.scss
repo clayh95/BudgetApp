@@ -49,6 +49,14 @@
         flex-direction: row;
         align-items: center;
         cursor: pointer;
+        .content { 
+            letter-spacing: 0px;
+            min-height: auto;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
         .info-image {
             max-height: 16px;
             margin-right: 18px;
@@ -272,15 +280,6 @@
             padding: 10px;
             width:93%;
             height: unset;
-            .description-content {
-              letter-spacing: 0px;
-              min-height: auto;
-              overflow: hidden;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              /* autoprefixer: off */
-             -webkit-box-orient: vertical;
-            }
           }
       
           .mat-cell,
