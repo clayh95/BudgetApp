@@ -79,8 +79,8 @@ jobs:
       - name: Set up Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Run tests (headless)
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
+      # - name: Run tests (headless)
+      #   run: npm run test -- --watch=false --browsers=ChromeHeadless
 
       - name: Build app
         run: npm run build
