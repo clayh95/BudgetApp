@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, Inject, AfterViewInit } from '@angular/co
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
+import { MatOptionSelectionChange } from '@angular/material/core';
 // import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
@@ -226,6 +227,11 @@ export class TransactionTableComponent implements AfterViewInit  {
     this.categoryFilter.next(category.name);
     this.searchValue = '';
     this.applyFilter(this.searchValue);
+  }
+
+  onCategoryOptionSelection(selection: MatOptionSelectionChange<string>, id: string, categoryName: string = '') {
+    if (!selection?.isUserInput) { return; }
+    this.updateValueOnChange(categoryName, id, 'category');
   }
 
   get showSearchHints(): boolean {
