@@ -51,7 +51,7 @@
         <td mat-cell (click)="editTransaction(row)" *matCellDef="let row">
           <div class="description-content">
             <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
-            <span class="desktop-height">{{row.description}}</span>
+            <span class="content">{{row.description}}</span>
           </div>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
