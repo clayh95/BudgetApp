@@ -5,6 +5,7 @@ import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
+import { compare, compareString } from '../core/utilities';
 import * as _ from "lodash";
 
 /**
@@ -88,9 +89,9 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       switch (this.sort.active) {
         case 'date': return compare(a.date, b.date, isAsc);
         case 'amount': return compare(+a.amount, +b.amount, isAsc);
-        case 'description': return compare(a.description, b.description, isAsc);
-        case 'category': return compare(a.category, b.category, isAsc);
-        case 'notes': return compare(a.notes, b.notes, isAsc);
+        case 'description': return compareString(a.description, b.description, isAsc);
+        case 'category': return compareString(a.category, b.category, isAsc);
+        case 'notes': return compareString(a.notes, b.notes, isAsc);
         default: return 0;
       }
     });
@@ -114,8 +115,3 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   }
 }
 
-
-/** Simple sort comparator for example ID/Name columns (for client-side sorting). */
-function compare(a, b, isAsc) {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-}
