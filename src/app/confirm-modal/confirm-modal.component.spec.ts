@@ -8,10 +8,12 @@ describe('ConfirmModalComponent', () => {
   let fixture: ComponentFixture<ConfirmModalComponent>;
 
   beforeEach(async () => {
+    const dialogRefMock = { close: vi.fn() };
+
     await TestBed.configureTestingModule({
       imports: [ ConfirmModalComponent ],
       providers: [
-        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+        { provide: MatDialogRef, useValue: dialogRefMock },
         { provide: MAT_DIALOG_DATA, useValue: { matIconName: '', message: '', buttons: [] } }
       ]
     })
@@ -25,5 +27,23 @@ describe('ConfirmModalComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('returns expected values for all button paths', () => {
+    const dialogRef = TestBed.inject(MatDialogRef);
+    component.ok();
+    expect(dialogRef.close).toHaveBeenCalledWith(true);
+
+    vi.clearAllMocks();
+    component.yes();
+    expect(dialogRef.close).toHaveBeenCalledWith(true);
+
+    vi.clearAllMocks();
+    component.no();
+    expect(dialogRef.close).toHaveBeenCalledWith(false);
+
+    vi.clearAllMocks();
+    component.cancel();
+    expect(dialogRef.close).toHaveBeenCalledWith(false);
   });
 });
