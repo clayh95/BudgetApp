@@ -82,7 +82,7 @@ jobs:
       #   run: npm run test -- --watch=false --browsers=ChromeHeadless
 
       - name: Build app
-        run: npm run build
+        run: npm run build -- --configuration production
 
       - name: Compute release values
         id: vars
