@@ -49,7 +49,9 @@ export function parseMoney(value: unknown): number | null {
   return null;
 }
 
-export function compare<T>(a: T, b: T, isAsc: boolean): number {
+export type Comparable = string | number | bigint | Date;
+
+export function compare<T extends Comparable>(a: T, b: T, isAsc: boolean): number {
   if (a === b) { return 0; }
   return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
 }
