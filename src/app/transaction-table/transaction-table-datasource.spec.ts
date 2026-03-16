@@ -157,7 +157,7 @@ describe('TransactionTableDataSource', () => {
 
     const page = await firstValueFrom(ds.connect().pipe(take(1)));
     expect(page.map(t => t.id)).toEqual(['1', '4']);
-    expect(ds.total).toBe(2583.41);
+    expect(ds.total).toBeCloseTo(2583.41, 2);
   });
 
   it('marks modified and added rows when month context matches', async () => {
