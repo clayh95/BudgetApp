@@ -7,7 +7,7 @@ import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
 import { DashboardWatchVendorModalComponent } from '../dashboard-watch-vendor-modal/dashboard-watch-vendor-modal.component';
-import { DashboardVendorMappingModalComponent } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
+import { DashboardVendorMappingModalComponent, DashboardVendorMappingModalResult } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
 
 export interface IDashboardStats {
   unbudgeted: number;
@@ -261,11 +261,13 @@ export function buildDashboardViewModel(
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private dataSub: Subscription;
+  private vendorMappingLimit = 8;
 
   viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
   availableWatchOptions: ICategory[] = [];
   watchedVendorWatchOptions: string[] = [];
+  vendorMappingFilter = '';
 
   constructor(
     public service: DbService,
@@ -358,6 +360,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${item.pattern}:${item.vendorName}`;
   }
 
+  trackByVendorMappingDisplayItem(index: number, item: { mapping: IVendorLogoRule; sourceIndex: number }) {
+    return item.sourceIndex >= 0 ? item.sourceIndex : `${index}:${item.mapping?.vendorName || ''}:${item.mapping?.pattern || ''}`;
+  }
+
   trackByTopVendor(index: number, item: ITopVendorSpend) {
     return item.key;
   }
@@ -425,9 +431,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: {}
     });
-    dialogRef.afterClosed().subscribe((mapping: IVendorLogoRule | undefined) => {
-      if (!mapping) { return; }
-      this.addVendorMapping(mapping);
+    dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
+      if (!result || result.action !== 'save') { return; }
+      this.addVendorMapping(result.mapping);
     });
   }
 
@@ -438,10 +444,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: { mapping, index }
     });
-    dialogRef.afterClosed().subscribe((mapping: IVendorLogoRule | undefined) => {
-      if (!mapping) { return; }
-      this.updateVendorMapping(mapping, index);
+    dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
+      if (!result) { return; }
+      if (result.action === 'save') {
+        this.updateVendorMapping(result.mapping, index);
+      } else if (result.action === 'delete') {
+        this.removeVendorMapping(index);
+      }
     });
+  }
+
+  getVendorMappingDisplayItems(): Array<{ mapping: IVendorLogoRule; sourceIndex: number }> {
+    const filter = (this.vendorMappingFilter || '').trim().toLowerCase();
+    const mappings = (this.viewModel?.vendorMappings || [])
+      .filter(mapping => {
+        if (!filter) { return true; }
+        return (mapping?.vendorName || '').toLowerCase().includes(filter);
+      });
+
+    const visible = filter ? mappings : mappings.slice(0, this.vendorMappingLimit);
+    return visible.map(mapping => ({
+      mapping,
+      sourceIndex: (this.viewModel?.vendorMappings || []).findIndex(v => v === mapping)
+    }));
+  }
+
+  onVendorMappingFilterChange(value: string) {
+    this.vendorMappingFilter = value || '';
   }
 
   async addWatchedCategory(categoryName: string) {

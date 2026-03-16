@@ -2,6 +2,13 @@
   <button mat-icon-button [disabled]="!pattern || !vendorName || !logoUrl" (click)="save()">
     <mat-icon>save</mat-icon>
   </button>
+  <button
+    *ngIf="!!data?.mapping"
+    mat-icon-button
+    aria-label="Delete mapping"
+    (click)="delete($event)">
+    <mat-icon>delete</mat-icon>
+  </button>
   <div class="spacer"></div>
   <button mat-icon-button (click)="close()">
     <mat-icon>close</mat-icon>
