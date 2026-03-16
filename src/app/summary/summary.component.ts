@@ -177,7 +177,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   }
 
   getIconFromUtils(description:string):string {
-    return getIcon(description);
+    return getIcon(description, this.service.vendorMappings.getValue() || []);
   }
 
   SetExpandedPanel(id: string) {

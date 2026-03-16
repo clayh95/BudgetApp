@@ -1,0 +1,27 @@
+<mat-dialog-actions class="actions">
+  <button mat-icon-button [disabled]="!vendorName" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+  <div class="spacer"></div>
+  <button mat-icon-button (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-dialog-actions>
+
+<h2 mat-dialog-title>Add Watched Vendor</h2>
+
+<mat-dialog-content>
+  <mat-form-field class="watch-field">
+    <mat-label>Vendor</mat-label>
+    <input
+      matInput
+      [matAutocomplete]="vendorAutocomplete"
+      [(ngModel)]="vendorName"
+      placeholder="Type vendor name">
+    <mat-autocomplete #vendorAutocomplete="matAutocomplete">
+      <mat-option *ngFor="let option of data.vendorOptions" [value]="option">
+        {{option}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+</mat-dialog-content>

@@ -1,0 +1,27 @@
+.watch-field {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+}

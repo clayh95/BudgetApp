@@ -18,7 +18,7 @@ import {
   where
 } from 'firebase/firestore';
 import { ITransaction, ICategory, IDocumentAction, documentActionType, editorActionType, collectionType, saveState } from './dataTypes';
-import { parseMoney } from './utilities';
+import { parseMoney, IVendorLogoRule, DEFAULT_VENDOR_MAPPINGS } from './utilities';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import {default as _rollupMoment} from 'moment';
 const moment = _rollupMoment;
@@ -30,6 +30,7 @@ export enum tAction {
 
 export interface IDashboardPreferences {
   watchedCategoryKeys: string[];
+  watchedVendorKeys: string[];
   updatedAt?: string;
 }
 
@@ -48,6 +49,7 @@ export class DbService {
   private catSub: Subscription;
   private monthSummarySub: Subscription;
   private dashboardPreferencesSub: Subscription | null = null;
+  private vendorMappingsSub: Subscription | null = null;
   private authStateSub: Subscription;
   private dashboardPreferencesUid: string | null = null;
 
@@ -55,7 +57,8 @@ export class DbService {
   transactions = new BehaviorSubject<ITransaction[]>([]);
   categories = new BehaviorSubject<ICategory[]>([]);
   monthSummary = new BehaviorSubject<string>('');
-  dashboardPreferences = new BehaviorSubject<IDashboardPreferences>({ watchedCategoryKeys: [] });
+  dashboardPreferences = new BehaviorSubject<IDashboardPreferences>({ watchedCategoryKeys: [], watchedVendorKeys: [] });
+  vendorMappings = new BehaviorSubject<IVendorLogoRule[]>(DEFAULT_VENDOR_MAPPINGS);
 
   // TODO: put in chrome storage (maybe?)
   actionStack: IDocumentAction[] = new Array<IDocumentAction>();
@@ -80,6 +83,12 @@ export class DbService {
       // this.userCollection = this.collection(this.getCollectionPath(collectionType.users));
       this.monthsCollection = this.collection(this.getCollectionPath(collectionType.monthsPK));
       this.additionalDataCollection = this.collection(this.getCollectionPath(collectionType.additionalData));
+      if (this.vendorMappingsSub) {
+        this.vendorMappingsSub.unsubscribe();
+      }
+      this.vendorMappingsSub = docData(this.getVendorMappingsDocRef()).subscribe(snap => {
+        this.vendorMappings.next(this.parseVendorMappings(snap));
+      });
 
       const startingMY = `${moment().format('MM')}\/${moment().format('YYYY')}`;
       this.monthYear = new BehaviorSubject<string>('');
@@ -311,7 +320,7 @@ export class DbService {
     this.monthYearSub = null;
     this.monthSummarySub = null;
     this.dashboardPreferencesUid = null;
-    this.dashboardPreferences.next({ watchedCategoryKeys: [] });
+      this.dashboardPreferences.next({ watchedCategoryKeys: [], watchedVendorKeys: [] });
     this.transactions.next([]);
     this.categories.next([]);
     console.log('Signed out');
@@ -440,12 +449,41 @@ export class DbService {
         .map(k => this.normalizeCategoryKey(`${k}`))
         .filter(k => k.length > 0)
       : [];
-    return { watchedCategoryKeys: Array.from(new Set(keys)) };
+    const watchedVendorKeys = Array.isArray(data?.['watchedVendorKeys'])
+      ? (data?.['watchedVendorKeys'] as any[])
+        .map(k => this.normalizeVendorKey(`${k}`))
+        .filter(k => k.length > 0)
+      : [];
+    return {
+      watchedCategoryKeys: Array.from(new Set(keys)),
+      watchedVendorKeys: Array.from(new Set(watchedVendorKeys))
+    };
+  }
+
+  private parseVendorMappings(data: any): IVendorLogoRule[] {
+    const rawRules = Array.isArray(data?.['rules'])
+      ? data?.['rules'] as any[]
+      : null;
+    if (!rawRules || rawRules.length === 0) {
+      return DEFAULT_VENDOR_MAPPINGS.slice();
+    }
+    const normalizedRules = rawRules
+      .map((rule: any) => {
+        const pattern = `${rule?.['pattern'] || ''}`.trim();
+        const vendorName = `${rule?.['vendorName'] || ''}`.trim();
+        const logoUrl = `${rule?.['logoUrl'] || ''}`.trim();
+        if (!pattern || !vendorName || !logoUrl) {
+          return null;
+        }
+        return { pattern, vendorName, logoUrl };
+      })
+      .filter((rule): rule is IVendorLogoRule => !!rule);
+    return normalizedRules.length > 0 ? normalizedRules : DEFAULT_VENDOR_MAPPINGS.slice();
   }
 
   private handleAuthStateChange(uid: string | null) {
     if (!uid) {
-      this.dashboardPreferences.next({ watchedCategoryKeys: [] });
+      this.dashboardPreferences.next({ watchedCategoryKeys: [], watchedVendorKeys: [] });
       if (this.dashboardPreferencesSub) {
         this.dashboardPreferencesSub.unsubscribe();
         this.dashboardPreferencesSub = null;
@@ -473,11 +511,40 @@ export class DbService {
         .map(k => this.normalizeCategoryKey(k))
         .filter(k => k.length > 0))
     );
+    const watchedVendorKeys = Array.from(
+      new Set((preferences?.watchedVendorKeys || [])
+        .map(k => this.normalizeVendorKey(k))
+        .filter(k => k.length > 0))
+    );
     await setDoc(
       this.getDashboardPreferencesDocRef(uid),
-      { watchedCategoryKeys, updatedAt: new Date().toISOString() },
+      { watchedCategoryKeys, watchedVendorKeys, updatedAt: new Date().toISOString() },
       { merge: true }
     );
-    this.dashboardPreferences.next({ watchedCategoryKeys });
+  }
+
+  private normalizeVendorKey(name: string): string {
+    return (name || '').trim().toLowerCase();
+  }
+
+  private getVendorMappingsDocRef() {
+    return doc(this.firestore, 'sharedData/vendorMappings');
+  }
+
+  async saveVendorMappings(vendorMappings: IVendorLogoRule[]): Promise<void> {
+    const uid = this.getCurrentUserUid();
+    if (!uid) { return; }
+    const normalizedRules: IVendorLogoRule[] = vendorMappings
+      .map(rule => ({
+        pattern: `${rule?.pattern || ''}`.trim(),
+        vendorName: `${rule?.vendorName || ''}`.trim(),
+        logoUrl: `${rule?.logoUrl || ''}`.trim()
+      }))
+      .filter(rule => rule.pattern.length > 0 && rule.vendorName.length > 0 && rule.logoUrl.length > 0);
+    await setDoc(
+      this.getVendorMappingsDocRef(),
+      { rules: normalizedRules, updatedAt: new Date().toISOString() },
+      { merge: true }
+    );
   }
 }

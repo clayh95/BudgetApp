@@ -1,0 +1,32 @@
+<mat-dialog-actions class="actions">
+  <button mat-icon-button [disabled]="!pattern || !vendorName || !logoUrl" (click)="save()">
+    <mat-icon>save</mat-icon>
+  </button>
+  <div class="spacer"></div>
+  <button mat-icon-button (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-dialog-actions>
+
+<h2 mat-dialog-title>{{ data?.mapping ? 'Edit Vendor Logo Mapping' : 'Add Vendor Logo Mapping' }}</h2>
+
+<mat-dialog-content>
+  <mat-form-field class="watch-field">
+    <mat-label>Match text or regex</mat-label>
+    <input matInput [(ngModel)]="pattern" />
+  </mat-form-field>
+
+  <mat-form-field class="watch-field">
+    <mat-label>Vendor name</mat-label>
+    <input matInput [(ngModel)]="vendorName" />
+  </mat-form-field>
+
+  <mat-form-field class="watch-field">
+    <mat-label>Logo URL</mat-label>
+    <input matInput [(ngModel)]="logoUrl" />
+  </mat-form-field>
+
+  <div class="preview" *ngIf="logoUrl">
+    <img [src]="logoUrl">
+  </div>
+</mat-dialog-content>
