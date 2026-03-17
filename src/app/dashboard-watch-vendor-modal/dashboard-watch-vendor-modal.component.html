@@ -1,5 +1,5 @@
 <mat-dialog-actions class="actions">
-  <button mat-icon-button [disabled]="!vendorName" (click)="save()">
+  <button mat-icon-button [disabled]="!vendorNameControl.value" (click)="save()">
     <mat-icon>save</mat-icon>
   </button>
   <div class="spacer"></div>
@@ -13,13 +13,16 @@
 <mat-dialog-content>
   <mat-form-field class="watch-field">
     <mat-label>Vendor</mat-label>
-    <input
+    <input #autocompleteInput
       matInput
+      [formControl]="vendorNameControl"
       [matAutocomplete]="vendorAutocomplete"
-      [(ngModel)]="vendorName"
+      (focus)="filterVendorOptions()"
+      (input)="filterVendorOptions()"
       placeholder="Type vendor name">
-    <mat-autocomplete #vendorAutocomplete="matAutocomplete">
-      <mat-option *ngFor="let option of data.vendorOptions" [value]="option">
+    <mat-autocomplete
+      #vendorAutocomplete="matAutocomplete" requireSelection>
+      <mat-option *ngFor="let option of filteredVendorOptions" [value]="option">
         {{option}}
       </mat-option>
     </mat-autocomplete>

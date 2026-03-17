@@ -291,7 +291,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.availableWatchOptions = cats
           .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
           .sort((a, b) => a.name.localeCompare(b.name));
-        this.watchedVendorWatchOptions = this.getWatchedVendorOptions(trans || [], vendorMappings || []);
+        this.watchedVendorWatchOptions = this.getWatchedVendorOptions(vendorMappings || []);
         this.viewModel = buildDashboardViewModel(
           cats,
           trans,
@@ -306,16 +306,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadBalances();
   }
 
-  getWatchedVendorOptions(transactions: ITransaction[], vendorMappings: IVendorLogoRule[]): string[] {
+  getWatchedVendorOptions(vendorMappings: IVendorLogoRule[]): string[] {
     const mappedVendors = (vendorMappings || [])
       .map(mapping => (mapping?.vendorName || '').trim())
       .filter(v => v.length > 0);
-    const spentVendorNames = (transactions || [])
-      .filter(t => (t.status || '').toUpperCase() !== ITransactionStatus.pending.toUpperCase())
-      .filter(t => (t.category || '').toUpperCase() !== 'INCOME')
-      .map(t => (getVendorMatch(t.description, vendorMappings)?.vendorName || t.description || '').trim())
-      .filter(v => v.length > 0);
-    return Array.from(new Set([...mappedVendors, ...spentVendorNames])).sort((a, b) => a.localeCompare(b));
+    return Array.from(new Set(mappedVendors))
+      .sort((a, b) => a.localeCompare(b));
   }
 
   ngOnDestroy() {
