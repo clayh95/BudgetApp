@@ -109,7 +109,7 @@ export function buildDashboardViewModel(
   const nonIncomeCategories = categories.filter(c => (c.name || '').toUpperCase() !== 'INCOME');
   const categoryByName = new Map(nonIncomeCategories.map(c => [c.name, c]));
   const spentByCategory = new Map<string, number>();
-  const spentByVendor = new Map<string, { vendorName: string; description: string; logoUrl: string; spent: number }>();
+  const spentByVendor = new Map<string, { vendorName: string; logoUrl: string; spent: number }>();
 
   postedTransactions.forEach(t => {
     if ((t.category || '').toUpperCase() === 'INCOME') {
@@ -124,7 +124,10 @@ export function buildDashboardViewModel(
     }
 
     const vendorMatch = getVendorMatch(t.description, vendorMappings);
-    const vendorName = (vendorMatch?.vendorName || t.description || '').trim() || 'Unknown';
+    if (!vendorMatch) {
+      return;
+    }
+    const vendorName = (vendorMatch.vendorName || '').trim();
     const vendorKey = normalizeVendorKey(vendorName);
     if (vendorKey) {
       const existingVendor = spentByVendor.get(vendorKey);
@@ -137,7 +140,6 @@ export function buildDashboardViewModel(
       } else {
         spentByVendor.set(vendorKey, {
           vendorName,
-          description: t.description || '',
           logoUrl: vendorLogo,
           spent: spendDelta
         });
@@ -167,14 +169,8 @@ export function buildDashboardViewModel(
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 5);
 
-  const topSpendingVendors = Array.from(spentByVendor.entries())
-    .map(([key, value]) => ({
-      key,
-      vendorName: value.vendorName,
-      description: value.description,
-      logoUrl: value.logoUrl,
-      spent: roundMoney(value.spent)
-    }))
+  const topSpendingVendors = Array.from(spentByVendor.values())
+    .filter((row): row is ITopVendorSpend => !!row)
     .filter(row => row.spent > 0)
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 5);

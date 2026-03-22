@@ -280,7 +280,7 @@
                 <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl">
                 <span>
                   <span>{{item.vendorName}}</span>
-                  <span class="muted">{{item.description}}</span>
+                  <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
                 </span>
               </span>
               <span class="row-actions">
@@ -294,7 +294,6 @@
                   <mat-icon>chevron_right</mat-icon>
                 </span>
               </span>
-              <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
             </div>
           </mat-list-item>
           <mat-list-item *ngIf="viewModel.topSpendingVendors.length === 0">
@@ -303,7 +302,7 @@
         </mat-list>
 
         <div class="section-title">
-          Vendor Logo Mappings
+          Vendor Mappings
           <button mat-icon-button matTooltip="Add vendor mapping" (click)="openAddVendorMappingModal()">
             <mat-icon>add</mat-icon>
           </button>
