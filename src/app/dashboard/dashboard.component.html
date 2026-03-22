@@ -214,7 +214,7 @@
               <span class="vendor-title">
                 <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" alt="" aria-hidden="true">
                 <span>
-                  {{item.displayName}}
+                  <span class="vendor-name">{{item.displayName}}</span>
                   <span class="metric-chip amount-inline">{{item.spent | currency}}</span>
                 </span>
               </span>
@@ -279,7 +279,7 @@
               <span class="vendor-title">
                 <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" alt="{{item.vendorName}} logo">
                 <span>
-                  <span>{{item.vendorName}}</span>
+                  <span class="vendor-name">{{item.vendorName}}</span>
                   <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
                 </span>
               </span>
@@ -301,48 +301,42 @@
           </mat-list-item>
         </mat-list>
 
-        <mat-accordion>
-          <mat-expansion-panel [expanded]="false">
-            <mat-expansion-panel-header>
-              <mat-panel-title>Vendor Mappings</mat-panel-title>
-            </mat-expansion-panel-header>
+        <div class="section-title">
+          Vendor Mappings
+          <button mat-icon-button matTooltip="Add vendor mapping" (click)="openAddVendorMappingModal()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
 
-            <div class="vendor-mapping-toolbar">
-              <mat-form-field class="vendor-mapping-filter" appearance="outline">
-                <mat-label>Filter mappings</mat-label>
-                <input
-                  matInput
-                  [value]="vendorMappingFilter"
-                  (input)="onVendorMappingFilterChange($any($event.target).value)"
-                  placeholder="Search vendor name">
-                <button *ngIf="vendorMappingFilter" matSuffix mat-icon-button aria-label="Clear filter" (click)="onVendorMappingFilterChange('')">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </mat-form-field>
+        <div class="vendor-mapping-toolbar">
+          <mat-form-field class="vendor-mapping-filter" appearance="outline">
+            <mat-label>Filter mappings</mat-label>
+            <input
+              matInput
+              [value]="vendorMappingFilter"
+              (input)="onVendorMappingFilterChange($any($event.target).value)"
+              placeholder="Search vendor name">
+            <button *ngIf="vendorMappingFilter" matSuffix mat-icon-button aria-label="Clear filter" (click)="onVendorMappingFilterChange('')">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
 
-              <button mat-fab extended type="button" color="primary" matTooltip="Add vendor mapping" (click)="openAddVendorMappingModal()">
-                <mat-icon>add</mat-icon>
-                <span>Add New</span>
-              </button>
-            </div>
-
-            <div class="vendor-mapping-grid">
-              <div
-                *ngFor="let item of getVendorMappingDisplayItems(); trackBy: trackByVendorMappingDisplayItem"
-                class="vendor-mapping-grid-item row-clickable"
-                role="button"
-                tabindex="0"
-                (click)="openEditVendorMappingModal(item.mapping, item.sourceIndex)"
-                [attr.aria-label]="'Edit mapping for ' + item.mapping.vendorName">
-                <img *ngIf="item.mapping.logoUrl" class="vendor-logo" [src]="item.mapping.logoUrl">
-                <span class="vendor-mapping-name">{{ item.mapping.vendorName }}</span>
-              </div>
-            </div>
-            <div class="muted" *ngIf="getVendorMappingDisplayItems().length === 0">
-              <span>No vendor mappings yet.</span>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
+        <div class="vendor-mapping-grid">
+          <div
+            *ngFor="let item of getVendorMappingDisplayItems(); trackBy: trackByVendorMappingDisplayItem"
+            class="vendor-mapping-grid-item row-clickable"
+            role="button"
+            tabindex="0"
+            (click)="openEditVendorMappingModal(item.mapping, item.sourceIndex)"
+            [attr.aria-label]="'Edit mapping for ' + item.mapping.vendorName">
+            <img *ngIf="item.mapping.logoUrl" class="vendor-logo" [src]="item.mapping.logoUrl">
+            <span class="vendor-mapping-name">{{ item.mapping.vendorName }}</span>
+          </div>
+        </div>
+        <div class="muted" *ngIf="getVendorMappingDisplayItems().length === 0">
+          <span>No vendor mappings yet.</span>
+        </div>
       </mat-card-content>
     </mat-card>
 
