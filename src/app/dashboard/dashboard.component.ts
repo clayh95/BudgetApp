@@ -357,7 +357,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   trackByTopVendor(index: number, item: ITopVendorSpend) {
-    return item.key;
+    return item.vendorName;
   }
 
   trackByWatchedVendorResolved(index: number, item: IWatchedVendorResolved) {
