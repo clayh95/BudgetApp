@@ -212,7 +212,7 @@
               [matMenuTriggerFor]="watchedVendorActionsMenu"
               [attr.aria-label]="'Actions for ' + item.displayName">
               <span class="vendor-title">
-                <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl">
+                <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" alt="" aria-hidden="true">
                 <span>
                   {{item.displayName}}
                   <span class="metric-chip amount-inline">{{item.spent | currency}}</span>
