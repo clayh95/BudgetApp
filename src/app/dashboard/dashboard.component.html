@@ -351,7 +351,7 @@
               [attr.aria-label]="'Actions for ' + item.category.name">
               <span>
                 {{item.category.name}}
-                <span class="metric-chip amount-inline negative">{{-item.spent | currency}}</span>
+                <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
               </span>
               <span class="row-actions">
                 <mat-menu #topSpendActionsMenu="matMenu">
