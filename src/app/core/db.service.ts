@@ -532,8 +532,6 @@ export class DbService {
   }
 
   async saveVendorMappings(vendorMappings: IVendorLogoRule[]): Promise<void> {
-    const uid = this.getCurrentUserUid();
-    if (!uid) { return; }
     const normalizedRules: IVendorLogoRule[] = vendorMappings
       .map(rule => ({
         pattern: `${rule?.pattern || ''}`.trim(),
