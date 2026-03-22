@@ -130,8 +130,8 @@
 
 .vendor-mapping-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 175px);
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, 155px);
+  gap: 24px;
 }
 
 .vendor-mapping-grid-item {
@@ -144,7 +144,7 @@
   gap: 8px;
   min-height: 40px;
   max-height: 40px;
-  width: 175px;
+  width: 155px;
   padding: 8px 10px;
 }
 

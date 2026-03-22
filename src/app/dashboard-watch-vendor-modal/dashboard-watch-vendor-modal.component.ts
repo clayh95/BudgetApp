@@ -1,6 +1,5 @@
 import { Component, ElementRef, ViewChild, inject } from '@angular/core';
-import { AbstractControl, FormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { FormControl } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SharedModule } from '../shared/shared.module';

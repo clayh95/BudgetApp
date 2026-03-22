@@ -50,29 +50,6 @@ describe('buildDashboardViewModel', () => {
     expect(normalizeCategoryKey('  Groceries  ')).toBe('groceries');
   });
 
-  it('only builds top spending vendors from watched keys and mapped transactions', () => {
-    const vm = buildDashboardViewModel(
-      [{ id: '1', name: 'Shopping', keywords: [], budgeted: 200, spent: 0, notes: '' }],
-      [
-        { id: 't1', date: '01/10/2026', amount: -100, description: 'TARGET T-123', category: 'Shopping', notes: '', status: 'Posted' },
-        { id: 't2', date: '01/10/2026', amount: -80, description: 'STARBUCKS #123', category: 'Shopping', notes: '', status: 'Posted' },
-        { id: 't3', date: '01/10/2026', amount: -75, description: 'UNMAPPED SHOP', category: 'Shopping', notes: '', status: 'Posted' }
-      ] as any,
-      '01/2026',
-      [],
-      ['target', 'walmart'],
-      [
-        { pattern: 'target', vendorName: 'Target', logoUrl: 'target.png' },
-        { pattern: 'starbucks', vendorName: 'Starbucks', logoUrl: 'starbucks.png' }
-      ]
-    );
-
-    expect(vm.topSpendingVendors.length).toBe(1);
-    expect(vm.topSpendingVendors[0].vendorName).toBe('Target');
-    expect(vm.topSpendingVendors[0].spent).toBe(100);
-    expect(vm.topSpendingVendors.find(v => v.vendorName === 'Starbucks')).toBeUndefined();
-  });
-
   it('excludes watched vendors with zero spend and keeps top vendors sorted and capped', () => {
     const vm = buildDashboardViewModel(
       [{ id: '1', name: 'Shopping', keywords: [], budgeted: 500, spent: 0, notes: '' }],

@@ -29,9 +29,7 @@ export interface ITopCategorySpend {
 }
 
 export interface ITopVendorSpend {
-  key: string;
   vendorName: string;
-  description: string;
   logoUrl: string;
   spent: number;
 }
