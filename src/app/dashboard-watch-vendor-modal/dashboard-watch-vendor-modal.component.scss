@@ -1,0 +1,15 @@
+.watch-field {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .spacer {
+    flex: 1;
+  }
+}

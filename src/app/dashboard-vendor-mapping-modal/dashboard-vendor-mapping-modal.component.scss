@@ -1,0 +1,56 @@
+.watch-field {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.dialog-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+}
+
+.regex-input {
+  font-family: Consolas, "SFMono-Regular", Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+}
+
+.regex-validation-icon {
+  font-size: 20px;
+}
+
+.regex-validation-icon.valid {
+  color: #2e7d32;
+}
+
+.regex-validation-icon.invalid {
+  color: #c62828;
+}

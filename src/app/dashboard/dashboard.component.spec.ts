@@ -49,4 +49,36 @@ describe('buildDashboardViewModel', () => {
   it('normalizes watch keys', () => {
     expect(normalizeCategoryKey('  Groceries  ')).toBe('groceries');
   });
+
+  it('excludes watched vendors with zero spend and keeps top vendors sorted and capped', () => {
+    const vm = buildDashboardViewModel(
+      [{ id: '1', name: 'Shopping', keywords: [], budgeted: 500, spent: 0, notes: '' }],
+      [
+        { id: 't1', date: '01/10/2026', amount: -110, description: 'A', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't2', date: '01/10/2026', amount: -95, description: 'B', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't3', date: '01/10/2026', amount: -85, description: 'C', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't4', date: '01/10/2026', amount: -70, description: 'D', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't5', date: '01/10/2026', amount: -60, description: 'E', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't6', date: '01/10/2026', amount: -40, description: 'F', category: 'Shopping', notes: '', status: 'Posted' },
+        { id: 't7', date: '01/10/2026', amount: 60, description: 'Z', category: 'Shopping', notes: '', status: 'Posted' }
+      ] as any,
+      '01/2026',
+      [],
+      ['a', 'b', 'c', 'd', 'e', 'f', 'z'],
+      [
+        { pattern: '^A$', vendorName: 'A', logoUrl: '' },
+        { pattern: '^B$', vendorName: 'B', logoUrl: '' },
+        { pattern: '^C$', vendorName: 'C', logoUrl: '' },
+        { pattern: '^D$', vendorName: 'D', logoUrl: '' },
+        { pattern: '^E$', vendorName: 'E', logoUrl: '' },
+        { pattern: '^F$', vendorName: 'F', logoUrl: '' },
+        { pattern: '^Z$', vendorName: 'Z', logoUrl: '' }
+      ]
+    );
+
+    expect(vm.topSpendingVendors.length).toBe(5);
+    expect(vm.topSpendingVendors.map(v => v.vendorName)).toEqual(['A', 'B', 'C', 'D', 'E']);
+    expect(vm.topSpendingVendors.find(v => v.vendorName === 'F')).toBeUndefined();
+    expect(vm.topSpendingVendors.find(v => v.vendorName === 'Z')).toBeUndefined();
+  });
 });

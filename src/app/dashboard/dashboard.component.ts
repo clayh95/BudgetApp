@@ -2,10 +2,12 @@ import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angula
 import { combineLatest, Subscription } from 'rxjs';
 import { DbService } from '../core/db.service';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
-import { parseMoney } from '../core/utilities';
+import { getVendorMatch, IVendorLogoRule, parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
+import { DashboardWatchVendorModalComponent } from '../dashboard-watch-vendor-modal/dashboard-watch-vendor-modal.component';
+import { DashboardVendorMappingModalComponent, DashboardVendorMappingModalResult } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
 
 export interface IDashboardStats {
   unbudgeted: number;
@@ -26,6 +28,12 @@ export interface ITopCategorySpend {
   spent: number;
 }
 
+export interface ITopVendorSpend {
+  vendorName: string;
+  logoUrl: string;
+  spent: number;
+}
+
 export interface IWatchedCategoryResolved {
   category: ICategory;
   spent: number;
@@ -37,12 +45,28 @@ export interface IWatchedCategoryMissing {
   displayName: string;
 }
 
+export interface IWatchedVendorResolved {
+  key: string;
+  displayName: string;
+  logoUrl: string;
+  spent: number;
+}
+
+export interface IWatchedVendorMissing {
+  key: string;
+  displayName: string;
+}
+
 export interface IDashboardViewModel {
   stats: IDashboardStats;
   overBudgetCategories: IOverBudgetCategory[];
   topSpendingCategories: ITopCategorySpend[];
   watchedCategoriesResolved: IWatchedCategoryResolved[];
   watchedCategoriesMissing: IWatchedCategoryMissing[];
+  vendorMappings: IVendorLogoRule[];
+  topSpendingVendors: ITopVendorSpend[];
+  watchedVendorsResolved: IWatchedVendorResolved[];
+  watchedVendorsMissing: IWatchedVendorMissing[];
 }
 
 function roundMoney(value: number): number {
@@ -53,15 +77,24 @@ export function normalizeCategoryKey(value: string): string {
   return (value || '').trim().toLowerCase();
 }
 
+export function normalizeVendorKey(value: string): string {
+  return (value || '').trim().toLowerCase();
+}
+
 export function buildDashboardViewModel(
   categories: ICategory[],
   transactions: ITransaction[],
   monthYear: string,
-  watchedCategoryKeys: string[] = []
+  watchedCategoryKeys: string[] = [],
+  watchedVendorKeys: string[] = [],
+  vendorMappings: IVendorLogoRule[] = []
 ): IDashboardViewModel {
   void monthYear;
   const normalizedWatchKeys = Array.from(new Set((watchedCategoryKeys || [])
     .map(k => normalizeCategoryKey(k))
+    .filter(k => k.length > 0)));
+  const normalizedWatchedVendorKeys = Array.from(new Set((watchedVendorKeys || [])
+    .map(k => normalizeVendorKey(k))
     .filter(k => k.length > 0)));
 
   const postedTransactions = transactions.filter(t => (t.status || '').toUpperCase() !== ITransactionStatus.pending.toUpperCase());
@@ -74,6 +107,7 @@ export function buildDashboardViewModel(
   const nonIncomeCategories = categories.filter(c => (c.name || '').toUpperCase() !== 'INCOME');
   const categoryByName = new Map(nonIncomeCategories.map(c => [c.name, c]));
   const spentByCategory = new Map<string, number>();
+  const spentByVendor = new Map<string, { vendorName: string; logoUrl: string; spent: number }>();
 
   postedTransactions.forEach(t => {
     if ((t.category || '').toUpperCase() === 'INCOME') {
@@ -82,11 +116,33 @@ export function buildDashboardViewModel(
     const spendDelta = -1 * +t.amount;
 
     const categoryName = t.category || '';
-    if (!categoryByName.has(categoryName)) {
+    if (categoryByName.has(categoryName)) {
+      const existing = spentByCategory.get(categoryName) || 0;
+      spentByCategory.set(categoryName, existing + spendDelta);
+    }
+
+    const vendorMatch = getVendorMatch(t.description, vendorMappings);
+    if (!vendorMatch) {
       return;
     }
-    const existing = spentByCategory.get(categoryName) || 0;
-    spentByCategory.set(categoryName, existing + spendDelta);
+    const vendorName = (vendorMatch.vendorName || '').trim();
+    const vendorKey = normalizeVendorKey(vendorName);
+    if (vendorKey) {
+      const existingVendor = spentByVendor.get(vendorKey);
+      const vendorLogo = vendorMatch?.logoUrl || '';
+      if (existingVendor) {
+        existingVendor.spent += spendDelta;
+        if (!existingVendor.logoUrl) {
+          existingVendor.logoUrl = vendorLogo;
+        }
+      } else {
+        spentByVendor.set(vendorKey, {
+          vendorName,
+          logoUrl: vendorLogo,
+          spent: spendDelta
+        });
+      }
+    }
   });
 
   const overBudgetCategories = nonIncomeCategories
@@ -111,6 +167,12 @@ export function buildDashboardViewModel(
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 5);
 
+  const topSpendingVendors = Array.from(spentByVendor.values())
+    .filter((row): row is ITopVendorSpend => !!row)
+    .filter(row => row.spent > 0)
+    .sort((a, b) => b.spent - a.spent)
+    .slice(0, 5);
+
   const categoryByNormalizedName = new Map<string, ICategory>();
   categories.forEach(c => {
     const key = normalizeCategoryKey(c.name);
@@ -121,6 +183,8 @@ export function buildDashboardViewModel(
 
   const watchedCategoriesResolved: IWatchedCategoryResolved[] = [];
   const watchedCategoriesMissing: IWatchedCategoryMissing[] = [];
+  const watchedVendorsResolved: IWatchedVendorResolved[] = [];
+  const watchedVendorsMissing: IWatchedVendorMissing[] = [];
   normalizedWatchKeys.forEach(key => {
     const category = categoryByNormalizedName.get(key);
     if (category) {
@@ -132,6 +196,23 @@ export function buildDashboardViewModel(
       });
     } else {
       watchedCategoriesMissing.push({
+        key,
+        displayName: key.replace(/\b\w/g, char => char.toUpperCase())
+      });
+    }
+  });
+
+  normalizedWatchedVendorKeys.forEach(key => {
+    const vendorEntry = spentByVendor.get(key);
+    if (vendorEntry) {
+      watchedVendorsResolved.push({
+        key,
+        displayName: vendorEntry.vendorName,
+        logoUrl: vendorEntry.logoUrl,
+        spent: roundMoney(vendorEntry.spent)
+      });
+    } else {
+      watchedVendorsMissing.push({
         key,
         displayName: key.replace(/\b\w/g, char => char.toUpperCase())
       });
@@ -157,7 +238,11 @@ export function buildDashboardViewModel(
     overBudgetCategories,
     topSpendingCategories,
     watchedCategoriesResolved,
-    watchedCategoriesMissing
+    watchedCategoriesMissing,
+    vendorMappings: vendorMappings.slice(),
+    topSpendingVendors,
+    watchedVendorsResolved,
+    watchedVendorsMissing
   };
 }
 
@@ -170,10 +255,13 @@ export function buildDashboardViewModel(
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private dataSub: Subscription;
+  private vendorMappingLimit = 8;
 
   viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
   availableWatchOptions: ICategory[] = [];
+  watchedVendorWatchOptions: string[] = [];
+  vendorMappingFilter = '';
 
   constructor(
     public service: DbService,
@@ -187,8 +275,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.service.categories,
       this.service.transactions,
       this.service.monthYear,
-      this.service.dashboardPreferences
-    ]).subscribe(([categories, transactions, monthYear, preferences]) => {
+      this.service.dashboardPreferences,
+      this.service.vendorMappings
+    ]).subscribe(([categories, transactions, monthYear, preferences, vendorMappings]) => {
       this.zone.run(() => {
         const cats = categories || [];
         const trans = transactions || [];
@@ -196,16 +285,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.availableWatchOptions = cats
           .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
           .sort((a, b) => a.name.localeCompare(b.name));
+        this.watchedVendorWatchOptions = this.getWatchedVendorOptions(vendorMappings || []);
         this.viewModel = buildDashboardViewModel(
           cats,
           trans,
           my,
-          preferences?.watchedCategoryKeys || []
+          preferences?.watchedCategoryKeys || [],
+          preferences?.watchedVendorKeys || [],
+          vendorMappings || []
         );
         this.cdr.markForCheck();
       });
     });
     this.loadBalances();
+  }
+
+  getWatchedVendorOptions(vendorMappings: IVendorLogoRule[]): string[] {
+    const mappedVendors = (vendorMappings || [])
+      .map(mapping => (mapping?.vendorName || '').trim())
+      .filter(v => v.length > 0);
+    return Array.from(new Set(mappedVendors))
+      .sort((a, b) => a.localeCompare(b));
   }
 
   ngOnDestroy() {
@@ -246,6 +346,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return item.key;
   }
 
+  trackByVendorMapping(index: number, item: IVendorLogoRule) {
+    return `${item.pattern}:${item.vendorName}`;
+  }
+
+  trackByVendorMappingDisplayItem(index: number, item: { mapping: IVendorLogoRule; sourceIndex: number }) {
+    return item.sourceIndex >= 0 ? item.sourceIndex : `${index}:${item.mapping?.vendorName || ''}:${item.mapping?.pattern || ''}`;
+  }
+
+  trackByTopVendor(index: number, item: ITopVendorSpend) {
+    return item.vendorName;
+  }
+
+  trackByWatchedVendorResolved(index: number, item: IWatchedVendorResolved) {
+    return item.key;
+  }
+
+  trackByWatchedVendorMissing(index: number, item: IWatchedVendorMissing) {
+    return item.key;
+  }
+
   getTransactionQueryParamsForCategory(categoryName: string) {
     return { category: categoryName };
   }
@@ -256,6 +376,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getSummaryQueryParamsForSection(section: 'pending' | 'uncategorized') {
     return { focusSection: section };
+  }
+
+  getTransactionQueryParamsForVendor(vendorName: string) {
+    return { search: vendorName };
   }
 
   openAddWatchedCategoryModal() {
@@ -275,29 +399,178 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  openAddWatchedVendorModal() {
+    const watchedVendorKeys = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
+    const vendorOptions = this.watchedVendorWatchOptions.filter(v => !watchedVendorKeys.includes(normalizeVendorKey(v)));
+    const dialogRef = this.dialog.open(DashboardWatchVendorModalComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      autoFocus: false,
+      data: { vendorOptions }
+    });
+    dialogRef.afterClosed().subscribe((vendorName: string | undefined) => {
+      if (!vendorName) { return; }
+      this.addWatchedVendor(vendorName);
+    });
+  }
+
+  openAddVendorMappingModal() {
+    const dialogRef = this.dialog.open(DashboardVendorMappingModalComponent, {
+      width: '520px',
+      maxWidth: '90vw',
+      autoFocus: false,
+      data: {}
+    });
+    dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
+      if (!result || result.action !== 'save') { return; }
+      this.addVendorMapping(result.mapping);
+    });
+  }
+
+  openEditVendorMappingModal(mapping: IVendorLogoRule, index: number) {
+    const dialogRef = this.dialog.open(DashboardVendorMappingModalComponent, {
+      width: '520px',
+      maxWidth: '90vw',
+      autoFocus: false,
+      data: { mapping, index }
+    });
+    dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
+      if (!result) { return; }
+      if (result.action === 'save') {
+        this.updateVendorMapping(result.mapping, index);
+      } else if (result.action === 'delete') {
+        this.removeVendorMapping(index);
+      }
+    });
+  }
+
+  getVendorMappingDisplayItems(): Array<{ mapping: IVendorLogoRule; sourceIndex: number }> {
+    const filter = (this.vendorMappingFilter || '').trim().toLowerCase();
+    const mappings = (this.viewModel?.vendorMappings || [])
+      .filter(mapping => {
+        if (!filter) { return true; }
+        return (mapping?.vendorName || '').toLowerCase().includes(filter);
+      });
+
+    const visible = filter ? mappings : mappings.slice(0, this.vendorMappingLimit);
+    return visible.map(mapping => ({
+      mapping,
+      sourceIndex: (this.viewModel?.vendorMappings || []).findIndex(v => v === mapping)
+    }));
+  }
+
+  onVendorMappingFilterChange(value: string) {
+    this.vendorMappingFilter = value || '';
+  }
+
   async addWatchedCategory(categoryName: string) {
     const key = normalizeCategoryKey(categoryName);
     if (!key) { return; }
     const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
     if (current.includes(key)) { return; }
-    await this.persistWatchedPreferences([...current, key]);
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: [...current, key],
+      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
+    });
+  }
+
+  async addWatchedVendor(vendorName: string) {
+    const key = normalizeVendorKey(vendorName);
+    if (!key) { return; }
+    const preferences = this.service.dashboardPreferences.getValue();
+    const current = preferences?.watchedVendorKeys || [];
+    if (current.includes(key)) { return; }
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: preferences?.watchedCategoryKeys || [],
+      watchedVendorKeys: [...current, key]
+    });
+  }
+
+  async removeWatchedVendorByName(vendorName: string) {
+    const key = normalizeVendorKey(vendorName);
+    if (!key) { return; }
+    const current = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [],
+      watchedVendorKeys: current.filter(k => k !== key)
+    });
+  }
+
+  async removeWatchedVendorMissing(key: string) {
+    const current = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [],
+      watchedVendorKeys: current.filter(k => k !== key)
+    });
   }
 
   async removeWatchedCategoryByName(categoryName: string) {
     const key = normalizeCategoryKey(categoryName);
     if (!key) { return; }
     const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    await this.persistWatchedPreferences(current.filter(k => k !== key));
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: current.filter(k => k !== key),
+      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
+    });
   }
 
   async removeWatchedMissing(key: string) {
     const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    await this.persistWatchedPreferences(current.filter(k => k !== key));
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: current.filter(k => k !== key),
+      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
+    });
   }
 
-  private async persistWatchedPreferences(watchedCategoryKeys: string[]) {
+  async removeVendorMapping(index: number) {
+    const mappings = this.service.vendorMappings.getValue() || [];
+    if (index < 0 || index >= mappings.length) { return; }
+    const updated = [...mappings];
+    updated.splice(index, 1);
+    await this.persistVendorMappings(updated);
+  }
+
+  private async addVendorMapping(mapping: IVendorLogoRule) {
+    const trimmed = {
+      pattern: (mapping?.pattern || '').trim(),
+      vendorName: (mapping?.vendorName || '').trim(),
+      logoUrl: (mapping?.logoUrl || '').trim()
+    };
+    if (!trimmed.pattern || !trimmed.vendorName || !trimmed.logoUrl) { return; }
+    const current = this.service.vendorMappings.getValue() || [];
+    const ruleKey = `${normalizeVendorKey(trimmed.pattern)}-${normalizeVendorKey(trimmed.vendorName)}`;
+    const deduped = current.filter(rule => `${normalizeVendorKey(rule.pattern)}-${normalizeVendorKey(rule.vendorName)}` !== ruleKey);
+    const updated = [trimmed, ...deduped];
+    await this.persistVendorMappings(updated);
+  }
+
+  private async updateVendorMapping(mapping: IVendorLogoRule, index: number) {
+    const trimmed = {
+      pattern: (mapping?.pattern || '').trim(),
+      vendorName: (mapping?.vendorName || '').trim(),
+      logoUrl: (mapping?.logoUrl || '').trim()
+    };
+    if (!trimmed.pattern || !trimmed.vendorName || !trimmed.logoUrl) { return; }
+
+    const current = this.service.vendorMappings.getValue() || [];
+    if (index < 0 || index >= current.length) {
+      await this.addVendorMapping(trimmed);
+      return;
+    }
+    const updated = [...current];
+    updated[index] = trimmed;
+    await this.persistVendorMappings(updated);
+  }
+
+  private async persistVendorMappings(vendorMappings: IVendorLogoRule[]) {
+    await this.service.saveVendorMappings(vendorMappings);
+  }
+
+  private async persistWatchedPreferences(update: { watchedCategoryKeys?: string[]; watchedVendorKeys?: string[] }) {
+    const current = this.service.dashboardPreferences.getValue() || { watchedCategoryKeys: [], watchedVendorKeys: [] };
     await this.service.saveDashboardPreferences({
-      watchedCategoryKeys
+      watchedCategoryKeys: update?.watchedCategoryKeys ?? current.watchedCategoryKeys,
+      watchedVendorKeys: update?.watchedVendorKeys ?? current.watchedVendorKeys
     });
   }
 }
