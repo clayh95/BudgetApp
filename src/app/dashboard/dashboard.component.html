@@ -75,7 +75,7 @@
 
   <div class="main-grid">
     <mat-card>
-      <mat-card-title>Needs Attention</mat-card-title>
+      <mat-card-title>Categories</mat-card-title>
       <mat-card-content>
         <div class="section-title">
           Watched Categories
@@ -195,6 +195,158 @@
     </mat-card>
 
     <mat-card>
+      <mat-card-title>Vendors</mat-card-title>
+      <mat-card-content>
+        <div class="section-title">
+          Watched Vendors
+          <button mat-icon-button matTooltip="Add watched vendor" (click)="openAddWatchedVendorModal()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.watchedVendorsResolved; trackBy: trackByWatchedVendorResolved">
+            <div
+              class="row row-clickable vendor-row"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedVendorActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.displayName">
+              <span class="vendor-title">
+                <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" alt="" aria-hidden="true">
+                <span>
+                  {{item.displayName}}
+                  <span class="metric-chip amount-inline">{{item.spent | currency}}</span>
+                </span>
+              </span>
+              <span class="row-actions">
+                <mat-menu #watchedVendorActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForVendor(item.displayName)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedVendorByName(item.displayName)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched vendor</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngFor="let item of viewModel.watchedVendorsMissing; trackBy: trackByWatchedVendorMissing">
+            <div
+              class="row row-clickable vendor-row"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="watchedVendorMissingActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.displayName">
+              <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
+              <span class="row-actions">
+                <mat-menu #watchedVendorMissingActionsMenu="matMenu">
+                  <button mat-menu-item disabled>
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                  <button mat-menu-item (click)="removeWatchedVendorMissing(item.key)">
+                    <mat-icon>close</mat-icon>
+                    <span>Remove watched vendor</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+
+          <mat-list-item *ngIf="viewModel.watchedVendorsResolved.length === 0 && viewModel.watchedVendorsMissing.length === 0">
+            <div class="muted">No watched vendors yet.</div>
+          </mat-list-item>
+        </mat-list>
+
+        <div class="section-title">Top Spending Vendors</div>
+        <mat-list dense>
+          <mat-list-item *ngFor="let item of viewModel.topSpendingVendors; trackBy: trackByTopVendor">
+            <div
+              class="row row-clickable vendor-row"
+              role="button"
+              tabindex="0"
+              [matMenuTriggerFor]="topVendorActionsMenu"
+              [attr.aria-label]="'Actions for ' + item.vendorName">
+              <span class="vendor-title">
+                <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" alt="{{item.vendorName}} logo">
+                <span>
+                  <span>{{item.vendorName}}</span>
+                  <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
+                </span>
+              </span>
+              <span class="row-actions">
+                <mat-menu #topVendorActionsMenu="matMenu">
+                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForVendor(item.vendorName)">
+                    <mat-icon>view_list</mat-icon>
+                    <span>Open transactions</span>
+                  </button>
+                </mat-menu>
+                <span class="row-chevron" aria-hidden="true">
+                  <mat-icon>chevron_right</mat-icon>
+                </span>
+              </span>
+            </div>
+          </mat-list-item>
+          <mat-list-item *ngIf="viewModel.topSpendingVendors.length === 0">
+            <div class="muted">No vendor spend yet.</div>
+          </mat-list-item>
+        </mat-list>
+
+        <mat-accordion>
+          <mat-expansion-panel [expanded]="false">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Vendor Mappings</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="vendor-mapping-toolbar">
+              <mat-form-field class="vendor-mapping-filter" appearance="outline">
+                <mat-label>Filter mappings</mat-label>
+                <input
+                  matInput
+                  [value]="vendorMappingFilter"
+                  (input)="onVendorMappingFilterChange($any($event.target).value)"
+                  placeholder="Search vendor name">
+                <button *ngIf="vendorMappingFilter" matSuffix mat-icon-button aria-label="Clear filter" (click)="onVendorMappingFilterChange('')">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </mat-form-field>
+
+              <button mat-fab extended type="button" color="primary" matTooltip="Add vendor mapping" (click)="openAddVendorMappingModal()">
+                <mat-icon>add</mat-icon>
+                <span>Add New</span>
+              </button>
+            </div>
+
+            <div class="vendor-mapping-grid">
+              <div
+                *ngFor="let item of getVendorMappingDisplayItems(); trackBy: trackByVendorMappingDisplayItem"
+                class="vendor-mapping-grid-item row-clickable"
+                role="button"
+                tabindex="0"
+                (click)="openEditVendorMappingModal(item.mapping, item.sourceIndex)"
+                [attr.aria-label]="'Edit mapping for ' + item.mapping.vendorName">
+                <img *ngIf="item.mapping.logoUrl" class="vendor-logo" [src]="item.mapping.logoUrl">
+                <span class="vendor-mapping-name">{{ item.mapping.vendorName }}</span>
+              </div>
+            </div>
+            <div class="muted" *ngIf="getVendorMappingDisplayItems().length === 0">
+              <span>No vendor mappings yet.</span>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
       <mat-card-title>This Month at a Glance</mat-card-title>
       <mat-card-content>
         <div class="section-title">Top Spending Categories</div>
@@ -208,7 +360,7 @@
               [attr.aria-label]="'Actions for ' + item.category.name">
               <span>
                 {{item.category.name}}
-                <span class="metric-chip amount-inline negative">{{-item.spent | currency}}</span>
+                <span class="metric-chip amount-inline">{{-item.spent | currency}}</span>
               </span>
               <span class="row-actions">
                 <mat-menu #topSpendActionsMenu="matMenu">
@@ -237,14 +389,12 @@
     <mat-card>
       <mat-card-title>Balances & Risk</mat-card-title>
       <mat-card-content>
-        <mat-list dense>
+        <mat-list dense class="balances-list">
           <mat-list-item *ngFor="let balance of balances">
             <div class="row">
               <span class="balance-key">
-                <span class="balance-risk-space">
-                  <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
-                </span>
                 <span class="balance-label">{{balance.key}}</span>
+                <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
               </span>
               <span class="balance-value-wrap">
                 {{balance.value}}

@@ -300,7 +300,7 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   getIconFromUtils(description:string):string {
-    return getIcon(description);
+    return getIcon(description, this.Tsvc.vendorMappings.getValue() || []);
   }
 
 }
