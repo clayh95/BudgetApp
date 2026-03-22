@@ -221,7 +221,7 @@
 }
 
 .balances-list {
-  ::ng-deep.mdc-list-item__content {
+  ::ng-deep .mdc-list-item__content {
     overflow: visible;
   }
 }
