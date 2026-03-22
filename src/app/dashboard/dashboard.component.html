@@ -374,24 +374,18 @@
             <div class="muted">Not enough data yet.</div>
           </mat-list-item>
         </mat-list>
-
-        <div class="section-title">Top Spending Vendors</div>
-        <mat-list dense>
-        </mat-list>
       </mat-card-content>
     </mat-card>
 
     <mat-card>
       <mat-card-title>Balances & Risk</mat-card-title>
       <mat-card-content>
-        <mat-list dense>
+        <mat-list dense class="balances-list">
           <mat-list-item *ngFor="let balance of balances">
             <div class="row">
               <span class="balance-key">
-                <span class="balance-risk-space">
-                  <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
-                </span>
                 <span class="balance-label">{{balance.key}}</span>
+                <mat-icon *ngIf="isCreditCardRisk(balance)" class="risk-icon">notification_important</mat-icon>
               </span>
               <span class="balance-value-wrap">
                 {{balance.value}}
