@@ -1,5 +1,5 @@
 <mat-dialog-actions class="actions">
-  <button mat-icon-button [disabled]="!pattern || !vendorName || !logoUrl" (click)="save()">
+  <button mat-icon-button [disabled]="!canSave" (click)="save()">
     <mat-icon>save</mat-icon>
   </button>
   <button
@@ -17,23 +17,34 @@
 
 <h2 mat-dialog-title>{{ data?.mapping ? 'Edit Vendor Logo Mapping' : 'Add Vendor Logo Mapping' }}</h2>
 
-<mat-dialog-content>
-  <mat-form-field class="watch-field">
-    <mat-label>Match text or regex</mat-label>
-    <input matInput [(ngModel)]="pattern" />
-  </mat-form-field>
-
+<mat-dialog-content class="dialog-fields">
   <mat-form-field class="watch-field">
     <mat-label>Vendor name</mat-label>
     <input matInput [(ngModel)]="vendorName" />
   </mat-form-field>
 
   <mat-form-field class="watch-field">
-    <mat-label>Logo URL</mat-label>
-    <input matInput [(ngModel)]="logoUrl" />
+    <mat-label>Match text or regex</mat-label>
+    <input class="regex-input" matInput [(ngModel)]="pattern" [errorStateMatcher]="regexErrorStateMatcher" />
+    <mat-icon
+      matSuffix
+      class="regex-validation-icon"
+      [class.valid]="isPatternValid"
+      [class.invalid]="!isPatternValid"
+      >{{ patternValidationIcon }}</mat-icon>
+    <mat-hint *ngIf="showPatternHint">Regex is valid.</mat-hint>
+    <mat-error *ngIf="showPatternError">Regex is invalid.</mat-error>
   </mat-form-field>
 
-  <div class="preview" *ngIf="logoUrl">
-    <img [src]="logoUrl">
+  <div class="logo-section">
+    <mat-form-field class="watch-field">
+      <mat-label>Logo URL</mat-label>
+      <input matInput [(ngModel)]="logoUrl" />
+    </mat-form-field>
+
+    <div class="preview" *ngIf="logoUrl">
+      <img [src]="logoUrl" alt="Logo preview">
+    </div>
   </div>
+
 </mat-dialog-content>

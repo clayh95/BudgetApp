@@ -14,6 +14,19 @@
   }
 }
 
+.dialog-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
 .preview {
   display: flex;
   align-items: center;
@@ -24,4 +37,20 @@
     height: 28px;
     object-fit: contain;
   }
+}
+
+.regex-input {
+  font-family: Consolas, "SFMono-Regular", Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
+}
+
+.regex-validation-icon {
+  font-size: 20px;
+}
+
+.regex-validation-icon.valid {
+  color: #2e7d32;
+}
+
+.regex-validation-icon.invalid {
+  color: #c62828;
 }

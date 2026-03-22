@@ -1,4 +1,6 @@
 import { Component, inject } from '@angular/core';
+import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
 import { SharedModule } from '../shared/shared.module';
 import { IVendorLogoRule } from '../core/utilities';
@@ -27,6 +29,9 @@ export class DashboardVendorMappingModalComponent {
   pattern = '';
   vendorName = '';
   logoUrl = '';
+  readonly regexErrorStateMatcher: ErrorStateMatcher = {
+    isErrorState: (_control: FormControl | null, _form: FormGroupDirective | NgForm | null): boolean => this.showPatternError
+  };
 
   constructor(
     public dialogRef: MatDialogRef<DashboardVendorMappingModalComponent>,
@@ -43,8 +48,41 @@ export class DashboardVendorMappingModalComponent {
     this.dialogRef.close({ action: 'close' } as DashboardVendorMappingModalResult);
   }
 
+  get isPatternValid(): boolean {
+    const value = this.pattern.trim();
+    if (!value) {
+      return false;
+    }
+    try {
+      new RegExp(value, 'i');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  get patternValidationIcon(): 'check_circle' | 'cancel' {
+    return this.isPatternValid ? 'check_circle' : 'cancel';
+  }
+
+  get hasPatternValue(): boolean {
+    return this.pattern.trim().length > 0;
+  }
+
+  get showPatternHint(): boolean {
+    return this.hasPatternValue && this.isPatternValid;
+  }
+
+  get showPatternError(): boolean {
+    return this.hasPatternValue && !this.isPatternValid;
+  }
+
+  get canSave(): boolean {
+    return !!this.vendorName.trim() && !!this.logoUrl.trim() && this.isPatternValid;
+  }
+
   save() {
-    if (!this.pattern || !this.vendorName || !this.logoUrl) { return; }
+    if (!this.canSave) { return; }
     this.dialogRef.close({
       action: 'save',
       mapping: {
