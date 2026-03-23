@@ -14,6 +14,7 @@ describe('parseTransactionRouteInitState', () => {
       startingBalances: 'false',
       uncategorized: 'true',
       category: 'Groceries',
+      vendor: 'Walmart',
       search: 'walmart',
       page: '2',
       sort: 'amount',
@@ -25,6 +26,7 @@ describe('parseTransactionRouteInitState', () => {
       startingBalances: false,
       uncategorized: true,
       category: 'Groceries',
+      vendor: 'Walmart',
       search: 'walmart',
       page: 2,
       sort: 'amount',
@@ -40,6 +42,14 @@ describe('parseTransactionRouteInitState', () => {
       page: '-1',
       sort: 'invalid',
       dir: 'sideways'
+    }));
+
+    expect(state).toEqual({});
+  });
+
+  it('ignores blank vendor values', () => {
+    const state = parseTransactionRouteInitState(new FakeParamMap({
+      vendor: '   '
     }));
 
     expect(state).toEqual({});

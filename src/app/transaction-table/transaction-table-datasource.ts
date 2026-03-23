@@ -5,6 +5,7 @@ import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
+import { IVendorLogoRule } from '../core/utilities';
 import * as _ from "lodash";
 
 /**
@@ -29,7 +30,8 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
               private bShowPending: BehaviorSubject<boolean>,
               private bShowStartingBalances: BehaviorSubject<boolean>,
               private bOnlyUncategorized: BehaviorSubject<boolean>,
-              private categoryFilter: BehaviorSubject<string>
+              private categoryFilter: BehaviorSubject<string>,
+              private vendorFilter: BehaviorSubject<string>
               ) {
     super();
   }
@@ -43,13 +45,24 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.bShowPending.asObservable(),
       this.bShowStartingBalances.asObservable(),
       this.bOnlyUncategorized.asObservable(),
-      this.categoryFilter.asObservable()
+      this.categoryFilter.asObservable(),
+      this.vendorFilter.asObservable(),
+      this.service.vendorMappings.asObservable()
     ]).pipe(map((d) => {
       let val = d[0] as unknown as ITransaction[];
       if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
       this.lastIDs = val;
       this.lastMY = this.service.getMonthYearValue();
-      let ret = this.getFilteredData(this.getSortedData([...val]), <string>d[3], <boolean>d[4], <boolean>d[5], <boolean>d[6], <string>d[7]);
+      let ret = this.getFilteredData(
+        this.getSortedData([...val]),
+        <string>d[3],
+        <boolean>d[4],
+        <boolean>d[5],
+        <boolean>d[6],
+        <string>d[7],
+        <string>d[8],
+        <IVendorLogoRule[]>d[9]
+      );
       this.paginator.length = ret.length;
       this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
       ret = this.getPagedData(ret);
@@ -101,16 +114,46 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
                           bShowPending:boolean,
                           bShowStartingBalances:boolean,
                           bOnlyUncategorized:boolean,
-                          categoryFilter:string
+                          categoryFilter:string,
+                          vendorFilter:string,
+                          vendorMappings: IVendorLogoRule[]
                           ) {
     const category = (categoryFilter || '').trim();
+    const vendor = (vendorFilter || '').trim().toLowerCase();
+    const vendorPatterns = this.getVendorPatternsForFilter(vendor, vendorMappings || []);
+    const hasVendorFilter = vendor.length > 0;
     return data.filter(t => {
       return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
         && (bShowPending || t.status == ITransactionStatus.posted)
         && (bShowStartingBalances || !t.description.endsWith('Starting Balance'))
         && (bOnlyUncategorized ? (t.category == '') : 1==1)
         && (category.length > 0 ? t.category === category : true)
+        && this.matchesVendorPattern(t.description, vendorPatterns, hasVendorFilter)
     })
+  }
+
+  private getVendorPatternsForFilter(vendorFilter: string, vendorMappings: IVendorLogoRule[]): RegExp[] {
+    if (!vendorFilter) { return []; }
+    return vendorMappings
+      .filter(mapping => (mapping?.vendorName || '').trim().toLowerCase() === vendorFilter)
+      .map(mapping => (mapping?.pattern || '').trim())
+      .filter(pattern => !!pattern)
+      .map(pattern => {
+        try {
+          return new RegExp(pattern, 'i');
+        } catch {
+          return null;
+        }
+      })
+      .filter((regex): regex is RegExp => !!regex);
+  }
+
+  private matchesVendorPattern(description: string, vendorPatterns: RegExp[], hasVendorFilter: boolean): boolean {
+    if (!hasVendorFilter) { return true; }
+    if (!vendorPatterns.length) { return false; }
+    const normalizedDescription = `${description || ''}`.trim();
+    if (!normalizedDescription) { return false; }
+    return vendorPatterns.some(pattern => pattern.test(normalizedDescription));
   }
 }
 
