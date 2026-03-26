@@ -107,7 +107,7 @@
 
 
 <div class="paginator">
-  <mat-form-field class="controlsFilter">
+  <mat-form-field class="controlsFilter" (click)="focusSearchInput()">
     <mat-chip-grid #searchChipGrid>
       <mat-chip-row *ngIf="bShowPending.getValue()" class="search-filter-chip">
         <mat-icon>error_outline</mat-icon>
@@ -133,14 +133,29 @@
       <mat-chip-row *ngIf="activeCategory" class="search-filter-chip">
         <span class="category-chip-emoji" *ngIf="activeCategory?.emoji">{{activeCategory?.emoji}}</span>
         <mat-icon *ngIf="!activeCategory?.emoji">category</mat-icon>
-        <span>{{activeCategory?.name}}</span>
+        <span class="chip-text-container">
+          <span>{{activeCategory?.name}}</span>
+          <span class="chip-type-label">Category</span>
+        </span>
         <button matChipRemove (click)="clearCategoryFilter(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-chip-row>
+      <mat-chip-row *ngIf="activeVendor" class="search-filter-chip">
+        <img *ngIf="activeVendor?.logoUrl" class="vendor-chip-logo" [src]="activeVendor?.logoUrl" alt="Vendor icon"/>
+        <mat-icon *ngIf="!activeVendor?.logoUrl">storefront</mat-icon>
+        <span class="chip-text-container">
+          <span>{{activeVendor?.name}}</span>
+          <span class="chip-type-label">Vendor</span>
+        </span>
+        <button matChipRemove (click)="clearVendorFilter(); $event.stopPropagation()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-chip-row>
     </mat-chip-grid>
 
-    <input matInput placeholder="Search"
+    <input #searchInput matInput placeholder="Search"
+      [matChipInputFor]="searchChipGrid"
       (input)="onSearchInput(($any($event.target).value))"
       (focus)="onSearchFocus()"
       (blur)="onSearchBlur()"
@@ -172,18 +187,39 @@
       </button>
     </mat-option>
 
-    <mat-option *ngIf="showSearchHints" disabled>Search transactions or categories...</mat-option>
+    <mat-option *ngIf="showSearchHints" disabled>Search transactions, categories, or vendors...</mat-option>
 
     <ng-container *ngIf="!showSearchHints">
-      <mat-option *ngIf="suggestedCategories.length === 0" disabled>
-        No categories found
+      <mat-option *ngIf="searchSuggestions.length === 0" disabled>
+        No matches found
       </mat-option>
-      <mat-option *ngFor="let category of suggestedCategories" [value]="category.name" (onSelectionChange)="$event.isUserInput && onCategoryOptionSelected(category)">
-        <span class="category-option-emoji" *ngIf="category.emoji">{{category.emoji}}</span>
-        <span class="category-option-no-emoji" *ngIf="!category.emoji">
-          <mat-icon>category</mat-icon>
-        </span>
-        <span>{{category.name}}</span>
+      <mat-option *ngFor="let suggestion of searchSuggestions; trackBy: trackBySearchSuggestion"
+        [value]="suggestion.type === 'category' ? suggestion.category.name : suggestion.vendor.name"
+        (onSelectionChange)="$event.isUserInput && (suggestion.type === 'category' ? onCategoryOptionSelected(suggestion.category) : onVendorOptionSelected(suggestion.vendor))">
+        <ng-container *ngIf="suggestion.type === 'category'">
+          <span class="suggestion-row">
+            <span class="category-option-emoji suggestion-leading-icon" *ngIf="suggestion.category.emoji">{{suggestion.category.emoji}}</span>
+            <span class="category-option-no-emoji suggestion-leading-icon" *ngIf="!suggestion.category.emoji">
+              <mat-icon>category</mat-icon>
+            </span>
+            <span class="suggestion-text">
+              <span>{{suggestion.category.name}}</span>
+              <span class="suggestion-type-label">Category</span>
+            </span>
+          </span>
+        </ng-container>
+        <ng-container *ngIf="suggestion.type === 'vendor'">
+          <span class="suggestion-row">
+            <img *ngIf="suggestion.vendor.logoUrl" class="vendor-option-logo suggestion-leading-icon" [src]="suggestion.vendor.logoUrl" alt="Vendor icon"/>
+            <span class="category-option-no-emoji suggestion-leading-icon" *ngIf="!suggestion.vendor.logoUrl">
+              <mat-icon>storefront</mat-icon>
+            </span>
+            <span class="suggestion-text">
+              <span>{{suggestion.vendor.name}}</span>
+              <span class="suggestion-type-label">Vendor</span>
+            </span>
+          </span>
+        </ng-container>
       </mat-option>
     </ng-container>
   </mat-autocomplete>

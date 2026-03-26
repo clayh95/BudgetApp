@@ -178,7 +178,6 @@
     }
     max-height: 70px;
     .search-filter-chip {
-        height: 1.9em;
         font-size: 12px;
     }
 
@@ -187,6 +186,24 @@
         margin-right: 4px;
         line-height: 1;
         font-size: 14px;
+    }
+
+    .chip-text-container {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+    }
+
+    .chip-type-label {
+        color: #7a7a7a;
+        font-size: 11px;
+    }
+
+    .vendor-chip-logo {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+        margin-right: 4px;
     }
 
   .search-filter-options-row {
@@ -206,6 +223,38 @@
       display: inline-flex;
       align-items: center;
       margin-right: 5px;
+  }
+
+  .vendor-option-logo {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+  }
+
+  .suggestion-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+  }
+
+  .suggestion-leading-icon {
+      width: 16px;
+      min-width: 16px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+  }
+
+  .suggestion-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+  }
+
+  .suggestion-type-label {
+      color: #7a7a7a;
+      font-size: 11px;
   }
 
   .total  {

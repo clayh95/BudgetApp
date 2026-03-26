@@ -122,7 +122,7 @@ export function buildDashboardViewModel(
     }
 
     const vendorMatch = getVendorMatch(t.description, vendorMappings);
-    if (!vendorMatch) {
+    if (!vendorMatch || t.description.endsWith('Starting Balance')) {
       return;
     }
     const vendorName = (vendorMatch.vendorName || '').trim();
@@ -379,7 +379,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getTransactionQueryParamsForVendor(vendorName: string) {
-    return { search: vendorName };
+    return { vendor: vendorName };
   }
 
   openAddWatchedCategoryModal() {
