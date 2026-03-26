@@ -1,4 +1,4 @@
-import { buildDashboardViewModel, normalizeCategoryKey } from './dashboard.component';
+import { DashboardComponent, buildDashboardViewModel, normalizeCategoryKey } from './dashboard.component';
 
 describe('buildDashboardViewModel', () => {
   it('calculates pending and non-pending uncategorized counts', () => {
@@ -80,5 +80,12 @@ describe('buildDashboardViewModel', () => {
     expect(vm.topSpendingVendors.map(v => v.vendorName)).toEqual(['A', 'B', 'C', 'D', 'E']);
     expect(vm.topSpendingVendors.find(v => v.vendorName === 'F')).toBeUndefined();
     expect(vm.topSpendingVendors.find(v => v.vendorName === 'Z')).toBeUndefined();
+  });
+});
+
+describe('DashboardComponent query params', () => {
+  it('routes vendor drill-down using vendor query param', () => {
+    const result = (DashboardComponent.prototype as any).getTransactionQueryParamsForVendor('Walmart');
+    expect(result).toEqual({ vendor: 'Walmart' });
   });
 });
