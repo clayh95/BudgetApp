@@ -123,7 +123,7 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     const vendorPatterns = this.getVendorPatternsForFilter(vendor, vendorMappings || []);
     const hasVendorFilter = vendor.length > 0;
     return data.filter(t => {
-      return Object.values(t).map(v => v?.toString().toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
+      return Object.values(t).map(v => `${v ?? ''}`.toLowerCase().indexOf(filter) >= 0).indexOf(true) >= 0
         && (bShowPending || t.status == ITransactionStatus.posted)
         && (bShowStartingBalances || !t.description.endsWith('Starting Balance'))
         && (bOnlyUncategorized ? (t.category == '') : 1==1)
