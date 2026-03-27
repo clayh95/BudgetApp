@@ -6,7 +6,6 @@ import { getVendorMatch, IVendorLogoRule, parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
-import { DashboardWatchVendorModalComponent } from '../dashboard-watch-vendor-modal/dashboard-watch-vendor-modal.component';
 import { DashboardVendorMappingModalComponent, DashboardVendorMappingModalResult } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
 
 export interface IDashboardStats {
@@ -34,6 +33,19 @@ export interface ITopVendorSpend {
   spent: number;
 }
 
+export type VendorSortMode = 'spend' | 'name';
+
+export interface IVendorCardItem {
+  vendorName: string;
+  displayName: string;
+  logoUrl: string;
+  spent: number;
+  isWatched: boolean;
+  hasSpend: boolean;
+  sourceIndex: number;
+  usesFallbackIcon: boolean;
+}
+
 export interface IWatchedCategoryResolved {
   category: ICategory;
   spent: number;
@@ -45,18 +57,6 @@ export interface IWatchedCategoryMissing {
   displayName: string;
 }
 
-export interface IWatchedVendorResolved {
-  key: string;
-  displayName: string;
-  logoUrl: string;
-  spent: number;
-}
-
-export interface IWatchedVendorMissing {
-  key: string;
-  displayName: string;
-}
-
 export interface IDashboardViewModel {
   stats: IDashboardStats;
   overBudgetCategories: IOverBudgetCategory[];
@@ -64,9 +64,7 @@ export interface IDashboardViewModel {
   watchedCategoriesResolved: IWatchedCategoryResolved[];
   watchedCategoriesMissing: IWatchedCategoryMissing[];
   vendorMappings: IVendorLogoRule[];
-  topSpendingVendors: ITopVendorSpend[];
-  watchedVendorsResolved: IWatchedVendorResolved[];
-  watchedVendorsMissing: IWatchedVendorMissing[];
+  vendorCards: IVendorCardItem[];
 }
 
 function roundMoney(value: number): number {
@@ -167,11 +165,18 @@ export function buildDashboardViewModel(
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 5);
 
-  const topSpendingVendors = Array.from(spentByVendor.values())
+  const vendorSpendItems = Array.from(spentByVendor.values())
     .filter((row): row is ITopVendorSpend => !!row)
     .filter(row => row.spent > 0)
-    .sort((a, b) => b.spent - a.spent)
-    .slice(0, 5);
+    .sort((a, b) => b.spent - a.spent);
+
+  const mappingIndexByVendorKey = new Map<string, number>();
+  vendorMappings.forEach((mapping, index) => {
+    const key = normalizeVendorKey(mapping?.vendorName || '');
+    if (key.length > 0 && !mappingIndexByVendorKey.has(key)) {
+      mappingIndexByVendorKey.set(key, index);
+    }
+  });
 
   const categoryByNormalizedName = new Map<string, ICategory>();
   categories.forEach(c => {
@@ -183,8 +188,6 @@ export function buildDashboardViewModel(
 
   const watchedCategoriesResolved: IWatchedCategoryResolved[] = [];
   const watchedCategoriesMissing: IWatchedCategoryMissing[] = [];
-  const watchedVendorsResolved: IWatchedVendorResolved[] = [];
-  const watchedVendorsMissing: IWatchedVendorMissing[] = [];
   normalizedWatchKeys.forEach(key => {
     const category = categoryByNormalizedName.get(key);
     if (category) {
@@ -202,21 +205,43 @@ export function buildDashboardViewModel(
     }
   });
 
+  const vendorCardByKey = new Map<string, IVendorCardItem>();
+  vendorSpendItems.forEach(item => {
+    const key = normalizeVendorKey(item.vendorName);
+    vendorCardByKey.set(key, {
+      vendorName: item.vendorName,
+      displayName: item.vendorName,
+      logoUrl: item.logoUrl,
+      spent: roundMoney(item.spent),
+      isWatched: normalizedWatchedVendorKeys.includes(key),
+      hasSpend: true,
+      sourceIndex: mappingIndexByVendorKey.get(key) ?? -1,
+      usesFallbackIcon: !item.logoUrl
+    });
+  });
+
   normalizedWatchedVendorKeys.forEach(key => {
-    const vendorEntry = spentByVendor.get(key);
-    if (vendorEntry) {
-      watchedVendorsResolved.push({
-        key,
-        displayName: vendorEntry.vendorName,
-        logoUrl: vendorEntry.logoUrl,
-        spent: roundMoney(vendorEntry.spent)
-      });
-    } else {
-      watchedVendorsMissing.push({
-        key,
-        displayName: key.replace(/\b\w/g, char => char.toUpperCase())
-      });
+    if (vendorCardByKey.has(key)) {
+      const existing = vendorCardByKey.get(key);
+      if (existing) {
+        existing.isWatched = true;
+      }
+      return;
     }
+    const sourceIndex = mappingIndexByVendorKey.get(key) ?? -1;
+    const mapping = sourceIndex >= 0 ? vendorMappings[sourceIndex] : undefined;
+    const displayName = (mapping?.vendorName || '').trim() || key.replace(/\b\w/g, char => char.toUpperCase());
+    const logoUrl = (mapping?.logoUrl || '').trim();
+    vendorCardByKey.set(key, {
+      vendorName: displayName,
+      displayName,
+      logoUrl,
+      spent: 0,
+      isWatched: true,
+      hasSpend: false,
+      sourceIndex,
+      usesFallbackIcon: !logoUrl
+    });
   });
 
   const actualIncome = roundMoney(
@@ -240,9 +265,7 @@ export function buildDashboardViewModel(
     watchedCategoriesResolved,
     watchedCategoriesMissing,
     vendorMappings: vendorMappings.slice(),
-    topSpendingVendors,
-    watchedVendorsResolved,
-    watchedVendorsMissing
+    vendorCards: Array.from(vendorCardByKey.values())
   };
 }
 
@@ -255,13 +278,12 @@ export function buildDashboardViewModel(
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private dataSub: Subscription;
-  private vendorMappingLimit = 8;
 
   viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
   availableWatchOptions: ICategory[] = [];
-  watchedVendorWatchOptions: string[] = [];
-  vendorMappingFilter = '';
+  vendorSearch = '';
+  vendorSortMode: VendorSortMode = 'spend';
 
   constructor(
     public service: DbService,
@@ -285,7 +307,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.availableWatchOptions = cats
           .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
           .sort((a, b) => a.name.localeCompare(b.name));
-        this.watchedVendorWatchOptions = this.getWatchedVendorOptions(vendorMappings || []);
         this.viewModel = buildDashboardViewModel(
           cats,
           trans,
@@ -298,14 +319,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
     });
     this.loadBalances();
-  }
-
-  getWatchedVendorOptions(vendorMappings: IVendorLogoRule[]): string[] {
-    const mappedVendors = (vendorMappings || [])
-      .map(mapping => (mapping?.vendorName || '').trim())
-      .filter(v => v.length > 0);
-    return Array.from(new Set(mappedVendors))
-      .sort((a, b) => a.localeCompare(b));
   }
 
   ngOnDestroy() {
@@ -346,24 +359,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return item.key;
   }
 
-  trackByVendorMapping(index: number, item: IVendorLogoRule) {
-    return `${item.pattern}:${item.vendorName}`;
-  }
-
-  trackByVendorMappingDisplayItem(index: number, item: { mapping: IVendorLogoRule; sourceIndex: number }) {
-    return item.sourceIndex >= 0 ? item.sourceIndex : `${index}:${item.mapping?.vendorName || ''}:${item.mapping?.pattern || ''}`;
-  }
-
-  trackByTopVendor(index: number, item: ITopVendorSpend) {
-    return item.vendorName;
-  }
-
-  trackByWatchedVendorResolved(index: number, item: IWatchedVendorResolved) {
-    return item.key;
-  }
-
-  trackByWatchedVendorMissing(index: number, item: IWatchedVendorMissing) {
-    return item.key;
+  trackByVendorGridItem(index: number, item: IVendorCardItem) {
+    return `${normalizeVendorKey(item.vendorName)}:${item.sourceIndex >= 0 ? item.sourceIndex : index}`;
   }
 
   getTransactionQueryParamsForCategory(categoryName: string) {
@@ -399,68 +396,90 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  openAddWatchedVendorModal() {
-    const watchedVendorKeys = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
-    const vendorOptions = this.watchedVendorWatchOptions.filter(v => !watchedVendorKeys.includes(normalizeVendorKey(v)));
-    const dialogRef = this.dialog.open(DashboardWatchVendorModalComponent, {
-      width: '450px',
-      maxWidth: '90vw',
-      autoFocus: false,
-      data: { vendorOptions }
-    });
-    dialogRef.afterClosed().subscribe((vendorName: string | undefined) => {
-      if (!vendorName) { return; }
-      this.addWatchedVendor(vendorName);
-    });
-  }
-
   openAddVendorMappingModal() {
     const dialogRef = this.dialog.open(DashboardVendorMappingModalComponent, {
       width: '520px',
       maxWidth: '90vw',
       autoFocus: false,
-      data: {}
+      data: { watched: false }
     });
     dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
       if (!result || result.action !== 'save') { return; }
-      this.addVendorMapping(result.mapping);
+      this.addVendor(result.mapping, result.watched);
     });
   }
 
   openEditVendorMappingModal(mapping: IVendorLogoRule, index: number) {
+    const watchedVendorKeys = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
     const dialogRef = this.dialog.open(DashboardVendorMappingModalComponent, {
       width: '520px',
       maxWidth: '90vw',
       autoFocus: false,
-      data: { mapping, index }
+      data: {
+        mapping,
+        index,
+        watched: watchedVendorKeys.includes(normalizeVendorKey(mapping?.vendorName || ''))
+      }
     });
     dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
       if (!result) { return; }
       if (result.action === 'save') {
-        this.updateVendorMapping(result.mapping, index);
+        this.updateVendor(result.mapping, index, result.watched, mapping?.vendorName || '');
       } else if (result.action === 'delete') {
-        this.removeVendorMapping(index);
+        this.removeVendorMapping(index, mapping?.vendorName || '');
       }
     });
   }
 
-  getVendorMappingDisplayItems(): Array<{ mapping: IVendorLogoRule; sourceIndex: number }> {
-    const filter = (this.vendorMappingFilter || '').trim().toLowerCase();
-    const mappings = (this.viewModel?.vendorMappings || [])
-      .filter(mapping => {
-        if (!filter) { return true; }
-        return (mapping?.vendorName || '').toLowerCase().includes(filter);
-      });
-
-    const visible = filter ? mappings : mappings.slice(0, this.vendorMappingLimit);
-    return visible.map(mapping => ({
-      mapping,
-      sourceIndex: (this.viewModel?.vendorMappings || []).findIndex(v => v === mapping)
-    }));
+  openVendorCardEdit(item: IVendorCardItem) {
+    if (item.sourceIndex >= 0) {
+      this.openEditVendorMappingModal(this.viewModel.vendorMappings[item.sourceIndex], item.sourceIndex);
+      return;
+    }
+    const dialogRef = this.dialog.open(DashboardVendorMappingModalComponent, {
+      width: '520px',
+      maxWidth: '90vw',
+      autoFocus: false,
+      data: {
+        initialVendorName: item.displayName,
+        watched: item.isWatched
+      }
+    });
+    dialogRef.afterClosed().subscribe((result: DashboardVendorMappingModalResult | undefined) => {
+      if (!result || result.action !== 'save') { return; }
+      this.addVendor(result.mapping, result.watched);
+    });
   }
 
-  onVendorMappingFilterChange(value: string) {
-    this.vendorMappingFilter = value || '';
+  getVendorGridItems(): IVendorCardItem[] {
+    const search = (this.vendorSearch || '').trim().toLowerCase();
+    const sortByMode = (a: IVendorCardItem, b: IVendorCardItem) => {
+      if (this.vendorSortMode === 'name') {
+        return a.displayName.localeCompare(b.displayName);
+      }
+      return b.spent - a.spent || a.displayName.localeCompare(b.displayName);
+    };
+    const items = (this.viewModel?.vendorCards || [])
+      .filter(item => {
+        if (!search) { return true; }
+        return (item?.displayName || '').toLowerCase().includes(search);
+      })
+      .sort((a, b) => {
+        if (a.isWatched !== b.isWatched) {
+          return a.isWatched ? -1 : 1;
+        }
+        return sortByMode(a, b);
+      });
+
+    return items;
+  }
+
+  onVendorSearchChange(value: string) {
+    this.vendorSearch = value || '';
+  }
+
+  setVendorSortMode(mode: VendorSortMode) {
+    this.vendorSortMode = mode;
   }
 
   async addWatchedCategory(categoryName: string) {
@@ -471,36 +490,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     await this.persistWatchedPreferences({
       watchedCategoryKeys: [...current, key],
       watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
-    });
-  }
-
-  async addWatchedVendor(vendorName: string) {
-    const key = normalizeVendorKey(vendorName);
-    if (!key) { return; }
-    const preferences = this.service.dashboardPreferences.getValue();
-    const current = preferences?.watchedVendorKeys || [];
-    if (current.includes(key)) { return; }
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: preferences?.watchedCategoryKeys || [],
-      watchedVendorKeys: [...current, key]
-    });
-  }
-
-  async removeWatchedVendorByName(vendorName: string) {
-    const key = normalizeVendorKey(vendorName);
-    if (!key) { return; }
-    const current = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [],
-      watchedVendorKeys: current.filter(k => k !== key)
-    });
-  }
-
-  async removeWatchedVendorMissing(key: string) {
-    const current = this.service.dashboardPreferences.getValue()?.watchedVendorKeys || [];
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [],
-      watchedVendorKeys: current.filter(k => k !== key)
     });
   }
 
@@ -522,12 +511,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  async removeVendorMapping(index: number) {
+  async removeVendorMapping(index: number, vendorName?: string) {
     const mappings = this.service.vendorMappings.getValue() || [];
     if (index < 0 || index >= mappings.length) { return; }
     const updated = [...mappings];
     updated.splice(index, 1);
     await this.persistVendorMappings(updated);
+    await this.setVendorWatchedState(vendorName || '', false);
+  }
+
+  private async addVendor(mapping: IVendorLogoRule, watched: boolean) {
+    await this.addVendorMapping(mapping);
+    await this.setVendorWatchedState(mapping?.vendorName || '', watched);
   }
 
   private async addVendorMapping(mapping: IVendorLogoRule) {
@@ -542,6 +537,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const deduped = current.filter(rule => `${normalizeVendorKey(rule.pattern)}-${normalizeVendorKey(rule.vendorName)}` !== ruleKey);
     const updated = [trimmed, ...deduped];
     await this.persistVendorMappings(updated);
+  }
+
+  private async updateVendor(mapping: IVendorLogoRule, index: number, watched: boolean, previousVendorName: string) {
+    await this.updateVendorMapping(mapping, index);
+    const previousKey = normalizeVendorKey(previousVendorName);
+    const currentKey = normalizeVendorKey(mapping?.vendorName || '');
+    if (previousKey && previousKey !== currentKey) {
+      await this.setVendorWatchedState(previousVendorName, false);
+    }
+    await this.setVendorWatchedState(mapping?.vendorName || '', watched);
   }
 
   private async updateVendorMapping(mapping: IVendorLogoRule, index: number) {
@@ -564,6 +569,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private async persistVendorMappings(vendorMappings: IVendorLogoRule[]) {
     await this.service.saveVendorMappings(vendorMappings);
+  }
+
+  private async setVendorWatchedState(vendorName: string, watched: boolean) {
+    const key = normalizeVendorKey(vendorName);
+    if (!key) { return; }
+    const preferences = this.service.dashboardPreferences.getValue();
+    const currentWatched = preferences?.watchedVendorKeys || [];
+    const nextWatched = watched
+      ? Array.from(new Set([...currentWatched, key]))
+      : currentWatched.filter(k => k !== key);
+    await this.persistWatchedPreferences({
+      watchedCategoryKeys: preferences?.watchedCategoryKeys || [],
+      watchedVendorKeys: nextWatched
+    });
   }
 
   private async persistWatchedPreferences(update: { watchedCategoryKeys?: string[]; watchedVendorKeys?: string[] }) {

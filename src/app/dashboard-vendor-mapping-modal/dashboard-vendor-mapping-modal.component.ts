@@ -8,13 +8,15 @@ import { ConfirmModalButtons, ConfirmModalConfig } from '../core/dataTypes';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 export type DashboardVendorMappingModalResult =
-  | { action: 'save'; mapping: IVendorLogoRule }
-  | { action: 'delete' }
+  | { action: 'save'; mapping: IVendorLogoRule; watched: boolean }
+  | { action: 'delete'; watched: boolean }
   | { action: 'close' };
 
 export interface IDashboardVendorMappingModalData {
   mapping?: IVendorLogoRule;
   index?: number;
+  watched?: boolean;
+  initialVendorName?: string;
 }
 
 @Component({
@@ -29,6 +31,7 @@ export class DashboardVendorMappingModalComponent {
   pattern = '';
   vendorName = '';
   logoUrl = '';
+  watched = false;
   readonly regexErrorStateMatcher: ErrorStateMatcher = {
     isErrorState: (_control: FormControl | null, _form: FormGroupDirective | NgForm | null): boolean => this.showPatternError
   };
@@ -41,7 +44,10 @@ export class DashboardVendorMappingModalComponent {
       this.pattern = this.data.mapping.pattern || '';
       this.vendorName = this.data.mapping.vendorName || '';
       this.logoUrl = this.data.mapping.logoUrl || '';
+    } else if (this.data?.initialVendorName) {
+      this.vendorName = this.data.initialVendorName || '';
     }
+    this.watched = !!this.data?.watched;
   }
 
   close() {
@@ -86,10 +92,11 @@ export class DashboardVendorMappingModalComponent {
     this.dialogRef.close({
       action: 'save',
       mapping: {
-      pattern: this.pattern.trim(),
-      vendorName: this.vendorName.trim(),
-      logoUrl: this.logoUrl.trim()
-      }
+        pattern: this.pattern.trim(),
+        vendorName: this.vendorName.trim(),
+        logoUrl: this.logoUrl.trim()
+      },
+      watched: this.watched
     } as DashboardVendorMappingModalResult);
   }
 
@@ -118,7 +125,7 @@ export class DashboardVendorMappingModalComponent {
     const dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (!confirmed) { return; }
-      this.dialogRef.close({ action: 'delete' } as DashboardVendorMappingModalResult);
+      this.dialogRef.close({ action: 'delete', watched: this.watched } as DashboardVendorMappingModalResult);
     });
   }
 }
