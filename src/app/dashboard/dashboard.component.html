@@ -231,6 +231,7 @@
           <div
             *ngFor="let item of getVendorGridItems(); trackBy: trackByVendorGridItem"
             class="vendor-mapping-grid-item"
+            [class.vendor-mapping-grid-item-watched]="item.isWatched"
             role="button"
             tabindex="0"
             [matMenuTriggerFor]="vendorCardActionsMenu"
