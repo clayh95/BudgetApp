@@ -50,7 +50,7 @@ describe('buildDashboardViewModel', () => {
     expect(normalizeCategoryKey('  Groceries  ')).toBe('groceries');
   });
 
-  it('excludes watched vendors with zero spend and keeps top vendors sorted and capped', () => {
+  it('returns all vendors with positive spend sorted by spend descending', () => {
     const vm = buildDashboardViewModel(
       [{ id: '1', name: 'Shopping', keywords: [], budgeted: 500, spent: 0, notes: '' }],
       [
@@ -76,10 +76,29 @@ describe('buildDashboardViewModel', () => {
       ]
     );
 
-    expect(vm.topSpendingVendors.length).toBe(5);
-    expect(vm.topSpendingVendors.map(v => v.vendorName)).toEqual(['A', 'B', 'C', 'D', 'E']);
-    expect(vm.topSpendingVendors.find(v => v.vendorName === 'F')).toBeUndefined();
-    expect(vm.topSpendingVendors.find(v => v.vendorName === 'Z')).toBeUndefined();
+    expect(vm.vendorCards.length).toBe(6);
+    expect(vm.vendorCards.map(v => v.vendorName)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
+    expect(vm.vendorCards.find(v => v.vendorName === 'Z')).toBeUndefined();
+  });
+
+  it('keeps watched vendors visible without spend and without mappings', () => {
+    const vm = buildDashboardViewModel(
+      [{ id: '1', name: 'Shopping', keywords: [], budgeted: 500, spent: 0, notes: '' }],
+      [
+        { id: 't1', date: '01/10/2026', amount: -110, description: 'Amazon', category: 'Shopping', notes: '', status: 'Posted' }
+      ] as any,
+      '01/2026',
+      [],
+      ['amazon', 'ghost vendor'],
+      [
+        { pattern: '^Amazon$', vendorName: 'Amazon', logoUrl: 'a.png' }
+      ]
+    );
+
+    expect(vm.vendorCards).toEqual([
+      jasmine.objectContaining({ vendorName: 'Amazon', isWatched: true, hasSpend: true, spent: 110, usesFallbackIcon: false }),
+      jasmine.objectContaining({ vendorName: 'Ghost Vendor', isWatched: true, hasSpend: false, spent: 0, usesFallbackIcon: true, sourceIndex: -1 })
+    ]);
   });
 });
 
@@ -87,5 +106,137 @@ describe('DashboardComponent query params', () => {
   it('routes vendor drill-down using vendor query param', () => {
     const result = (DashboardComponent.prototype as any).getTransactionQueryParamsForVendor('Walmart');
     expect(result).toEqual({ vendor: 'Walmart' });
+  });
+});
+
+describe('DashboardComponent vendor grid', () => {
+  function createComponent(dialogOverrides: any = {}): DashboardComponent {
+    return new DashboardComponent(
+      {} as any,
+      { open: jasmine.createSpy('open'), ...dialogOverrides } as any,
+      {} as any,
+      { markForCheck: () => undefined } as any
+    );
+  }
+
+  it('filters vendor grid items by vendor name', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorCards: [
+        { vendorName: 'Amazon', displayName: 'Amazon', logoUrl: 'a.png', spent: 30, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
+        { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 1, usesFallbackIcon: false }
+      ]
+    } as any;
+
+    component.onVendorSearchChange('tar');
+
+    expect(component.getVendorGridItems().map(item => item.vendorName)).toEqual(['Target']);
+  });
+
+  it('sorts vendor grid items by name', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorCards: [
+        { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
+        { vendorName: 'Amazon', displayName: 'Amazon', logoUrl: 'a.png', spent: 30, isWatched: false, hasSpend: true, sourceIndex: 1, usesFallbackIcon: false }
+      ]
+    } as any;
+
+    component.setVendorSortMode('name');
+
+    expect(component.getVendorGridItems().map(item => item.vendorName)).toEqual(['Amazon', 'Target']);
+  });
+
+  it('pins watched vendors above other vendors while sorting by spend', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorCards: [
+        { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
+        { vendorName: 'Amazon', displayName: 'Amazon', logoUrl: 'a.png', spent: 30, isWatched: true, hasSpend: true, sourceIndex: 1, usesFallbackIcon: false },
+        { vendorName: 'Whole Foods', displayName: 'Whole Foods', logoUrl: '', spent: 0, isWatched: true, hasSpend: false, sourceIndex: -1, usesFallbackIcon: true }
+      ]
+    } as any;
+
+    expect(component.getVendorGridItems().map(item => item.vendorName)).toEqual(['Amazon', 'Whole Foods', 'Target']);
+  });
+
+  it('applies name sort within watched and non-watched blocks', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorCards: [
+        { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 10, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
+        { vendorName: 'Whole Foods', displayName: 'Whole Foods', logoUrl: 'w.png', spent: 40, isWatched: true, hasSpend: true, sourceIndex: 1, usesFallbackIcon: false },
+        { vendorName: 'Amazon', displayName: 'Amazon', logoUrl: 'a.png', spent: 0, isWatched: true, hasSpend: false, sourceIndex: -1, usesFallbackIcon: false },
+        { vendorName: 'Best Buy', displayName: 'Best Buy', logoUrl: 'b.png', spent: 30, isWatched: false, hasSpend: true, sourceIndex: 2, usesFallbackIcon: false }
+      ]
+    } as any;
+
+    component.setVendorSortMode('name');
+
+    expect(component.getVendorGridItems().map(item => item.vendorName)).toEqual(['Amazon', 'Whole Foods', 'Best Buy', 'Target']);
+  });
+
+  it('keeps watched-first grouping when filtering search results', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorCards: [
+        { vendorName: 'Costco', displayName: 'Costco', logoUrl: 'c.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
+        { vendorName: 'Corner Store', displayName: 'Corner Store', logoUrl: '', spent: 0, isWatched: true, hasSpend: false, sourceIndex: -1, usesFallbackIcon: true },
+        { vendorName: 'Coffee Shop', displayName: 'Coffee Shop', logoUrl: 'co.png', spent: 15, isWatched: false, hasSpend: true, sourceIndex: 1, usesFallbackIcon: false }
+      ]
+    } as any;
+
+    component.onVendorSearchChange('co');
+
+    expect(component.getVendorGridItems().map(item => item.vendorName)).toEqual(['Corner Store', 'Costco', 'Coffee Shop']);
+  });
+
+  it('routes mapped vendor edit through the existing edit modal flow', () => {
+    const component = createComponent();
+    component.viewModel = {
+      vendorMappings: [
+        { pattern: '^Amazon$', vendorName: 'Amazon', logoUrl: 'a.png' }
+      ]
+    } as any;
+    spyOn(component, 'openEditVendorMappingModal');
+
+    component.openVendorCardEdit({
+      vendorName: 'Amazon',
+      displayName: 'Amazon',
+      logoUrl: 'a.png',
+      spent: 30,
+      isWatched: false,
+      hasSpend: true,
+      sourceIndex: 0,
+      usesFallbackIcon: false
+    });
+
+    expect(component.openEditVendorMappingModal).toHaveBeenCalledWith(component.viewModel.vendorMappings[0], 0);
+  });
+
+  it('routes unmapped watched vendor edit through the add-prefilled modal flow', () => {
+    const afterClosed = jasmine.createSpy('afterClosed').and.returnValue({ subscribe: () => undefined });
+    const component = createComponent({
+      open: jasmine.createSpy('open').and.returnValue({ afterClosed })
+    });
+
+    component.openVendorCardEdit({
+      vendorName: 'Ghost Vendor',
+      displayName: 'Ghost Vendor',
+      logoUrl: '',
+      spent: 0,
+      isWatched: true,
+      hasSpend: false,
+      sourceIndex: -1,
+      usesFallbackIcon: true
+    });
+
+    expect(component.dialog.open).toHaveBeenCalled();
+    expect((component.dialog.open as jasmine.Spy).calls.mostRecent().args[1].data).toEqual(
+      jasmine.objectContaining({
+        initialVendorName: 'Ghost Vendor',
+        watched: true
+      })
+    );
   });
 });

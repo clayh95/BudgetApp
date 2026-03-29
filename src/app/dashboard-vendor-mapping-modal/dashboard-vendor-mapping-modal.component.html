@@ -15,7 +15,7 @@
   </button>
 </mat-dialog-actions>
 
-<h2 mat-dialog-title>{{ data?.mapping ? 'Edit Vendor Logo Mapping' : 'Add Vendor Logo Mapping' }}</h2>
+<h2 mat-dialog-title>{{ data?.mapping ? 'Edit Vendor' : 'Add Vendor' }}</h2>
 
 <mat-dialog-content class="dialog-fields">
   <mat-form-field class="watch-field">
@@ -46,5 +46,7 @@
       <img [src]="logoUrl" alt="Logo preview">
     </div>
   </div>
+
+  <mat-slide-toggle [(ngModel)]="watched">Watch this vendor</mat-slide-toggle>
 
 </mat-dialog-content>
