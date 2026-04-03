@@ -206,8 +206,38 @@ export function buildDashboardViewModel(
   });
 
   const vendorCardByKey = new Map<string, IVendorCardItem>();
+  vendorMappings.forEach((mapping, index) => {
+    const vendorName = (mapping?.vendorName || '').trim();
+    const key = normalizeVendorKey(vendorName);
+    if (!key || vendorCardByKey.has(key)) {
+      return;
+    }
+    const logoUrl = (mapping?.logoUrl || '').trim();
+    vendorCardByKey.set(key, {
+      vendorName,
+      displayName: vendorName,
+      logoUrl,
+      spent: 0,
+      isWatched: normalizedWatchedVendorKeys.includes(key),
+      hasSpend: false,
+      sourceIndex: index,
+      usesFallbackIcon: !logoUrl
+    });
+  });
+
   vendorSpendItems.forEach(item => {
     const key = normalizeVendorKey(item.vendorName);
+    const existing = vendorCardByKey.get(key);
+    if (existing) {
+      existing.vendorName = item.vendorName;
+      existing.displayName = item.vendorName;
+      existing.logoUrl = item.logoUrl || existing.logoUrl;
+      existing.spent = roundMoney(item.spent);
+      existing.isWatched = existing.isWatched || normalizedWatchedVendorKeys.includes(key);
+      existing.hasSpend = true;
+      existing.usesFallbackIcon = !existing.logoUrl;
+      return;
+    }
     vendorCardByKey.set(key, {
       vendorName: item.vendorName,
       displayName: item.vendorName,
