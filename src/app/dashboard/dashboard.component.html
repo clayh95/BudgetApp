@@ -232,9 +232,11 @@
             *ngFor="let item of getVendorGridItems(); trackBy: trackByVendorGridItem"
             class="vendor-mapping-grid-item"
             [class.vendor-mapping-grid-item-watched]="item.isWatched"
+            [class.vendor-mapping-grid-item-active]="vendorCardTrigger.menuOpen"
             role="button"
             tabindex="0"
             [matMenuTriggerFor]="vendorCardActionsMenu"
+            #vendorCardTrigger="matMenuTrigger"
             [matMenuTriggerData]="{ item: item }"
             [attr.aria-label]="'Actions for ' + item.displayName">
             <span class="vendor-card-main">
@@ -242,10 +244,10 @@
                 <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" [alt]="item.displayName + ' logo'">
                 <mat-icon *ngIf="item.usesFallbackIcon" class="vendor-fallback-icon" aria-hidden="true">storefront</mat-icon>
                 <span class="vendor-mapping-name">{{ item.displayName }}</span>
+                <mat-icon *ngIf="item.isWatched" class="vendor-watch-icon" aria-hidden="true">visibility</mat-icon>
               </div>
               <span class="metric-chip vendor-mapping-spend">{{-item.spent | currency}}</span>
             </span>
-            <mat-icon *ngIf="item.isWatched" class="vendor-watch-icon" aria-hidden="true">visibility</mat-icon>
           </div>
         </div>
         <mat-menu #vendorCardActionsMenu="matMenu">
