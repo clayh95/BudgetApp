@@ -75,122 +75,99 @@
 
   <div class="main-grid">
     <mat-card>
-      <mat-card-title>Categories</mat-card-title>
-      <mat-card-content>
-        <div class="section-title">
-          Watched Categories
-          <button mat-icon-button matTooltip="Add watched category" (click)="openAddWatchedCategoryModal()">
+      <mat-card-title>
+        <span class="card-title-row">
+          <span>Categories</span>
+          <button mat-icon-button matTooltip="Add category" (click)="openAddCategoryModal()">
             <mat-icon>add</mat-icon>
+          </button>
+        </span>
+      </mat-card-title>
+      <mat-card-content>
+        <div class="vendor-mapping-toolbar">
+          <mat-form-field class="vendor-mapping-filter" appearance="outline">
+            <mat-label>Filter categories</mat-label>
+            <input
+              matInput
+              [value]="categorySearch"
+              (input)="onCategorySearchChange($any($event.target).value)"
+              placeholder="Search category name">
+            <button *ngIf="categorySearch" matSuffix mat-icon-button aria-label="Clear category filter" (click)="onCategorySearchChange('')">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-button-toggle-group
+            [value]="categorySortMode"
+            aria-label="Sort categories"
+            class="vendor-sort-toggle"
+            (change)="setCategorySortMode($event.value)">
+            <mat-button-toggle value="spend">Spend</mat-button-toggle>
+            <mat-button-toggle value="name">Name</mat-button-toggle>
+          </mat-button-toggle-group>
+
+          <button
+            mat-icon-button
+            class="category-filter-toggle"
+            [class.category-filter-toggle-active]="categoryOverBudgetOnly"
+            [attr.aria-pressed]="categoryOverBudgetOnly"
+            [matTooltip]="categoryOverBudgetOnly ? 'Showing only over-budget categories' : 'Show only over-budget categories'"
+            (click)="toggleCategoryOverBudgetOnly()">
+            <mat-icon>{{categoryOverBudgetOnly ? 'warning' : 'warning_amber'}}</mat-icon>
           </button>
         </div>
 
-        <mat-list dense>
-          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesResolved; trackBy: trackByWatchedResolved">
-            <div
-              class="row row-clickable"
-              role="button"
-              tabindex="0"
-              [matMenuTriggerFor]="watchedActionsMenu"
-              [attr.aria-label]="'Actions for ' + item.category.name">
-              <span>
-                {{item.category.name}}
-                <span class="metric-chip amount-inline" [class.negative]="item.remaining < 0" [class.positive]="item.remaining >= 0">
-                  {{item.remaining | currency}}
+        <div class="vendor-mapping-grid">
+          <div
+            *ngFor="let item of getCategoryGridItems(); trackBy: trackByCategoryGridItem"
+            class="vendor-mapping-grid-item category-grid-item"
+            [class.vendor-mapping-grid-item-watched]="item.isWatched"
+            [class.vendor-mapping-grid-item-active]="categoryCardTrigger.menuOpen"
+            role="button"
+            tabindex="0"
+            [matMenuTriggerFor]="categoryCardActionsMenu"
+            #categoryCardTrigger="matMenuTrigger"
+            [matMenuTriggerData]="{ item: item }"
+            [attr.aria-label]="'Edit category ' + item.displayName">
+            <span class="vendor-card-main category-card-main">
+              <div class="vendor-card-row category-card-row">
+                <span class="category-card-title">
+                  <span class="category-card-icon">
+                    <span *ngIf="item.icon" class="category-card-emoji" aria-hidden="true">{{item.icon}}</span>
+                    <mat-icon *ngIf="item.usesFallbackIcon" class="category-card-fallback-icon" aria-hidden="true">category</mat-icon>
+                  </span>
+                  <span class="vendor-mapping-name">{{ item.displayName }}</span>
+                  <mat-icon *ngIf="item.isWatched" class="vendor-watch-icon" aria-hidden="true">visibility</mat-icon>
                 </span>
+              </div>
+              <span class="metric-chip vendor-mapping-spend" [class.positive]="item.remaining >= 0" [class.negative]="item.remaining < 0">
+                {{item.remaining | currency}}
               </span>
-              <span class="row-actions">
-                <mat-menu #watchedActionsMenu="matMenu">
-                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
-                    <mat-icon>view_list</mat-icon>
-                    <span>Open transactions</span>
-                  </button>
-                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
-                    <mat-icon>view_agenda</mat-icon>
-                    <span>Open summary</span>
-                  </button>
-                  <button mat-menu-item (click)="removeWatchedCategoryByName(item.category.name)">
-                    <mat-icon>close</mat-icon>
-                    <span>Remove watched category</span>
-                  </button>
-                </mat-menu>
-                <span class="row-chevron" aria-hidden="true">
-                  <mat-icon>chevron_right</mat-icon>
-                </span>
-              </span>
-            </div>
-          </mat-list-item>
-
-          <mat-list-item *ngFor="let item of viewModel.watchedCategoriesMissing; trackBy: trackByWatchedMissing">
-            <div
-              class="row row-clickable"
-              role="button"
-              tabindex="0"
-              [matMenuTriggerFor]="watchedMissingActionsMenu"
-              [attr.aria-label]="'Actions for ' + item.displayName">
-              <span>{{item.displayName}} <span class="muted">(not in this month)</span></span>
-              <span class="row-actions">
-                <mat-menu #watchedMissingActionsMenu="matMenu">
-                  <button mat-menu-item disabled>
-                    <mat-icon>view_list</mat-icon>
-                    <span>Open transactions</span>
-                  </button>
-                  <button mat-menu-item disabled>
-                    <mat-icon>view_agenda</mat-icon>
-                    <span>Open summary</span>
-                  </button>
-                  <button mat-menu-item (click)="removeWatchedMissing(item.key)">
-                    <mat-icon>close</mat-icon>
-                    <span>Remove watched category</span>
-                  </button>
-                </mat-menu>
-                <span class="row-chevron" aria-hidden="true">
-                  <mat-icon>chevron_right</mat-icon>
-                </span>
-              </span>
-            </div>
-          </mat-list-item>
-
-          <mat-list-item *ngIf="viewModel.watchedCategoriesResolved.length === 0 && viewModel.watchedCategoriesMissing.length === 0">
-            <div class="muted">No watched categories yet.</div>
-          </mat-list-item>
-        </mat-list>
-
-        <div class="section-title">
-          Over Budget Categories
+            </span>
+          </div>
         </div>
-        <mat-list dense>
-          <mat-list-item *ngFor="let item of viewModel.overBudgetCategories | slice:0:5; trackBy: trackByCategoryId">
-            <div
-              class="row row-clickable"
-              role="button"
-              tabindex="0"
-              [matMenuTriggerFor]="overBudgetActionsMenu"
-              [attr.aria-label]="'Actions for ' + item.category.name">
-              <span>
-                {{item.category.name}}
-                <span class="metric-chip amount-inline negative">{{item.remaining | currency}}</span>
-              </span>
-              <span class="row-actions">
-                <mat-menu #overBudgetActionsMenu="matMenu">
-                  <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
-                    <mat-icon>view_list</mat-icon>
-                    <span>Open transactions</span>
-                  </button>
-                  <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
-                    <mat-icon>view_agenda</mat-icon>
-                    <span>Open summary</span>
-                  </button>
-                </mat-menu>
-                <span class="row-chevron" aria-hidden="true">
-                  <mat-icon>chevron_right</mat-icon>
-                </span>
-              </span>
-            </div>
-          </mat-list-item>
-          <mat-list-item *ngIf="viewModel.overBudgetCategories.length === 0">
-            <div class="muted">No over-budget categories.</div>
-          </mat-list-item>
-        </mat-list>
+        <mat-menu #categoryCardActionsMenu="matMenu">
+          <ng-template matMenuContent let-item="item">
+            <button mat-menu-item (click)="openCategoryCardEdit(item.category)">
+              <mat-icon>edit</mat-icon>
+              <span>Edit Category</span>
+            </button>
+            <button mat-menu-item [routerLink]="['/transactions']" [queryParams]="getTransactionQueryParamsForCategory(item.category.name)">
+              <mat-icon>view_list</mat-icon>
+              <span>Open transactions</span>
+            </button>
+            <button mat-menu-item [routerLink]="['/summary']" [queryParams]="getSummaryQueryParamsForCategory(item.category)">
+              <mat-icon>view_agenda</mat-icon>
+              <span>Open summary</span>
+            </button>
+          </ng-template>
+        </mat-menu>
+        <div class="muted" *ngIf="viewModel.categoryCards.length === 0">
+          <span>No categories yet.</span>
+        </div>
+        <div class="muted" *ngIf="viewModel.categoryCards.length > 0 && getCategoryGridItems().length === 0">
+          <span>{{categoryOverBudgetOnly ? 'No over-budget categories match that search.' : 'No categories match that search.'}}</span>
+        </div>
       </mat-card-content>
     </mat-card>
 
