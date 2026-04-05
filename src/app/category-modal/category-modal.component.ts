@@ -8,6 +8,10 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SharedModule } from '../shared/shared.module';
 import { parseMoney } from '../core/utilities';
 
+interface ICategoryModalData extends ICategory {
+  watched?: boolean;
+}
+
 @Component({
   selector: 'app-category-modal',
   standalone: true,
@@ -29,9 +33,10 @@ export class CategoryModalComponent {
   @ViewChild("chipInput") chipInput: ElementRef;
 
   showPicker: boolean;
-  data = inject<ICategory>(MAT_DIALOG_DATA);
+  data = inject<ICategoryModalData>(MAT_DIALOG_DATA);
   budgetedDisplay: string = '';
   budgetedNegative: boolean = false;
+  watched = false;
 
   constructor(public CATsvc: DbService, 
               public dialogRef: MatDialogRef<CategoryModalComponent>,
@@ -39,10 +44,13 @@ export class CategoryModalComponent {
                 this.origName = this.data.name;
                 this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
                 this.budgetedNegative = (parseMoney(this.data.budgeted) ?? 0) < 0;
+                this.watched = typeof this.data?.watched === 'boolean'
+                  ? this.data.watched
+                  : this.getCurrentWatchedKeys().includes(this.normalizeCategoryKey(this.data?.name || ''));
                 history.pushState(null, null, location.href);
                }
 
-  add() {
+  async add() {
     const budgeted = parseMoney(this.data.budgeted);
     if (budgeted === null) {
       window.alert('Please enter a valid budgeted amount.');
@@ -52,9 +60,11 @@ export class CategoryModalComponent {
       name: this.data.name, 
       notes: this.data.notes ?? '',
       keywords: this.data.keywords, 
-      budgeted: budgeted
+      budgeted: budgeted,
+      emoji: this.data.emoji ?? ''
     }
-    this.CATsvc.addDocument(doc, collectionType.categories);
+    await this.CATsvc.addDocument(doc, collectionType.categories);
+    await this.persistWatchedState('', this.data.name, this.watched);
     this.dialogRef.close();
   }
 
@@ -73,6 +83,7 @@ export class CategoryModalComponent {
     }
     await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
     this.updateRelatedTransactions(this.data.name);
+    await this.persistWatchedState(this.origName, this.data.name, this.watched);
     this.dialogRef.close();
   }
 
@@ -97,9 +108,10 @@ export class CategoryModalComponent {
       disableClose: true
     }
     let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       if (result) {
-        this.CATsvc.deleteDocument(this.data, collectionType.categories);
+        await this.CATsvc.deleteDocument(this.data, collectionType.categories);
+        await this.persistWatchedState(this.origName, '', false);
         this.updateRelatedTransactions('');
         this.dialogRef.close();
       }
@@ -152,6 +164,10 @@ export class CategoryModalComponent {
     this.dialogRef.close();
   }
 
+  toggleWatched() {
+    this.watched = !this.watched;
+  }
+
   onBudgetedInput(value: string) {
     this.budgetedDisplay = value;
   }
@@ -185,6 +201,31 @@ export class CategoryModalComponent {
       this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
     }
     this.commitBudgeted();
+  }
+
+  private normalizeCategoryKey(value: string): string {
+    return (value || '').trim().toLowerCase();
+  }
+
+  private getCurrentWatchedKeys(): string[] {
+    return this.CATsvc.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
+  }
+
+  private async persistWatchedState(previousName: string, currentName: string, watched: boolean) {
+    const previousKey = this.normalizeCategoryKey(previousName);
+    const currentKey = this.normalizeCategoryKey(currentName);
+    const currentPreferences = this.CATsvc.dashboardPreferences.getValue() || { watchedCategoryKeys: [], watchedVendorKeys: [] };
+    const nextWatchedKeys = currentPreferences.watchedCategoryKeys
+      .filter(key => key !== previousKey && key !== currentKey);
+
+    if (watched && currentKey) {
+      nextWatchedKeys.push(currentKey);
+    }
+
+    await this.CATsvc.saveDashboardPreferences({
+      watchedCategoryKeys: Array.from(new Set(nextWatchedKeys)),
+      watchedVendorKeys: currentPreferences.watchedVendorKeys || []
+    });
   }
 
 

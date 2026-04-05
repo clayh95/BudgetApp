@@ -158,8 +158,8 @@
 
 .vendor-mapping-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
   max-height: 300px;
   overflow-y: auto;
   padding: 6px;
@@ -168,16 +168,26 @@
 .vendor-mapping-grid-item {
   align-items: center;
   background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(60, 64, 67, 0.2);
+  border: 0;
   border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(24, 128, 56, 0.06);
+  color: inherit;
   display: flex;
   min-height: 64px;
   justify-content: space-between;
+  margin: 0;
+  outline: none;
   padding: 10px 12px;
+  cursor: pointer;
+  transform: translateY(0);
+  transition: box-shadow 160ms ease, transform 160ms ease;
 }
 
-.vendor-mapping-grid-item-watched {
-  border: 1px solid #1a8039bd;
+.vendor-mapping-grid-item:hover,
+.vendor-mapping-grid-item:focus-visible,
+.vendor-mapping-grid-item-active {
+  box-shadow: 0 8px 18px rgba(24, 128, 56, 0.18);
+  transform: translateY(-1px);
 }
 
 .vendor-mapping-name {
@@ -217,19 +227,59 @@
   min-width: 0;
 }
 
+.category-card-main {
+  width: 100%;
+}
+
+.category-card-row {
+  align-items: center;
+}
+
+.category-card-title {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.category-card-icon {
+  align-items: center;
+  color: #5f6368;
+  display: inline-flex;
+  font-size: 21px;
+  height: 24px;
+  justify-content: center;
+  min-width: 24px;
+  width: 24px;
+}
+
+.category-card-emoji {
+  line-height: 1;
+}
+
+.category-card-fallback-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.category-filter-toggle {
+  color: #5f6368;
+}
+
+.category-filter-toggle-active {
+  color: #d93025;
+}
+
 .vendor-fallback-icon {
   color: #5f6368;
-  font-size: 22px;
-  height: 22px;
-  min-width: 22px;
+  font-size: 20px;
   width: 22px;
 }
 
 .vendor-watch-icon {
   color: #188038;
-  font-size: 22px;
-  height: 22px;
-  width: 22px;
+  font-size: 20px;
   align-self: end;
   font-variation-settings: 'FILL' 1;
 }
