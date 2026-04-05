@@ -5,8 +5,8 @@ import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../
 import { getVendorMatch, IVendorLogoRule, parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
-import { DashboardWatchCategoryModalComponent } from '../dashboard-watch-category-modal/dashboard-watch-category-modal.component';
 import { DashboardVendorMappingModalComponent, DashboardVendorMappingModalResult } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
+import { CategoryModalComponent } from '../category-modal/category-modal.component';
 
 export interface IDashboardStats {
   unbudgeted: number;
@@ -34,6 +34,18 @@ export interface ITopVendorSpend {
 }
 
 export type VendorSortMode = 'spend' | 'name';
+export type CategorySortMode = 'spend' | 'name';
+
+export interface ICategoryCardItem {
+  category: ICategory;
+  displayName: string;
+  spent: number;
+  remaining: number;
+  isWatched: boolean;
+  isOverBudget: boolean;
+  icon: string;
+  usesFallbackIcon: boolean;
+}
 
 export interface IVendorCardItem {
   vendorName: string;
@@ -63,6 +75,7 @@ export interface IDashboardViewModel {
   topSpendingCategories: ITopCategorySpend[];
   watchedCategoriesResolved: IWatchedCategoryResolved[];
   watchedCategoriesMissing: IWatchedCategoryMissing[];
+  categoryCards: ICategoryCardItem[];
   vendorMappings: IVendorLogoRule[];
   vendorCards: IVendorCardItem[];
 }
@@ -205,9 +218,55 @@ export function buildDashboardViewModel(
     }
   });
 
+  const categoryCards: ICategoryCardItem[] = nonIncomeCategories.map(category => {
+    const spent = roundMoney(spentByCategory.get(category.name) || 0);
+    const remaining = roundMoney((category.budgeted || 0) - spent);
+    const icon = (category.emoji || '').trim();
+    return {
+      category,
+      displayName: category.name,
+      spent,
+      remaining,
+      isWatched: normalizedWatchKeys.includes(normalizeCategoryKey(category.name)),
+      isOverBudget: remaining < 0,
+      icon,
+      usesFallbackIcon: !icon
+    };
+  });
+
   const vendorCardByKey = new Map<string, IVendorCardItem>();
+  vendorMappings.forEach((mapping, index) => {
+    const vendorName = (mapping?.vendorName || '').trim();
+    const key = normalizeVendorKey(vendorName);
+    if (!key || vendorCardByKey.has(key)) {
+      return;
+    }
+    const logoUrl = (mapping?.logoUrl || '').trim();
+    vendorCardByKey.set(key, {
+      vendorName,
+      displayName: vendorName,
+      logoUrl,
+      spent: 0,
+      isWatched: normalizedWatchedVendorKeys.includes(key),
+      hasSpend: false,
+      sourceIndex: index,
+      usesFallbackIcon: !logoUrl
+    });
+  });
+
   vendorSpendItems.forEach(item => {
     const key = normalizeVendorKey(item.vendorName);
+    const existing = vendorCardByKey.get(key);
+    if (existing) {
+      existing.vendorName = item.vendorName;
+      existing.displayName = item.vendorName;
+      existing.logoUrl = item.logoUrl || existing.logoUrl;
+      existing.spent = roundMoney(item.spent);
+      existing.isWatched = existing.isWatched || normalizedWatchedVendorKeys.includes(key);
+      existing.hasSpend = true;
+      existing.usesFallbackIcon = !existing.logoUrl;
+      return;
+    }
     vendorCardByKey.set(key, {
       vendorName: item.vendorName,
       displayName: item.vendorName,
@@ -264,6 +323,7 @@ export function buildDashboardViewModel(
     topSpendingCategories,
     watchedCategoriesResolved,
     watchedCategoriesMissing,
+    categoryCards,
     vendorMappings: vendorMappings.slice(),
     vendorCards: Array.from(vendorCardByKey.values())
   };
@@ -281,7 +341,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   viewModel: IDashboardViewModel = buildDashboardViewModel([], [], '', []);
   balances: Array<{ key: string; value: any }> = [];
-  availableWatchOptions: ICategory[] = [];
+  categorySearch = '';
+  categorySortMode: CategorySortMode = 'spend';
+  categoryOverBudgetOnly = false;
   vendorSearch = '';
   vendorSortMode: VendorSortMode = 'spend';
 
@@ -304,9 +366,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const cats = categories || [];
         const trans = transactions || [];
         const my = monthYear || '';
-        this.availableWatchOptions = cats
-          .filter(c => (c.name || '').trim().length > 0 && (c.name || '').toUpperCase() !== 'INCOME')
-          .sort((a, b) => a.name.localeCompare(b.name));
         this.viewModel = buildDashboardViewModel(
           cats,
           trans,
@@ -363,6 +422,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${normalizeVendorKey(item.vendorName)}:${item.sourceIndex >= 0 ? item.sourceIndex : index}`;
   }
 
+  trackByCategoryGridItem(index: number, item: ICategoryCardItem) {
+    return item.category.id || `${normalizeCategoryKey(item.displayName)}:${index}`;
+  }
+
   getTransactionQueryParamsForCategory(categoryName: string) {
     return { category: categoryName };
   }
@@ -377,23 +440,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getTransactionQueryParamsForVendor(vendorName: string) {
     return { vendor: vendorName };
-  }
-
-  openAddWatchedCategoryModal() {
-    const watchedCategoryKeys = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    const categoryOptions = this.availableWatchOptions
-      .map(c => c.name)
-      .filter(name => !watchedCategoryKeys.includes(normalizeCategoryKey(name)));
-    const dialogRef = this.dialog.open(DashboardWatchCategoryModalComponent, {
-      width: '450px',
-      maxWidth: '90vw',
-      autoFocus: false,
-      data: { categoryOptions }
-    });
-    dialogRef.afterClosed().subscribe((categoryName: string | undefined) => {
-      if (!categoryName) { return; }
-      this.addWatchedCategory(categoryName);
-    });
   }
 
   openAddVendorMappingModal() {
@@ -451,6 +497,60 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  openCategoryCardEdit(category: ICategory) {
+    this.dialog.open(CategoryModalComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      data: Object.assign({}, category, {
+        watched: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys?.includes(normalizeCategoryKey(category.name)) || false
+      }),
+      autoFocus: false
+    });
+  }
+
+  openAddCategoryModal() {
+    this.dialog.open(CategoryModalComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      data: {
+        name: '',
+        notes: '',
+        keywords: [],
+        budgeted: 0,
+        spent: 0,
+        emoji: '',
+        watched: false
+      } as ICategory & { watched: boolean },
+      autoFocus: false
+    });
+  }
+
+  getCategoryGridItems(): ICategoryCardItem[] {
+    const search = (this.categorySearch || '').trim().toLowerCase();
+    const sortByMode = (a: ICategoryCardItem, b: ICategoryCardItem) => {
+      if (this.categorySortMode === 'name') {
+        return a.displayName.localeCompare(b.displayName);
+      }
+      return b.remaining - a.remaining || a.displayName.localeCompare(b.displayName);
+    };
+    return (this.viewModel?.categoryCards || [])
+      .filter(item => {
+        if (this.categoryOverBudgetOnly && !item.isOverBudget) {
+          return false;
+        }
+        if (!search) {
+          return true;
+        }
+        return (item.displayName || '').toLowerCase().includes(search);
+      })
+      .sort((a, b) => {
+        if (a.isWatched !== b.isWatched) {
+          return a.isWatched ? -1 : 1;
+        }
+        return sortByMode(a, b);
+      });
+  }
+
   getVendorGridItems(): IVendorCardItem[] {
     const search = (this.vendorSearch || '').trim().toLowerCase();
     const sortByMode = (a: IVendorCardItem, b: IVendorCardItem) => {
@@ -478,37 +578,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.vendorSearch = value || '';
   }
 
+  onCategorySearchChange(value: string) {
+    this.categorySearch = value || '';
+  }
+
   setVendorSortMode(mode: VendorSortMode) {
     this.vendorSortMode = mode;
   }
 
-  async addWatchedCategory(categoryName: string) {
-    const key = normalizeCategoryKey(categoryName);
-    if (!key) { return; }
-    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    if (current.includes(key)) { return; }
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: [...current, key],
-      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
-    });
+  setCategorySortMode(mode: CategorySortMode) {
+    this.categorySortMode = mode;
   }
 
-  async removeWatchedCategoryByName(categoryName: string) {
-    const key = normalizeCategoryKey(categoryName);
-    if (!key) { return; }
-    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: current.filter(k => k !== key),
-      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
-    });
-  }
-
-  async removeWatchedMissing(key: string) {
-    const current = this.service.dashboardPreferences.getValue()?.watchedCategoryKeys || [];
-    await this.persistWatchedPreferences({
-      watchedCategoryKeys: current.filter(k => k !== key),
-      watchedVendorKeys: this.service.dashboardPreferences.getValue()?.watchedVendorKeys || []
-    });
+  toggleCategoryOverBudgetOnly() {
+    this.categoryOverBudgetOnly = !this.categoryOverBudgetOnly;
   }
 
   async removeVendorMapping(index: number, vendorName?: string) {
