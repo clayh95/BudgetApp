@@ -36,8 +36,8 @@ describe('utilities', () => {
       expect(getIcon('Google One')).toBe('assets/images/google-logo.png');
     });
 
-    it('returns undefined for unmatched descriptions', () => {
-      expect(getIcon('Unknown Merchant')).toBeUndefined();
+    it('returns an empty icon for unmatched descriptions', () => {
+      expect(getIcon('Unknown Merchant')).toBe('');
     });
   });
 });

@@ -1,3 +1,4 @@
+import { BehaviorSubject } from 'rxjs';
 import { DashboardComponent, buildDashboardViewModel, normalizeCategoryKey } from './dashboard.component';
 
 describe('buildDashboardViewModel', () => {
@@ -64,7 +65,7 @@ describe('buildDashboardViewModel', () => {
       ] as any,
       '01/2026',
       [],
-      ['a', 'b', 'c', 'd', 'e', 'f', 'z'],
+      ['a', 'b', 'c', 'd', 'e', 'f'],
       [
         { pattern: '^A$', vendorName: 'A', logoUrl: '' },
         { pattern: '^B$', vendorName: 'B', logoUrl: '' },
@@ -96,8 +97,8 @@ describe('buildDashboardViewModel', () => {
     );
 
     expect(vm.vendorCards).toEqual([
-      jasmine.objectContaining({ vendorName: 'Amazon', isWatched: true, hasSpend: true, spent: 110, usesFallbackIcon: false }),
-      jasmine.objectContaining({ vendorName: 'Ghost Vendor', isWatched: true, hasSpend: false, spent: 0, usesFallbackIcon: true, sourceIndex: -1 })
+      expect.objectContaining({ vendorName: 'Amazon', isWatched: true, hasSpend: true, spent: 110, usesFallbackIcon: false }),
+      expect.objectContaining({ vendorName: 'Ghost Vendor', isWatched: true, hasSpend: false, spent: 0, usesFallbackIcon: true, sourceIndex: -1 })
     ]);
   });
 });
@@ -112,8 +113,10 @@ describe('DashboardComponent query params', () => {
 describe('DashboardComponent vendor grid', () => {
   function createComponent(dialogOverrides: any = {}): DashboardComponent {
     return new DashboardComponent(
-      {} as any,
-      { open: jasmine.createSpy('open'), ...dialogOverrides } as any,
+      {
+        dashboardPreferences: new BehaviorSubject({ watchedCategoryKeys: [], watchedVendorKeys: [] })
+      } as any,
+      { open: vi.fn(), ...dialogOverrides } as any,
       {} as any,
       { markForCheck: () => undefined } as any
     );
@@ -121,6 +124,7 @@ describe('DashboardComponent vendor grid', () => {
 
   it('filters vendor grid items by vendor name', () => {
     const component = createComponent();
+    component.vendorWatchedOnly = false;
     component.viewModel = {
       vendorCards: [
         { vendorName: 'Amazon', displayName: 'Amazon', logoUrl: 'a.png', spent: 30, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
@@ -135,6 +139,7 @@ describe('DashboardComponent vendor grid', () => {
 
   it('sorts vendor grid items by name', () => {
     const component = createComponent();
+    component.vendorWatchedOnly = false;
     component.viewModel = {
       vendorCards: [
         { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
@@ -149,6 +154,7 @@ describe('DashboardComponent vendor grid', () => {
 
   it('pins watched vendors above other vendors while sorting by spend', () => {
     const component = createComponent();
+    component.vendorWatchedOnly = false;
     component.viewModel = {
       vendorCards: [
         { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
@@ -162,6 +168,7 @@ describe('DashboardComponent vendor grid', () => {
 
   it('applies name sort within watched and non-watched blocks', () => {
     const component = createComponent();
+    component.vendorWatchedOnly = false;
     component.viewModel = {
       vendorCards: [
         { vendorName: 'Target', displayName: 'Target', logoUrl: 't.png', spent: 10, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
@@ -178,6 +185,7 @@ describe('DashboardComponent vendor grid', () => {
 
   it('keeps watched-first grouping when filtering search results', () => {
     const component = createComponent();
+    component.vendorWatchedOnly = false;
     component.viewModel = {
       vendorCards: [
         { vendorName: 'Costco', displayName: 'Costco', logoUrl: 'c.png', spent: 20, isWatched: false, hasSpend: true, sourceIndex: 0, usesFallbackIcon: false },
@@ -198,7 +206,7 @@ describe('DashboardComponent vendor grid', () => {
         { pattern: '^Amazon$', vendorName: 'Amazon', logoUrl: 'a.png' }
       ]
     } as any;
-    spyOn(component, 'openEditVendorMappingModal');
+    vi.spyOn(component, 'openEditVendorMappingModal').mockImplementation(() => undefined);
 
     component.openVendorCardEdit({
       vendorName: 'Amazon',
@@ -215,9 +223,9 @@ describe('DashboardComponent vendor grid', () => {
   });
 
   it('routes unmapped watched vendor edit through the add-prefilled modal flow', () => {
-    const afterClosed = jasmine.createSpy('afterClosed').and.returnValue({ subscribe: () => undefined });
+    const afterClosed = vi.fn().mockReturnValue({ subscribe: () => undefined });
     const component = createComponent({
-      open: jasmine.createSpy('open').and.returnValue({ afterClosed })
+      open: vi.fn().mockReturnValue({ afterClosed })
     });
 
     component.openVendorCardEdit({
@@ -232,8 +240,8 @@ describe('DashboardComponent vendor grid', () => {
     });
 
     expect(component.dialog.open).toHaveBeenCalled();
-    expect((component.dialog.open as jasmine.Spy).calls.mostRecent().args[1].data).toEqual(
-      jasmine.objectContaining({
+    expect((component.dialog.open as any).mock.calls.at(-1)[1].data).toEqual(
+      expect.objectContaining({
         initialVendorName: 'Ghost Vendor',
         watched: true
       })

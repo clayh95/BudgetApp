@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { BehaviorSubject } from 'rxjs';
 import { CategoryModalComponent } from './category-modal.component';
 import { DbService } from '../core/db.service';
 
@@ -12,7 +13,9 @@ describe('CategoryModalComponent', () => {
       addDocument: vi.fn(),
       updateDocument: vi.fn(),
       deleteDocument: vi.fn(),
-      getQuerySnapshot: vi.fn()
+      getQuerySnapshot: vi.fn(),
+      dashboardPreferences: new BehaviorSubject({ watchedCategoryKeys: [], watchedVendorKeys: [] }),
+      saveDashboardPreferences: vi.fn().mockResolvedValue(undefined)
     };
 
     TestBed.configureTestingModule({

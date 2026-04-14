@@ -14,7 +14,7 @@ describe('DbService', () => {
     (service as any).categories = new BehaviorSubject<ICategory[]>([]);
     (service as any).monthYear = new BehaviorSubject<string>('03/2026');
     (service as any).saveState = new BehaviorSubject<SaveState>(SaveState.done);
-    (service as any).dashboardPreferences = new BehaviorSubject({ watchedCategoryKeys: [] });
+    (service as any).dashboardPreferences = new BehaviorSubject({ watchedCategoryKeys: [], watchedVendorKeys: [] });
     (service as any).auth = { currentUser: null };
     (service as any).firestore = {};
     return service;
@@ -96,7 +96,7 @@ describe('DbService', () => {
 
     service.transactions.next([{ id: '1' } as any]);
     service.categories.next([{ id: '1' } as any]);
-    service.dashboardPreferences.next({ watchedCategoryKeys: ['rent'] });
+    service.dashboardPreferences.next({ watchedCategoryKeys: ['rent'], watchedVendorKeys: ['target'] });
 
     service.signOut();
 
@@ -105,7 +105,7 @@ describe('DbService', () => {
     expect(prefUnsub).toHaveBeenCalled();
     expect(service.transactions.getValue()).toEqual([]);
     expect(service.categories.getValue()).toEqual([]);
-    expect(service.dashboardPreferences.getValue()).toEqual({ watchedCategoryKeys: [] });
+    expect(service.dashboardPreferences.getValue()).toEqual({ watchedCategoryKeys: [], watchedVendorKeys: [] });
   });
 
 });

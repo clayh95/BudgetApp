@@ -1,4 +1,3 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,37 +8,30 @@ class DbServiceStub {
   transactions = new BehaviorSubject<any[]>([]);
   categories = new BehaviorSubject<any[]>([]);
   vendorMappings = new BehaviorSubject<any[]>([]);
-  getMonthYearValue = jasmine.createSpy('getMonthYearValue').and.returnValue('01/2026');
-  updateDocument = jasmine.createSpy('updateDocument');
-  getTransactionsForEdit = jasmine.createSpy('getTransactionsForEdit').and.resolveTo([]);
+  getMonthYearValue = vi.fn().mockReturnValue('01/2026');
+  updateDocument = vi.fn();
+  getTransactionsForEdit = vi.fn().mockResolvedValue([]);
 }
 
 describe('TransactionTableComponent', () => {
   let component: TransactionTableComponent;
-  let fixture: ComponentFixture<TransactionTableComponent>;
+  let db: DbServiceStub;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [TransactionTableComponent],
-      providers: [
-        { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({})) } },
-        { provide: DbService, useClass: DbServiceStub }
-      ]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(TransactionTableComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+  beforeEach(() => {
+    db = new DbServiceStub();
+    component = new TransactionTableComponent(
+      db as unknown as DbService,
+      { open: vi.fn() } as unknown as MatDialog,
+      { queryParamMap: of(convertToParamMap({})) } as unknown as ActivatedRoute
+    );
+    component.paginator = { pageIndex: 0 } as any;
+  });
 
   it('should compile', () => {
     expect(component).toBeTruthy();
   });
 
   it('builds category and vendor suggestions from search input', () => {
-    const db = TestBed.inject(DbService) as unknown as DbServiceStub;
     db.categories.next([
       { id: '1', name: 'Groceries', keywords: [], budgeted: 0, spent: 0, notes: '', emoji: '🥦' },
       { id: '2', name: 'Utilities', keywords: [], budgeted: 0, spent: 0, notes: '' }

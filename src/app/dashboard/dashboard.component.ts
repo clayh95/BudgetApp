@@ -270,25 +270,6 @@ export function buildDashboardViewModel(
   });
 
   const vendorCardByKey = new Map<string, IVendorCardItem>();
-  vendorMappings.forEach((mapping, index) => {
-    const vendorName = (mapping?.vendorName || '').trim();
-    const key = normalizeVendorKey(vendorName);
-    if (!key || vendorCardByKey.has(key)) {
-      return;
-    }
-    const logoUrl = (mapping?.logoUrl || '').trim();
-    vendorCardByKey.set(key, {
-      vendorName,
-      displayName: vendorName,
-      logoUrl,
-      spent: 0,
-      isWatched: normalizedWatchedVendorKeys.includes(key),
-      hasSpend: false,
-      sourceIndex: index,
-      usesFallbackIcon: !logoUrl
-    });
-  });
-
   vendorSpendItems.forEach(item => {
     const key = normalizeVendorKey(item.vendorName);
     const existing = vendorCardByKey.get(key);
@@ -646,7 +627,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         if (!search) { return true; }
         return (item?.displayName || '').toLowerCase().includes(search);
       })
-      .sort((a, b) => sortByMode(a, b));
+      .sort((a, b) => {
+        if (a.isWatched !== b.isWatched) {
+          return a.isWatched ? -1 : 1;
+        }
+        return sortByMode(a, b);
+      });
 
     return items;
   }

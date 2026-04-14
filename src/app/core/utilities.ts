@@ -31,12 +31,12 @@ export const DEFAULT_VENDOR_MAPPINGS: IVendorLogoRule[] = [
   { pattern: 'koppe bridge', vendorName: 'Koppe Bridge', logoUrl: 'assets/images/koppe-bridge-logo.png' }
 ];
 
-export function getIcon(description: string, vendorMappings: IVendorLogoRule[] = []): string {
+export function getIcon(description: string, vendorMappings: IVendorLogoRule[] = DEFAULT_VENDOR_MAPPINGS): string {
   const match = getVendorMatch(description, vendorMappings);
   return match?.logoUrl || '';
 }
 
-export function getVendorMatch(description: string, vendorMappings: IVendorLogoRule[] = []): IVendorMatch | null {
+export function getVendorMatch(description: string, vendorMappings: IVendorLogoRule[] = DEFAULT_VENDOR_MAPPINGS): IVendorMatch | null {
   if (!description) { return null; }
   const normalizedDescription = `${description}`.trim();
   if (!normalizedDescription || !vendorMappings?.length) { return null; }
