@@ -857,12 +857,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           callbacks: {
             label: (tooltipItem, data) => {
               const index = tooltipItem.index ?? 0;
-              const item = this.getCategoryChartItems()[index];
-              if (!item) {
-                const label = data.labels?.[index] || '';
-                return `${label}: ${this.formatCurrency(0)}`;
-              }
-              return `${item.label}: ${this.formatCurrency(item.spent)} spent`;
+              const datasetIndex = tooltipItem.datasetIndex ?? 0;
+              const label = data.labels?.[index] || '';
+              const rawValue = data.datasets?.[datasetIndex]?.data?.[index];
+              const spent = typeof rawValue === 'number' ? rawValue : Number(rawValue) || 0;
+              return `${label}: ${this.formatCurrency(spent)} spent`;
             }
           }
         }
@@ -890,9 +889,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           callbacks: {
             label: (tooltipItem, data) => {
               const index = tooltipItem.index ?? 0;
-              const item = this.getVendorChartItems()[index];
-              const label = item?.label || data.labels?.[index] || '';
-              const spent = item?.spent || 0;
+              const datasetIndex = tooltipItem.datasetIndex ?? 0;
+              const label = data.labels?.[index] || '';
+              const rawValue = data.datasets?.[datasetIndex]?.data?.[index];
+              const spent = typeof rawValue === 'number' ? rawValue : Number(rawValue) || 0;
               return `${label}: ${this.formatCurrency(spent)} spent`;
             }
           }
