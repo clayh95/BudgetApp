@@ -95,29 +95,59 @@
             <button *ngIf="categorySearch" matSuffix mat-icon-button aria-label="Clear category filter" (click)="onCategorySearchChange('')">
               <mat-icon>close</mat-icon>
             </button>
+            <button
+              matSuffix
+              mat-icon-button
+              class="sort-menu-trigger"
+              [matMenuTriggerFor]="categorySortMenu"
+              matTooltip="Sort categories"
+              [attr.aria-label]="'Sort categories by ' + categorySortMode">
+              <mat-icon>sort</mat-icon>
+            </button>
+            <button
+              matSuffix
+              mat-icon-button
+              class="category-filter-toggle"
+              [class.category-filter-toggle-active]="categoryOverBudgetOnly"
+              [attr.aria-pressed]="categoryOverBudgetOnly"
+              [matTooltip]="categoryOverBudgetOnly ? 'Showing only over-budget categories' : 'Show only over-budget categories'"
+              (click)="toggleCategoryOverBudgetOnly()">
+              <mat-icon>warning</mat-icon>
+            </button>
+            <button
+              matSuffix
+              mat-icon-button
+              class="watched-filter-toggle"
+              [class.watched-filter-toggle-active]="categoryWatchedOnly"
+              [attr.aria-pressed]="categoryWatchedOnly"
+              [matTooltip]="categoryWatchedOnly ? 'Showing watched categories only' : 'Show watched categories only'"
+              (click)="toggleCategoryWatchedOnly()">
+              <mat-icon>visibility</mat-icon>
+            </button>
           </mat-form-field>
 
-          <mat-button-toggle-group
-            [value]="categorySortMode"
-            aria-label="Sort categories"
-            class="vendor-sort-toggle"
-            (change)="setCategorySortMode($event.value)">
-            <mat-button-toggle value="spend">Spend</mat-button-toggle>
-            <mat-button-toggle value="name">Name</mat-button-toggle>
-          </mat-button-toggle-group>
+          <mat-menu #categorySortMenu="matMenu">
+            <button mat-menu-item (click)="setCategorySortMode('spend')">
+              <mat-icon [class.sort-menu-check-hidden]="categorySortMode !== 'spend'">check</mat-icon>
+              <span>{{getCategoryAmountSortLabel()}}</span>
+            </button>
+            <button mat-menu-item (click)="setCategorySortMode('name')">
+              <mat-icon [class.sort-menu-check-hidden]="categorySortMode !== 'name'">check</mat-icon>
+              <span>Name</span>
+            </button>
+          </mat-menu>
 
-          <button
-            mat-icon-button
-            class="category-filter-toggle"
-            [class.category-filter-toggle-active]="categoryOverBudgetOnly"
-            [attr.aria-pressed]="categoryOverBudgetOnly"
-            [matTooltip]="categoryOverBudgetOnly ? 'Showing only over-budget categories' : 'Show only over-budget categories'"
-            (click)="toggleCategoryOverBudgetOnly()">
-            <mat-icon>{{categoryOverBudgetOnly ? 'warning' : 'warning_amber'}}</mat-icon>
-          </button>
+          <mat-button-toggle-group
+            [value]="categoryViewMode"
+            aria-label="Category view"
+            class="vendor-sort-toggle"
+            (change)="setCategoryViewMode($event.value)">
+            <mat-button-toggle value="grid">Grid</mat-button-toggle>
+            <mat-button-toggle value="chart">Chart</mat-button-toggle>
+          </mat-button-toggle-group>
         </div>
 
-        <div class="vendor-mapping-grid">
+        <div class="vendor-mapping-grid" [class.dashboard-view-hidden]="categoryViewMode !== 'grid'">
           <div
             *ngFor="let item of getCategoryGridItems(); trackBy: trackByCategoryGridItem"
             class="vendor-mapping-grid-item category-grid-item"
@@ -140,10 +170,30 @@
                   <mat-icon *ngIf="item.isWatched" class="vendor-watch-icon" aria-hidden="true">visibility</mat-icon>
                 </span>
               </div>
-              <span class="metric-chip vendor-mapping-spend" [class.positive]="item.remaining >= 0" [class.negative]="item.remaining < 0">
+              <span
+                class="metric-chip vendor-mapping-spend"
+                [class.positive]="item.remaining >= 0"
+                [class.negative]="item.remaining < 0"
+                [matTooltip]="getCategorySpendTooltip(item)">
                 {{item.remaining | currency}}
               </span>
             </span>
+          </div>
+        </div>
+        <div class="dashboard-donut-container" [class.dashboard-view-hidden]="categoryViewMode !== 'chart'">
+          <div class="dashboard-donut-canvas-wrap">
+            <canvas #categoryDonutCanvas aria-label="Category spend donut chart"></canvas>
+          </div>
+          <div class="dashboard-chart-legend" *ngIf="getCategoryChartItems().length > 0">
+            <div class="dashboard-chart-legend-row" *ngFor="let item of getCategoryChartItems(); let index = index">
+              <span class="dashboard-chart-legend-color" [style.background]="getChartColor(index)"></span>
+              <span class="category-card-icon dashboard-chart-legend-icon">
+                <span *ngIf="item.icon" class="category-card-emoji" aria-hidden="true">{{item.icon}}</span>
+                <mat-icon *ngIf="item.usesFallbackIcon" class="category-card-fallback-icon" aria-hidden="true">category</mat-icon>
+              </span>
+              <span class="dashboard-chart-legend-label">{{item.label}}</span>
+              <span class="metric-chip dashboard-chart-legend-value">{{item.spent | currency}}</span>
+            </div>
           </div>
         </div>
         <mat-menu #categoryCardActionsMenu="matMenu">
@@ -165,8 +215,11 @@
         <div class="muted" *ngIf="viewModel.categoryCards.length === 0">
           <span>No categories yet.</span>
         </div>
-        <div class="muted" *ngIf="viewModel.categoryCards.length > 0 && getCategoryGridItems().length === 0">
-          <span>{{categoryOverBudgetOnly ? 'No over-budget categories match that search.' : 'No categories match that search.'}}</span>
+        <div class="muted" *ngIf="categoryViewMode === 'grid' && viewModel.categoryCards.length > 0 && getCategoryGridItems().length === 0">
+          <span>{{categoryWatchedOnly ? 'No watched categories match those filters.' : (categoryOverBudgetOnly ? 'No over-budget categories match that search.' : 'No categories match that search.')}}</span>
+        </div>
+        <div class="muted" *ngIf="categoryViewMode === 'chart' && viewModel.categoryCards.length > 0 && getCategoryGridItems().length > 0 && getCategoryChartItems().length === 0">
+          <span>No positive category spend to chart.</span>
         </div>
       </mat-card-content>
     </mat-card>
@@ -192,19 +245,49 @@
             <button *ngIf="vendorSearch" matSuffix mat-icon-button aria-label="Clear filter" (click)="onVendorSearchChange('')">
               <mat-icon>close</mat-icon>
             </button>
+            <button
+              matSuffix
+              mat-icon-button
+              class="sort-menu-trigger"
+              [matMenuTriggerFor]="vendorSortMenu"
+              matTooltip="Sort vendors"
+              [attr.aria-label]="'Sort vendors by ' + vendorSortMode">
+              <mat-icon>sort</mat-icon>
+            </button>
+            <button
+              matSuffix
+              mat-icon-button
+              class="watched-filter-toggle"
+              [class.watched-filter-toggle-active]="vendorWatchedOnly"
+              [attr.aria-pressed]="vendorWatchedOnly"
+              [matTooltip]="vendorWatchedOnly ? 'Showing watched vendors only' : 'Show watched vendors only'"
+              (click)="toggleVendorWatchedOnly()">
+              <mat-icon>visibility</mat-icon>
+            </button>
           </mat-form-field>
 
+          <mat-menu #vendorSortMenu="matMenu">
+            <button mat-menu-item (click)="setVendorSortMode('spend')">
+              <mat-icon [class.sort-menu-check-hidden]="vendorSortMode !== 'spend'">check</mat-icon>
+              <span>Spend</span>
+            </button>
+            <button mat-menu-item (click)="setVendorSortMode('name')">
+              <mat-icon [class.sort-menu-check-hidden]="vendorSortMode !== 'name'">check</mat-icon>
+              <span>Name</span>
+            </button>
+          </mat-menu>
+
           <mat-button-toggle-group
-            [value]="vendorSortMode"
-            aria-label="Sort vendors"
+            [value]="vendorViewMode"
+            aria-label="Vendor view"
             class="vendor-sort-toggle"
-            (change)="setVendorSortMode($event.value)">
-            <mat-button-toggle value="spend">Spend</mat-button-toggle>
-            <mat-button-toggle value="name">Name</mat-button-toggle>
+            (change)="setVendorViewMode($event.value)">
+            <mat-button-toggle value="grid">Grid</mat-button-toggle>
+            <mat-button-toggle value="chart">Chart</mat-button-toggle>
           </mat-button-toggle-group>
         </div>
 
-        <div class="vendor-mapping-grid">
+        <div class="vendor-mapping-grid" [class.dashboard-view-hidden]="vendorViewMode !== 'grid'">
           <div
             *ngFor="let item of getVendorGridItems(); trackBy: trackByVendorGridItem"
             class="vendor-mapping-grid-item"
@@ -227,6 +310,22 @@
             </span>
           </div>
         </div>
+        <div class="dashboard-donut-container" [class.dashboard-view-hidden]="vendorViewMode !== 'chart'">
+          <div class="dashboard-donut-canvas-wrap">
+            <canvas #vendorDonutCanvas aria-label="Vendor spend donut chart"></canvas>
+          </div>
+          <div class="dashboard-chart-legend" *ngIf="getVendorChartItems().length > 0">
+            <div class="dashboard-chart-legend-row" *ngFor="let item of getVendorChartItems(); let index = index">
+              <span class="dashboard-chart-legend-color" [style.background]="getChartColor(index)"></span>
+              <span class="dashboard-chart-legend-icon">
+                <img *ngIf="item.logoUrl" class="vendor-logo" [src]="item.logoUrl" [alt]="item.label + ' logo'">
+                <mat-icon *ngIf="item.usesFallbackIcon" class="vendor-fallback-icon" aria-hidden="true">storefront</mat-icon>
+              </span>
+              <span class="dashboard-chart-legend-label">{{item.label}}</span>
+              <span class="metric-chip dashboard-chart-legend-value">{{item.spent | currency}}</span>
+            </div>
+          </div>
+        </div>
         <mat-menu #vendorCardActionsMenu="matMenu">
           <ng-template matMenuContent let-item="item">
             <button mat-menu-item (click)="openVendorCardEdit(item)">
@@ -242,8 +341,11 @@
         <div class="muted" *ngIf="viewModel.vendorCards.length === 0">
           <span>No vendor spend yet.</span>
         </div>
-        <div class="muted" *ngIf="viewModel.vendorCards.length > 0 && getVendorGridItems().length === 0">
-          <span>No vendors match that search.</span>
+        <div class="muted" *ngIf="vendorViewMode === 'grid' && viewModel.vendorCards.length > 0 && getVendorGridItems().length === 0">
+          <span>{{vendorWatchedOnly ? 'No watched vendors match that search.' : 'No vendors match that search.'}}</span>
+        </div>
+        <div class="muted" *ngIf="vendorViewMode === 'chart' && viewModel.vendorCards.length > 0 && getVendorGridItems().length > 0 && getVendorChartItems().length === 0">
+          <span>No positive vendor spend to chart.</span>
         </div>
       </mat-card-content>
     </mat-card>
