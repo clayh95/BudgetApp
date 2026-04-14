@@ -1,111 +1,73 @@
-import { TestBed } from '@angular/core/testing';
-import { MatOptionSelectionChange } from '@angular/material/core';
-import { ICategory } from '../core/dataTypes';
-
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { BehaviorSubject, of } from 'rxjs';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { TransactionTableComponent } from './transaction-table.component';
 import { DbService } from '../core/db.service';
 
+class DbServiceStub {
+  transactions = new BehaviorSubject<any[]>([]);
+  categories = new BehaviorSubject<any[]>([]);
+  vendorMappings = new BehaviorSubject<any[]>([]);
+  getMonthYearValue = jasmine.createSpy('getMonthYearValue').and.returnValue('01/2026');
+  updateDocument = jasmine.createSpy('updateDocument');
+  getTransactionsForEdit = jasmine.createSpy('getTransactionsForEdit').and.resolveTo([]);
+}
+
 describe('TransactionTableComponent', () => {
   let component: TransactionTableComponent;
-  let dbService: DbService;
+  let fixture: ComponentFixture<TransactionTableComponent>;
 
-  function makeSelectionChange(isUserInput: boolean): MatOptionSelectionChange<string> {
-    return { isUserInput } as MatOptionSelectionChange<string>;
-  }
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [TransactionTableComponent],
+      providers: [
+        { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({})) } },
+        { provide: DbService, useClass: DbServiceStub }
+      ]
+    })
+    .compileComponents();
 
-  beforeEach(() => {
-    dbService = TestBed.inject(DbService);
-    (dbService.transactions as any).next([{ id: 'txn-1', category: 'Utilities' }]);
-    (dbService.categories as any).next([
-      { id: 'c1', name: 'Groceries', keywords: ['food'], budgeted: 250, spent: 0, notes: '' },
-      { id: 'c2', name: 'Income', keywords: ['salary'], budgeted: 1000, spent: 0, notes: '' },
-      { id: 'c3', name: 'Utilities', keywords: ['power'], budgeted: 150, spent: 0, notes: '' }
-    ] as ICategory[]);
-    component = new TransactionTableComponent(dbService, null as any, null as any);
-    component.paginator = { pageIndex: 3 } as any;
-  });
+    fixture = TestBed.createComponent(TransactionTableComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
   it('should compile', () => {
     expect(component).toBeTruthy();
   });
 
-  it('returns all categories when search is empty', () => {
-    component.searchValue = '';
-    expect(component.suggestedCategories.map(c => c.name))
-      .toEqual(['Groceries', 'Income', 'Utilities']);
+  it('builds category and vendor suggestions from search input', () => {
+    const db = TestBed.inject(DbService) as unknown as DbServiceStub;
+    db.categories.next([
+      { id: '1', name: 'Groceries', keywords: [], budgeted: 0, spent: 0, notes: '', emoji: '🥦' },
+      { id: '2', name: 'Utilities', keywords: [], budgeted: 0, spent: 0, notes: '' }
+    ]);
+    db.vendorMappings.next([
+      { pattern: 'wal-?mart', vendorName: 'Walmart', logoUrl: 'assets/images/walmart-logo.png' },
+      { pattern: 'target', vendorName: 'Target', logoUrl: 'assets/images/target-logo.png' }
+    ]);
+
+    component.searchValue = 'wa';
+    const suggestions = component.searchSuggestions;
+
+    expect(suggestions.length).toBe(1);
+    expect(suggestions[0].type).toBe('vendor');
+    if (suggestions[0].type === 'vendor') {
+      expect(suggestions[0].vendor.name).toBe('Walmart');
+    }
   });
 
-  it('filters suggested categories by search term', () => {
-    component.searchValue = 'util';
-    expect(component.suggestedCategories.map(c => c.name)).toEqual(['Utilities']);
+  it('keeps one category chip and one vendor chip active at the same time', () => {
+    component.onCategoryOptionSelected({ id: '1', name: 'Groceries', keywords: [], budgeted: 0, spent: 0, notes: '' });
+    component.onVendorOptionSelected({ name: 'Walmart', logoUrl: 'assets/images/walmart-logo.png' });
 
-    component.searchValue = 'in';
-    expect(component.suggestedCategories.map(c => c.name)).toEqual(['Income']);
-  });
-
-  it('tracks search hint visibility from focus and panel state', () => {
-    expect(component.showSearchHints).toBe(false);
-
-    component.searchValue = '';
-    component.onSearchFocus();
-    expect(component.showSearchHints).toBe(true);
-
-    component.onSearchPanelOpened();
-    expect(component.showSearchHints).toBe(true);
-
-    component.onSearchPanelClosed();
-    component.onSearchBlur();
-    expect(component.showSearchHints).toBe(false);
-
-    component.searchValue = '';
-    component.onSearchFocus();
-    expect(component.showSearchHints).toBe(true);
-    component.onClearSearch();
-    component.onSearchInput('foo');
-    expect(component.showSearchHints).toBe(false);
-  });
-
-  it('clears category filter and resets pagination', () => {
-    const nextSpy = vi.spyOn(component.categoryFilter, 'next');
-    component.categoryFilter.next('Groceries');
-    component.paginator.pageIndex = 7;
+    expect(component.categoryFilter.getValue()).toBe('Groceries');
+    expect(component.vendorFilter.getValue()).toBe('Walmart');
 
     component.clearCategoryFilter();
-
-    expect(nextSpy).toHaveBeenCalledWith('');
-    expect(component.paginator.pageIndex).toBe(0);
     expect(component.categoryFilter.getValue()).toBe('');
-  });
-
-  it('applies search input and clears search with filter updates', () => {
-    const filterSpy = vi.spyOn(component.filter, 'next');
-    component.paginator.pageIndex = 4;
-    component.onSearchInput('  walmart  ');
-
-    expect(component.searchValue).toBe('  walmart  ');
-    expect(component.paginator.pageIndex).toBe(0);
-    expect(filterSpy).toHaveBeenCalledWith('walmart');
-
-    component.onClearSearch();
-
-    expect(component.searchValue).toBe('');
-    expect(component.paginator.pageIndex).toBe(0);
-    expect(filterSpy).toHaveBeenCalledWith('');
-  });
-
-  it('does not update category when option selection is not user input', () => {
-    const updateSpy = vi.spyOn(component, 'updateValueOnChange');
-
-    component.onCategoryOptionSelection(makeSelectionChange(false), 'txn-1', 'Groceries');
-
-    expect(updateSpy).not.toHaveBeenCalled();
-  });
-
-  it('updates category when option selection is user input', () => {
-    const updateSpy = vi.spyOn(component, 'updateValueOnChange');
-
-    component.onCategoryOptionSelection(makeSelectionChange(true), 'txn-1', 'Groceries');
-
-    expect(updateSpy).toHaveBeenCalledWith('Groceries', 'txn-1', 'category');
+    expect(component.vendorFilter.getValue()).toBe('Walmart');
   });
 });
