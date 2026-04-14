@@ -184,17 +184,19 @@
           <div class="dashboard-donut-canvas-wrap">
             <canvas #categoryDonutCanvas aria-label="Category spend donut chart"></canvas>
           </div>
-          <div class="dashboard-chart-legend" *ngIf="getCategoryChartItems().length > 0">
-            <div class="dashboard-chart-legend-row" *ngFor="let item of getCategoryChartItems(); let index = index">
-              <span class="dashboard-chart-legend-color" [style.background]="getChartColor(index)"></span>
-              <span class="category-card-icon dashboard-chart-legend-icon">
-                <span *ngIf="item.icon" class="category-card-emoji" aria-hidden="true">{{item.icon}}</span>
-                <mat-icon *ngIf="item.usesFallbackIcon" class="category-card-fallback-icon" aria-hidden="true">category</mat-icon>
-              </span>
-              <span class="dashboard-chart-legend-label">{{item.label}}</span>
-              <span class="metric-chip dashboard-chart-legend-value">{{item.spent | currency}}</span>
+          <ng-container *ngIf="getCategoryChartItems() as categoryChartItems">
+            <div class="dashboard-chart-legend" *ngIf="categoryChartItems.length > 0">
+              <div class="dashboard-chart-legend-row" *ngFor="let item of categoryChartItems; let index = index">
+                <span class="dashboard-chart-legend-color" [style.background]="getChartColor(index)"></span>
+                <span class="category-card-icon dashboard-chart-legend-icon">
+                  <span *ngIf="item.icon" class="category-card-emoji" aria-hidden="true">{{item.icon}}</span>
+                  <mat-icon *ngIf="item.usesFallbackIcon" class="category-card-fallback-icon" aria-hidden="true">category</mat-icon>
+                </span>
+                <span class="dashboard-chart-legend-label">{{item.label}}</span>
+                <span class="metric-chip dashboard-chart-legend-value">{{item.spent | currency}}</span>
+              </div>
             </div>
-          </div>
+          </ng-container>
         </div>
         <mat-menu #categoryCardActionsMenu="matMenu">
           <ng-template matMenuContent let-item="item">
