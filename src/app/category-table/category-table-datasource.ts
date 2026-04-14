@@ -4,6 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ICategory } from '../core/dataTypes';
+import { compare, compareString } from '../core/utilities';
 
 export class CategoryTableDataSource extends DataSource<ICategory> {
 
@@ -43,7 +44,7 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
     return data.sort((a, b) => {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
-        case 'category': return compare(a.name, b.name, isAsc);
+        case 'category': return compareString(a.name, b.name, isAsc);
         case 'budgeted': return compare(+a.budgeted, +b.budgeted, isAsc)
         default: return 0;
       }
@@ -55,11 +56,4 @@ export class CategoryTableDataSource extends DataSource<ICategory> {
       return Object.values(t).filter(z => typeof z === 'string').map(v => v.toLowerCase().indexOf(filter)>=0).indexOf(true) >= 0
     })
   }
-}
-
-
-
-/** Simple sort comparator for example ID/Name columns (for client-side sorting). */
-function compare(a, b, isAsc) {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
 }

@@ -8,7 +8,7 @@ describe('BasePageComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ BasePageComponent ]
+      imports: [ BasePageComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('BasePageComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(BasePageComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

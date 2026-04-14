@@ -88,11 +88,8 @@ jobs:
           }
           EOF
 
-      # - name: Set up Chrome
-      #   uses: browser-actions/setup-chrome@v1
-
-      # - name: Run tests (headless)
-      #   run: npm run test -- --watch=false --browsers=ChromeHeadless
+      - name: Run full test suite
+        run: npm test
 
       - name: Build app
         run: npm run build -- --configuration production

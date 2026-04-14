@@ -83,8 +83,8 @@
         <td mat-cell class="category" *matCellDef="let row">
           <mat-form-field>
             <mat-select placeholder="Category" [value]="row.category">
-              <mat-option (click)="updateValueOnChange('', row.id, 'category')"></mat-option>
-              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (click)="updateValueOnChange(category.name, row.id, 'category')">
+              <mat-option [value]="''" (onSelectionChange)="$event.source.selected && onCategoryOptionSelection($event, row.id, '')"></mat-option>
+              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (onSelectionChange)="$event.source.selected && onCategoryOptionSelection($event, row.id, category.name)">
                 {{category.name}}
               </mat-option>
             </mat-select>

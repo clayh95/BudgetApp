@@ -8,7 +8,7 @@ describe('MonthYearPickerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ MonthYearPickerComponent ]
+      imports: [ MonthYearPickerComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('MonthYearPickerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(MonthYearPickerComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

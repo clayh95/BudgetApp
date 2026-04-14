@@ -1,16 +1,15 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "../out-tsc/spec",
-    "module": "commonjs",
+    "target": "es2022",
     "types": [
-      "jasmine",
+      "vitest/globals",
       "node"
     ]
   },
   "files": [
-    "test.ts",
-    "polyfills.ts"
+    "test-setup.ts"
   ],
   "include": [
     "**/*.spec.ts",

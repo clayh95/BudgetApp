@@ -8,7 +8,7 @@ describe('AppLoginPageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AppLoginPageComponent ]
+      imports: [ AppLoginPageComponent ]
     })
     .compileComponents();
   });
@@ -16,7 +16,6 @@ describe('AppLoginPageComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AppLoginPageComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {

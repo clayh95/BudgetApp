@@ -82,3 +82,17 @@ export function parseMoney(value: unknown): number | null {
   }
   return null;
 }
+
+export type Comparable = string | number | bigint | Date;
+
+export function compare<T extends Comparable>(a: T, b: T, isAsc: boolean): number {
+  if (a === b) { return 0; }
+  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+}
+
+export function compareString(a: unknown, b: unknown, isAsc: boolean): number {
+  const left = (a || '').toString().toLowerCase();
+  const right = (b || '').toString().toLowerCase();
+  if (left === right) { return 0; }
+  return (left < right ? -1 : 1) * (isAsc ? 1 : -1);
+}

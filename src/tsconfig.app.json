@@ -1,9 +1,14 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "../out-tsc/app",
     "typeRoots": ["../node_modules/@types"]
   },
-  "exclude": ["src/test.ts", "**/*.spec.ts"]
+  "exclude": [
+    "test.ts",
+    "test-setup.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 }

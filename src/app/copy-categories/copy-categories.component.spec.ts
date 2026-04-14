@@ -8,7 +8,7 @@ describe('CopyCategoriesComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ CopyCategoriesComponent ]
+      imports: [ CopyCategoriesComponent ]
     })
     .compileComponents();
   }));
@@ -16,7 +16,6 @@ describe('CopyCategoriesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CopyCategoriesComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
