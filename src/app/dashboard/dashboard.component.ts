@@ -682,6 +682,31 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.updateVendorDonutChart();
   }
 
+  private categoryDonutChartUpdateFrame: number | null = null;
+  private vendorDonutChartUpdateFrame: number | null = null;
+
+  private scheduleCategoryDonutChartUpdate() {
+    if (this.categoryDonutChartUpdateFrame !== null) {
+      cancelAnimationFrame(this.categoryDonutChartUpdateFrame);
+    }
+
+    this.categoryDonutChartUpdateFrame = requestAnimationFrame(() => {
+      this.categoryDonutChartUpdateFrame = null;
+      this.updateCategoryDonutChart();
+    });
+  }
+
+  private scheduleVendorDonutChartUpdate() {
+    if (this.vendorDonutChartUpdateFrame !== null) {
+      cancelAnimationFrame(this.vendorDonutChartUpdateFrame);
+    }
+
+    this.vendorDonutChartUpdateFrame = requestAnimationFrame(() => {
+      this.vendorDonutChartUpdateFrame = null;
+      this.updateVendorDonutChart();
+    });
+  }
+
   setCategorySortMode(mode: CategorySortMode) {
     this.categorySortMode = mode;
     this.updateCategoryDonutChart();
@@ -709,7 +734,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.categoryOverBudgetOnly = false;
     }
     this.updateCategoryDonutChart();
-    setTimeout(() => this.updateCategoryDonutChart());
+    this.scheduleCategoryDonutChartUpdate();
   }
 
   setVendorViewMode(mode: DashboardCardViewMode) {
@@ -718,7 +743,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.vendorWatchedOnly = false;
     }
     this.updateVendorDonutChart();
-    setTimeout(() => this.updateVendorDonutChart());
+    this.scheduleVendorDonutChartUpdate();
   }
 
   async removeVendorMapping(index: number, vendorName?: string) {
