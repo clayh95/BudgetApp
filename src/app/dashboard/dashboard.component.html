@@ -173,8 +173,7 @@
               <span
                 class="metric-chip vendor-mapping-spend"
                 [class.positive]="item.remaining >= 0"
-                [class.negative]="item.remaining < 0"
-                [matTooltip]="getCategorySpendTooltip(item)">
+                [class.negative]="item.remaining < 0">
                 {{item.remaining | currency}}
               </span>
             </span>

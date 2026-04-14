@@ -630,10 +630,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.categoryViewMode === 'chart' ? 'Spend' : 'Remaining';
   }
 
-  getCategorySpendTooltip(item: ICategoryCardItem): string {
-    return `Spend: ${this.formatCurrency(item?.spent || 0)}`;
-  }
-
   getVendorGridItems(): IVendorCardItem[] {
     const search = (this.vendorSearch || '').trim().toLowerCase();
     const sortByMode = (a: IVendorCardItem, b: IVendorCardItem) => {
