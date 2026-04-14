@@ -101,7 +101,7 @@
               class="sort-menu-trigger"
               [matMenuTriggerFor]="categorySortMenu"
               matTooltip="Sort categories"
-              [attr.aria-label]="'Sort categories by ' + categorySortMode">
+              [attr.aria-label]="'Sort categories by ' + (categorySortMode === 'spend' ? getCategoryAmountSortLabel() : 'Name')">
               <mat-icon>sort</mat-icon>
             </button>
             <button
