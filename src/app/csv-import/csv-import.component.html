@@ -5,67 +5,104 @@
         <mat-card-title>
             Import transactions from CSV
         </mat-card-title>
-        <mat-card-content>
-                <div *ngIf="isStart()" class="file-controls">
+        <mat-card-content class="import-csv-content">
+                <div *ngIf="isStart()" class="file-controls state-panel">
+                    <div class="state-copy">
+                        <div class="state-title">Upload a transaction export</div>
+                        <div class="state-subtitle">Choose a CSV file to review transactions before importing them.</div>
+                    </div>
                     <input id="fileUpload" #fileUpload type="file" (change)="GetFiles($event)" hidden/>
                     <button mat-raised-button color="primary" (click)="fileUpload.click()">Choose CSV file</button>
                 </div>
                 <div class="import-summary" *ngIf="isReview()">
-                    <mat-selection-list class="import-list" role="list" #summary>
-                        <h3>{{importSummary.title}}</h3>
-                        <mat-list-item role="listitem">
-                            {{importSummary.readyTransactions.length 
-                                + importSummary.duplicateTransactions.length}} charges found in sheet:
-                        </mat-list-item>
-                        <mat-list-option 
-                            *ngFor="let t of importSummary.readyTransactions" 
-                            [value]="t"
-                            selected = "true"
-                            checkboxPosition="before"
-                            role="listitem">
-                            <div class="transaction-list-item">
-                                <div class="top-line">
-                                    <div>{{t.date}}</div>
-                                    <div>{{t.amount}}</div>
-                                </div>
-                                <div class="bottom-line">
-                                    {{t.description}}
-                                </div>
+                    <div class="summary-header">
+                        <div class="state-copy">
+                            <div class="state-title">{{importSummary.title}}</div>
+                            <div class="state-subtitle">
+                                {{importSummary.readyTransactions.length + importSummary.duplicateTransactions.length}} charges found in sheet
                             </div>
-                        </mat-list-option>
-                        <mat-list-item role="listitem">
-                            {{importSummary.duplicateTransactions.length}} duplicate charge found:
-                        </mat-list-item>
-                        <mat-list-option
-                            *ngFor="let t of importSummary.duplicateTransactions"
-                            [value]="t"
-                            checkboxPosition="before"
-                            role="listitem">
-                            <div class="transaction-list-item">
-                                <div class="top-line">
-                                    <div>{{t.date}}</div>
-                                    <div>{{t.amount}}</div>
-                                </div>
-                                <div class="bottom-line">
-                                    {{t.description}}
-                                </div>
+                        </div>
+                        <div class="summary-metrics">
+                            <div class="metric-card">
+                                <span class="metric-label">Ready</span>
+                                <span class="metric-value">{{importSummary.readyTransactions.length}}</span>
                             </div>
-                        </mat-list-option>
-                    </mat-selection-list>
+                            <div class="metric-card metric-card-warn">
+                                <span class="metric-label">Duplicates</span>
+                                <span class="metric-value">{{importSummary.duplicateTransactions.length}}</span>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div *ngIf="summary.selectedOptions.selected.length > 0">
-                        <button mat-raised-button color="primary" (click)="ImportSelected(summary.selectedOptions.selected)">
+                    <div class="import-list-shell">
+                        <div class="import-list-scroll">
+                            <mat-selection-list class="import-list" role="list" #summary>
+                                <div class="section-label">Ready to import</div>
+                                <mat-list-option 
+                                    *ngFor="let t of importSummary.readyTransactions" 
+                                    [value]="t"
+                                    selected = "true"
+                                    checkboxPosition="before"
+                                    role="listitem">
+                                    <div class="transaction-list-item">
+                                        <div class="top-line">
+                                            <div class="transaction-date">{{t.date}}</div>
+                                            <div class="transaction-amount">{{t.amount | currency}}</div>
+                                        </div>
+                                        <div class="bottom-line transaction-description">
+                                            {{t.description}}
+                                        </div>
+                                    </div>
+                                </mat-list-option>
+
+                                <div class="section-label" *ngIf="importSummary.duplicateTransactions.length > 0">Possible duplicates</div>
+                                <mat-list-option
+                                    *ngFor="let t of importSummary.duplicateTransactions"
+                                    [value]="t"
+                                    checkboxPosition="before"
+                                    role="listitem">
+                                    <div class="transaction-list-item">
+                                        <div class="top-line">
+                                            <div class="transaction-date">{{t.date}}</div>
+                                            <div class="transaction-amount">{{t.amount | currency}}</div>
+                                        </div>
+                                        <div class="bottom-line transaction-description">
+                                            {{t.description}}
+                                        </div>
+                                    </div>
+                                </mat-list-option>
+                            </mat-selection-list>
+                        </div>
+                    </div>
+
+                    <div class="import-action-bar">
+                        <div class="selection-copy">
+                            <span class="selection-count">{{summary.selectedOptions.selected.length}}</span>
+                            <span>selected for import</span>
+                        </div>
+                        <button
+                            *ngIf="summary.selectedOptions.selected.length > 0"
+                            mat-raised-button
+                            color="primary"
+                            (click)="ImportSelected(summary.selectedOptions.selected)">
                             Import {{summary.selectedOptions.selected.length}} charge(s)
                         </button>
+                        <div *ngIf="summary.selectedOptions.selected.length === 0" class="selection-hint">
+                            Select at least one transaction to continue.
+                        </div>
                     </div>
                 </div>
 
-                <div *ngIf="isComplete()">
-                    Imported {{importSummary.transactionsImported}} transactions.
+                <div *ngIf="isComplete()" class="state-panel complete-panel">
+                    <div class="state-copy">
+                        <div class="state-title">Import complete</div>
+                        <div class="state-subtitle">
+                            Imported {{importSummary.transactionsImported}} transactions.
+                        </div>
+                    </div>
                 </div>
             </mat-card-content>
     </mat-card>
 
 </div>
-
 
