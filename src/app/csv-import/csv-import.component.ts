@@ -55,9 +55,9 @@ export class CsvImportComponent {
     fRdr.onload = (e) => {
       this.zone.run(() => {
         let res: string = fRdr.result.toString();
-        let lines: Array<string> = res.replace(/"/g, "").split('\n');
+        let lines: Array<string> = res.split('\n');
         lines.map(line => {
-          let objs = line.split(',');
+          let objs = this.parseCsvLine(line);
           if (objs.length > 1) {
             let t = this.ConvertCSVToTransaction(objs);
             if (t) {
@@ -99,19 +99,124 @@ export class CsvImportComponent {
   //Might should put this in the service
 
   ConvertCSVToTransaction(stringTransaction: string[]): ITransaction | null {
+    const format = this.detectCsvFormat(stringTransaction);
+    if (!format) {
+      return null;
+    }
+
+    if (format === 'old') {
+      return this.convertOldFormatRow(stringTransaction);
+    }
+
+    return this.convertNewFormatRow(stringTransaction);
+  }
+
+  detectCsvFormat(stringTransaction: string[]): CsvImportFormat | null {
+    if (!this.rowHasDate(stringTransaction[0])) {
+      return null;
+    }
+
+    if (this.isNewFormatHeader(stringTransaction)) {
+      return null;
+    }
+
+    if (this.isAmountValue(stringTransaction[2])) {
+      return 'new';
+    }
+
+    if (this.isAmountValue(stringTransaction[1]) && stringTransaction.length > 4) {
+      return 'old';
+    }
+
+    return null;
+  }
+
+  convertOldFormatRow(stringTransaction: string[]): ITransaction | null {
     const parsedAmount = parseMoney(stringTransaction[1]);
     if (parsedAmount === null) {
       return null;
     }
-    let t = {
-        "date" : stringTransaction[0],
-        "amount" : parsedAmount,
-        "description" : stringTransaction[4],
-        "category" : this.SetCategoryFromKeywords(stringTransaction[4]),
-        "notes" : "",
-        "status": ITransactionStatus.posted //WF manual import is only posted
+
+    const description = this.normalizeDescription(stringTransaction[4]);
+    return <ITransaction>{
+      "date": stringTransaction[0],
+      "amount": parsedAmount,
+      "description": description,
+      "category": this.SetCategoryFromKeywords(description),
+      "notes": "",
+      "status": ITransactionStatus.posted
+    };
+  }
+
+  convertNewFormatRow(stringTransaction: string[]): ITransaction | null {
+    const parsedAmount = parseMoney(stringTransaction[2]);
+    if (parsedAmount === null) {
+      return null;
     }
-    return <ITransaction>t;
+
+    const description = this.normalizeDescription(stringTransaction[1]);
+    return <ITransaction>{
+      "date": stringTransaction[0],
+      "amount": parsedAmount,
+      "description": description,
+      "category": this.SetCategoryFromKeywords(description),
+      "notes": "",
+      "status": ITransactionStatus.posted
+    };
+  }
+
+  normalizeDescription(value: string): string {
+    return (value || '').trim().replace(/\s+/g, ' ');
+  }
+
+  parseCsvLine(line: string): string[] {
+    const result: string[] = [];
+    let currentValue = '';
+    let inQuotes = false;
+
+    for (let idx = 0; idx < (line || '').length; idx++) {
+      const char = line[idx];
+      const nextChar = line[idx + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          currentValue += '"';
+          idx++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+
+      if (char === ',' && !inQuotes) {
+        result.push(currentValue);
+        currentValue = '';
+        continue;
+      }
+
+      if (char !== '\r') {
+        currentValue += char;
+      }
+    }
+
+    result.push(currentValue);
+    return result;
+  }
+
+  private isNewFormatHeader(stringTransaction: string[]): boolean {
+    return stringTransaction[0] === 'DATE'
+      && stringTransaction[1] === 'DESCRIPTION'
+      && stringTransaction[2] === 'AMOUNT'
+      && stringTransaction[3] === 'CHECK #'
+      && stringTransaction[4] === 'STATUS';
+  }
+
+  private rowHasDate(value: string): boolean {
+    return /^\d{2}\/\d{2}\/\d{4}$/.test((value || '').trim());
+  }
+
+  private isAmountValue(value: string): boolean {
+    return /^-?\$?\d{1,3}(,\d{3})*(\.\d{2})?$|^-?\$?\d+(\.\d{2})?$/.test((value || '').trim());
   }
 
   SetCategoryFromKeywords(tDesc: string): string {
@@ -157,3 +262,5 @@ enum importStatus {
   review = 1,
   complete = 2
 }
+
+type CsvImportFormat = 'old' | 'new';
