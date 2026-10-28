@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { EditorDrawerService } from './section-drawer/editor-drawer.service';
 import { Routes } from '@angular/router';
 import { CsvImportComponent } from './csv-import/csv-import.component';
 import { TransactionTableComponent } from './transaction-table/transaction-table.component';
@@ -8,10 +10,10 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'transactions', component: TransactionTableComponent },
+  { path: 'dashboard', component: DashboardComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
+  { path: 'transactions', component: TransactionTableComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
   { path: 'csv', component: CsvImportComponent},
-  { path: 'categories', component: EditCategoriesComponent},
+  { path: 'categories', component: EditCategoriesComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
   { path: 'reports', component: ReportsComponent},
-  { path: 'summary', component: SummaryComponent}
+  { path: 'summary', component: SummaryComponent, canDeactivate: [(component: SummaryComponent) => component.canDeactivate()] }
 ];

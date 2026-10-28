@@ -22,7 +22,8 @@ describe('TransactionTableComponent', () => {
     component = new TransactionTableComponent(
       db as unknown as DbService,
       { open: vi.fn() } as unknown as MatDialog,
-      { queryParamMap: of(convertToParamMap({})) } as unknown as ActivatedRoute
+      { queryParamMap: of(convertToParamMap({})) } as unknown as ActivatedRoute,
+      { openTransactions: vi.fn() } as any,
     );
     component.paginator = { pageIndex: 0 } as any;
   });
@@ -34,11 +35,11 @@ describe('TransactionTableComponent', () => {
   it('builds category and vendor suggestions from search input', () => {
     db.categories.next([
       { id: '1', name: 'Groceries', keywords: [], budgeted: 0, spent: 0, notes: '', emoji: '🥦' },
-      { id: '2', name: 'Utilities', keywords: [], budgeted: 0, spent: 0, notes: '' }
+      { id: '2', name: 'Utilities', keywords: [], budgeted: 0, spent: 0, notes: '' },
     ]);
     db.vendorMappings.next([
       { pattern: 'wal-?mart', vendorName: 'Walmart', logoUrl: 'assets/images/walmart-logo.png' },
-      { pattern: 'target', vendorName: 'Target', logoUrl: 'assets/images/target-logo.png' }
+      { pattern: 'target', vendorName: 'Target', logoUrl: 'assets/images/target-logo.png' },
     ]);
 
     component.searchValue = 'wa';

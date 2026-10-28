@@ -18,16 +18,18 @@
       <button 
         mat-icon-button 
         class="action"
+        aria-label="Undo last action"
         matTooltip="Undo last action" [matTooltipPosition]="'right'" 
-        [disabled] = "service.actionStack.length == 0 || service.actionStackIndex == service.actionStack.length"
+        [disabled] = "service.getSaveState() === 'saving' || service.actionStack.length == 0 || service.actionStackIndex == service.actionStack.length"
         (click)="undo()" >
         <mat-icon>undo</mat-icon>
       </button>
       <button 
         mat-icon-button 
         class="action" 
+        aria-label="Redo last action"
         matTooltip="Redo last action" [matTooltipPosition]="'right'" 
-        [disabled] = "service.actionStackIndex == 0"
+        [disabled] = "service.getSaveState() === 'saving' || service.actionStackIndex == 0"
         (click)="redo()" >
         <mat-icon>redo</mat-icon>
       </button>
@@ -53,8 +55,9 @@
       </div>
       <span class="spacer-small"></span>
     </mat-toolbar>
-    <div style="height:100%">
+    <div class="route-content">
       <router-outlet></router-outlet>
     </div>
+    <app-editor-drawer></app-editor-drawer>
   </mat-sidenav-content>
 </mat-sidenav-container>

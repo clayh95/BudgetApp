@@ -1,14 +1,14 @@
-import { Component, OnInit, ViewChild, Inject, AfterViewInit, ElementRef } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { EditorDrawerService } from '../section-drawer/editor-drawer.service';
+import { Component, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 // import {MatDatepickerInputEvent} from '@angular/material/datepicker';
 import { TransactionTableDataSource } from './transaction-table-datasource';
 import { DbService } from '../core/db.service';
-import { Observable, BehaviorSubject } from '../../../node_modules/rxjs';
+import { BehaviorSubject } from '../../../node_modules/rxjs';
 import { collectionType, ICategory, ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { getIcon, IVendorLogoRule } from '../core/utilities';
-import { AddTransactionComponent } from '../add-transaction/add-transaction.component'
 import { rowsEnterLeave, rowsColor } from '../animations/template.animations';
 import { SharedModule } from '../shared/shared.module';
 import { ActivatedRoute } from '@angular/router';
@@ -20,8 +20,7 @@ interface IVendorSuggestion {
 }
 
 type TransactionSearchSuggestion =
-  | { type: 'category'; category: ICategory }
-  | { type: 'vendor'; vendor: IVendorSuggestion };
+  { type: 'category'; category: ICategory } | { type: 'vendor'; vendor: IVendorSuggestion };
 
 export interface ITransactionRouteInitState {
   pending?: boolean;
@@ -36,14 +35,22 @@ export interface ITransactionRouteInitState {
 }
 
 function parseBool(value: string | null): boolean | undefined {
-  if (value === null) { return undefined; }
+  if (value === null) {
+    return undefined;
+  }
   const normalized = value.toLowerCase();
-  if (normalized === 'true') { return true; }
-  if (normalized === 'false') { return false; }
+  if (normalized === 'true') {
+    return true;
+  }
+  if (normalized === 'false') {
+    return false;
+  }
   return undefined;
 }
 
-export function parseTransactionRouteInitState(params: { get: (name: string) => string | null }): ITransactionRouteInitState {
+export function parseTransactionRouteInitState(params: {
+  get: (name: string) => string | null;
+}): ITransactionRouteInitState {
   const state: ITransactionRouteInitState = {};
   const pending = parseBool(params.get('pending'));
   if (pending !== undefined) {
@@ -103,43 +110,46 @@ export function parseTransactionRouteInitState(params: { get: (name: string) => 
   imports: [SharedModule],
   templateUrl: './transaction-table.component.html',
   styleUrls: ['./transaction-table.component.scss'],
-  animations: [rowsEnterLeave, rowsColor]
+  animations: [rowsEnterLeave, rowsColor],
 })
-export class TransactionTableComponent implements AfterViewInit  {
+export class TransactionTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
   @ViewChild('searchInput', { static: false }) searchInput: ElementRef<HTMLInputElement>;
   dataSource: TransactionTableDataSource;
   displayedColumns = ['id', 'date', 'info', 'amount', 'description', 'notes', 'category'];
-  filter = new BehaviorSubject<string>("");
+  filter = new BehaviorSubject<string>('');
   bShowPending = new BehaviorSubject<boolean>(false);
   bShowStartingBalances = new BehaviorSubject<boolean>(false);
   bOnlyUncategorized = new BehaviorSubject<boolean>(false);
   categoryFilter = new BehaviorSubject<string>('');
   vendorFilter = new BehaviorSubject<string>('');
-  searchValue: string = "";
+  searchValue: string = '';
   searchFocused = false;
   searchPanelOpen = false;
 
-  constructor(public Tsvc: DbService,
-              public dialog: MatDialog,
-              private route: ActivatedRoute) {
-
-  }
+  constructor(
+    public Tsvc: DbService,
+    public dialog: MatDialog,
+    private route: ActivatedRoute,
+    public editors: EditorDrawerService,
+  ) {}
   ngAfterViewInit(): void {
-    this.dataSource = new TransactionTableDataSource(this.paginator, 
-      this.sort, 
+    this.dataSource = new TransactionTableDataSource(
+      this.paginator,
+      this.sort,
       this.Tsvc,
       this.filter,
       this.bShowPending,
       this.bShowStartingBalances,
       this.bOnlyUncategorized,
       this.categoryFilter,
-      this.vendorFilter);
-    this.sort.direction = "desc";
-    this.sort.active = "date";
+      this.vendorFilter,
+    );
+    this.sort.direction = 'desc';
+    this.sort.active = 'date';
 
-    this.route.queryParamMap.pipe(take(1)).subscribe(params => {
+    this.route.queryParamMap.pipe(take(1)).subscribe((params) => {
       const state = parseTransactionRouteInitState(params);
       this.applyRouteInitState(state);
     });
@@ -183,37 +193,45 @@ export class TransactionTableComponent implements AfterViewInit  {
         pageIndex: this.paginator.pageIndex,
         previousPageIndex: previous,
         pageSize: this.paginator.pageSize,
-        length: this.paginator.length
+        length: this.paginator.length,
       };
       this.paginator.page.emit(pageEvent);
     }
   }
 
   updateValueOnChange(newValue: string, id: string, columnName: string) {
-    let t = <ITransaction>this.Tsvc.transactions.getValue().filter(t => t.id === id)[0];
-    if (newValue === t[columnName]) { return; }
-    let update = {};
+    const t = <ITransaction>this.Tsvc.transactions.getValue().filter((t) => t.id === id)[0];
+    if (newValue === t[columnName]) {
+      return;
+    }
+    const update = {};
     update[columnName] = newValue;
     this.Tsvc.updateDocument(id, collectionType.transactions, update);
   }
 
   addTransaction() {
-    let t = <ITransaction>{date:"", description:"", amount: 0, category:"", notes: "", status:ITransactionStatus.posted}
-    const dialogRef = this.dialog.open(AddTransactionComponent, {width:'1600px', maxWidth:'90vw', data: [t], autoFocus: false})
+    const t = <ITransaction>{
+      date: '',
+      description: '',
+      amount: 0,
+      category: '',
+      notes: '',
+      status: ITransactionStatus.posted,
+    };
+    this.editors.openTransactions([t]);
   }
 
-  editTransaction(t:ITransaction) {
-    this.Tsvc.getTransactionsForEdit(t).then(modalData => {
-      const dialogRef = this.dialog.open(
-        AddTransactionComponent, 
-        {width:'1600px', maxWidth:'90vw', data: modalData, autoFocus: false}
-      );
-    });
+  async editTransaction(t: ITransaction) {
+    const month = this.Tsvc.getMonthPKValue();
+    const data = await this.Tsvc.getTransactionsForEdit(t);
+    if (month === this.Tsvc.getMonthPKValue()) {
+      await this.editors.openTransactions(data);
+    }
   }
 
   applyFilter(filterValue: string) {
     this.resetPageIndex();
-    this.filter.next(filterValue.trim().toLowerCase())
+    this.filter.next(filterValue.trim().toLowerCase());
   }
 
   onSearchInput(value: string) {
@@ -238,7 +256,9 @@ export class TransactionTableComponent implements AfterViewInit  {
   }
 
   focusSearchInput() {
-    if (!this.searchInput?.nativeElement) { return; }
+    if (!this.searchInput?.nativeElement) {
+      return;
+    }
     this.searchInput.nativeElement.focus();
   }
 
@@ -270,22 +290,22 @@ export class TransactionTableComponent implements AfterViewInit  {
     const query = (this.searchValue || '').toLowerCase().trim();
     const categories = this.Tsvc.categories.getValue() || [];
 
-    if (!query) { return categories; }
+    if (!query) {
+      return categories;
+    }
 
-    return categories.filter((category) =>
-      (category.name || '').toLowerCase().indexOf(query) >= 0
-    );
+    return categories.filter((category) => (category.name || '').toLowerCase().indexOf(query) >= 0);
   }
 
   get suggestedVendors(): IVendorSuggestion[] {
     const query = (this.searchValue || '').toLowerCase().trim();
     const vendors = this.getMappedVendors();
 
-    if (!query) { return vendors; }
+    if (!query) {
+      return vendors;
+    }
 
-    return vendors.filter((vendor) =>
-      (vendor.name || '').toLowerCase().indexOf(query) >= 0
-    );
+    return vendors.filter((vendor) => (vendor.name || '').toLowerCase().indexOf(query) >= 0);
   }
 
   get searchSuggestions(): TransactionSearchSuggestion[] {
@@ -296,16 +316,20 @@ export class TransactionTableComponent implements AfterViewInit  {
 
   get activeCategory(): ICategory | null {
     const categoryFilter = (this.categoryFilter.getValue() || '').trim().toLowerCase();
-    if (!categoryFilter) { return null; }
+    if (!categoryFilter) {
+      return null;
+    }
     const categories = this.Tsvc.categories.getValue() || [];
-    return categories.find(category => (category.name || '').toLowerCase() === categoryFilter) ?? null;
+    return categories.find((category) => (category.name || '').toLowerCase() === categoryFilter) ?? null;
   }
 
   get activeVendor(): IVendorSuggestion | null {
     const vendorFilter = (this.vendorFilter.getValue() || '').trim().toLowerCase();
-    if (!vendorFilter) { return null; }
+    if (!vendorFilter) {
+      return null;
+    }
     const vendors = this.getMappedVendors();
-    return vendors.find(vendor => (vendor.name || '').toLowerCase() === vendorFilter) ?? null;
+    return vendors.find((vendor) => (vendor.name || '').toLowerCase() === vendorFilter) ?? null;
   }
 
   clearCategoryFilter() {
@@ -325,7 +349,9 @@ export class TransactionTableComponent implements AfterViewInit  {
       const vendorName = `${mapping?.vendorName || ''}`.trim();
       const logoUrl = `${mapping?.logoUrl || ''}`.trim();
       const key = vendorName.toLowerCase();
-      if (!vendorName || byName.has(key)) { return; }
+      if (!vendorName || byName.has(key)) {
+        return;
+      }
       byName.set(key, { name: vendorName, logoUrl });
     });
     return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -367,22 +393,21 @@ export class TransactionTableComponent implements AfterViewInit  {
     }
   }
 
-  getTotal():number {
+  getTotal(): number {
     if (this.dataSource) {
       return this.dataSource.total;
     }
     return null;
   }
 
-  getTotalColor():string {
+  getTotalColor(): string {
     if (this.dataSource) {
       return this.dataSource.total > -1 ? '#3a8d5f' : 'orangered';
     }
     return null;
   }
 
-  getIconFromUtils(description:string):string {
+  getIconFromUtils(description: string): string {
     return getIcon(description, this.Tsvc.vendorMappings.getValue() || []);
   }
-
 }

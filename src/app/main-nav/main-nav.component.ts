@@ -1,3 +1,4 @@
+import { EditorDrawerComponent } from '../section-drawer/editor-drawer.component';
 import { Component, ViewChild } from '@angular/core';
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
@@ -13,7 +14,7 @@ import { UserLoginComponent } from '../user-login/user-login.component';
 @Component({
   selector: 'app-main-nav',
   standalone: true,
-  imports: [SharedModule, MonthYearPickerComponent, UserLoginComponent],
+  imports: [SharedModule, MonthYearPickerComponent, UserLoginComponent, EditorDrawerComponent],
   templateUrl: './main-nav.component.html',
   styleUrls: ['./main-nav.component.scss']
 })

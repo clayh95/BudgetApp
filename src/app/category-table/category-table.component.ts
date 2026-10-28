@@ -1,3 +1,4 @@
+import { EditorDrawerService } from '../section-drawer/editor-drawer.service';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -13,7 +14,6 @@ import { SharedModule } from '../shared/shared.module';
 
 import { arrayRemove, arrayUnion } from 'firebase/firestore';
 import { collectionType, ICategory } from '../core/dataTypes';
-import { CategoryModalComponent } from '../category-modal/category-modal.component';
 import { parseMoney } from '../core/utilities';
 
 @Component({
@@ -46,7 +46,7 @@ export class CategoryTableComponent implements AfterViewInit {
   BudgetChart: Chart;
   BudgetConfig: Chart.ChartConfiguration = {};
 
-  constructor(public CATsvc: DbService, public dialog: MatDialog) {}
+  constructor(public CATsvc: DbService, public dialog: MatDialog, public editors: EditorDrawerService) {}
 
   ngAfterViewInit() {
     this.dataSource = new CategoryTableDataSource(this.paginator, 
@@ -67,21 +67,11 @@ export class CategoryTableComponent implements AfterViewInit {
 
   addCategory() {
     let c = <ICategory>{name: "", keywords: [], budgeted: 0}
-    const catDialogRef = this.dialog.open(
-      CategoryModalComponent, 
-      {
-        width:'1600px', maxWidth:'90vw',
-        data: c, 
-        autoFocus: false
-      }
-    );
+    this.editors.openCategory(c);
   }
 
-  editCategory(c) {
-    const catDialogRef = this.dialog.open(CategoryModalComponent, 
-      {width:'500px', maxWidth:'90vw', 
-      data: Object.assign({}, c), 
-      autoFocus: false})
+  editCategory(c: ICategory) {
+    this.editors.openCategory(c);
   }
 
   async updateRelatedTransactions(oldName:string, newName:string) {

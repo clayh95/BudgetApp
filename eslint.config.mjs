@@ -44,6 +44,13 @@ export default [
                     ignoreRestSiblings: true,
                 },
             ],
+            'padding-line-between-statements': [
+                'error',
+                {
+                  blankLine: 'always',
+                  prev: 'function', next: '*'
+                },
+              ]
         },
     },
     prettier,

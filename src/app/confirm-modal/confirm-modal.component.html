@@ -1,17 +1,16 @@
-
 <div class="custom-dialog-confirm">
-    <div class="title">
-        <mat-icon class="indicator-icon">{{config.matIconName}}</mat-icon>
-        <mat-dialog-content class="content">
-            <div class="message">{{config.message}}</div>
-        </mat-dialog-content>
-        <div class="actions">
-            <button mat-icon-button *ngIf="config.buttons.indexOf(1) > -1" (click)="yes()">
-                <mat-icon style="color:green">check_circle_outline</mat-icon>
-            </button>
-            <button mat-icon-button *ngIf="config.buttons.indexOf(2) > -1" (click)="no()" color="red">
-                <mat-icon style="color:red">highlight_off</mat-icon>
-            </button>
-        </div>
+  <div class="title">
+    <mat-icon class="indicator-icon">{{ config.matIconName }}</mat-icon>
+    <mat-dialog-content class="content">
+      <div class="message">{{ config.message }}</div>
+    </mat-dialog-content>
+    <div class="actions">
+      <button mat-icon-button aria-label="Yes" *ngIf="config.buttons.indexOf(1) > -1" (click)="yes()">
+        <mat-icon style="color: green">check_circle_outline</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="No" *ngIf="config.buttons.indexOf(2) > -1" (click)="no()" color="red">
+        <mat-icon style="color: red">highlight_off</mat-icon>
+      </button>
     </div>
+  </div>
 </div>

@@ -1,27 +1,29 @@
-
 .userImage {
-    border-radius: 25px;
-    cursor: pointer;
+  border-radius: 25px;
+  cursor: pointer;
 }
 
 .loginControls {
-    display: flex;
-    .name {
-        padding-top: 10px;
-        padding-right: 20px;
-    }
+  display: flex;
+  .name {
+    padding-top: 10px;
+    padding-right: 20px;
+  }
 }
-
 
 .badge {
-    color: orange !important;
-    margin-left: -8px;
-    font-size: 1.75em;
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  color: orange !important;
+  margin-left: -8px;
+  font-size: 1.75em;
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }
 
-@media(max-width: 1000px) {
-    .name {
-        display:none;
-    }
+@media (max-width: 1000px) {
+  .name {
+    display: none;
   }
+}

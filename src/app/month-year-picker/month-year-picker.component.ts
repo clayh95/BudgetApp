@@ -38,19 +38,17 @@ export class MonthYearPickerComponent {
       this.date.setValue(moment(d))
   }
 
-  chosenMonthHandler(normlizedMonth: Moment, datepicker: MatDatepicker<Moment>) {
-    const ctrlValue = this.date.value;
+  async chosenMonthHandler(normlizedMonth: Moment, datepicker: MatDatepicker<Moment>) {
+    const ctrlValue = this.date.value.clone();
     ctrlValue.month(normlizedMonth.month());
     ctrlValue.year(normlizedMonth.year());
-    this.date.setValue(ctrlValue);
     datepicker.close();
-    this.service.monthYear.next(moment(this.date.value).format(MMYY_FORMAT.display.dateInput))
+    if (await this.service.requestMonthChange(ctrlValue.format(MMYY_FORMAT.display.dateInput))) this.date.setValue(ctrlValue);
   }
 
-  NavigateMonth(increment: number) {
+  async NavigateMonth(increment: number) {
     const d = moment(this.date.value).add(increment, 'month');
-    this.service.monthYear.next(d.format(MMYY_FORMAT.display.dateInput));
-    this.date.setValue(d);
+    if (await this.service.requestMonthChange(d.format(MMYY_FORMAT.display.dateInput))) this.date.setValue(d);
   }
 
 }

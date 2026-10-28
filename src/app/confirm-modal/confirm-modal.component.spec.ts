@@ -11,13 +11,12 @@ describe('ConfirmModalComponent', () => {
     const dialogRefMock = { close: vi.fn() };
 
     await TestBed.configureTestingModule({
-      imports: [ ConfirmModalComponent ],
+      imports: [ConfirmModalComponent],
       providers: [
         { provide: MatDialogRef, useValue: dialogRefMock },
-        { provide: MAT_DIALOG_DATA, useValue: { matIconName: '', message: '', buttons: [] } }
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: { matIconName: '', message: '', buttons: [] } },
+      ],
+    }).compileComponents();
   });
 
   beforeEach(() => {

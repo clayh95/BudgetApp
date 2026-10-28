@@ -8,9 +8,8 @@ describe('UserLoginComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ UserLoginComponent ]
-    })
-    .compileComponents();
+      imports: [UserLoginComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

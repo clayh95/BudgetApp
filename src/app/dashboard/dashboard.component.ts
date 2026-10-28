@@ -1,3 +1,4 @@
+import { EditorDrawerService } from '../section-drawer/editor-drawer.service';
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Chart } from 'chart.js';
 import { combineLatest, Subscription } from 'rxjs';
@@ -7,7 +8,6 @@ import { getVendorMatch, IVendorLogoRule, parseMoney } from '../core/utilities';
 import { SharedModule } from '../shared/shared.module';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardVendorMappingModalComponent, DashboardVendorMappingModalResult } from '../dashboard-vendor-mapping-modal/dashboard-vendor-mapping-modal.component';
-import { CategoryModalComponent } from '../category-modal/category-modal.component';
 
 export interface IDashboardStats {
   unbudgeted: number;
@@ -377,8 +377,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     public service: DbService,
     public dialog: MatDialog,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef, public editors: EditorDrawerService) {}
 
   ngOnInit() {
     this.dataSub = combineLatest([
@@ -536,31 +535,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openCategoryCardEdit(category: ICategory) {
-    this.dialog.open(CategoryModalComponent, {
-      width: '500px',
-      maxWidth: '90vw',
-      data: Object.assign({}, category, {
-        watched: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys?.includes(normalizeCategoryKey(category.name)) || false
-      }),
-      autoFocus: false
+    this.editors.openCategory({ ...category,
+      watched: this.service.dashboardPreferences.getValue()?.watchedCategoryKeys?.includes(normalizeCategoryKey(category.name)) || false
     });
   }
 
   openAddCategoryModal() {
-    this.dialog.open(CategoryModalComponent, {
-      width: '500px',
-      maxWidth: '90vw',
-      data: {
-        name: '',
-        notes: '',
-        keywords: [],
-        budgeted: 0,
-        spent: 0,
-        emoji: '',
-        watched: false
-      } as ICategory & { watched: boolean },
-      autoFocus: false
-    });
+    this.editors.openCategory({ id: undefined, name: '', notes: '', keywords: [], budgeted: 0, spent: 0, emoji: '', watched: false });
   }
 
   getCategoryGridItems(): ICategoryCardItem[] {
