@@ -9,7 +9,7 @@ describe('TransactionTableDataSource vendor filtering', () => {
     const service = {
       transactions: new BehaviorSubject<ITransaction[]>([]),
       vendorMappings: new BehaviorSubject<any[]>([]),
-      getMonthYearValue: () => '01/2026'
+      getMonthYearValue: () => '01/2026',
     } as any;
 
     return new TransactionTableDataSource(
@@ -21,19 +21,43 @@ describe('TransactionTableDataSource vendor filtering', () => {
       new BehaviorSubject<boolean>(true),
       new BehaviorSubject<boolean>(false),
       new BehaviorSubject<string>(''),
-      new BehaviorSubject<string>('')
+      new BehaviorSubject<string>(''),
     );
   };
 
   const transactions: ITransaction[] = [
-    { id: '1', date: '01/01/2026', amount: -10, description: 'WAL-MART #1200', category: 'Groceries', notes: '', status: 'Posted' },
-    { id: '2', date: '01/02/2026', amount: -20, description: 'TARGET T-123', category: 'Groceries', notes: '', status: 'Posted' },
-    { id: '3', date: '01/03/2026', amount: -30, description: 'Random Store', category: 'Dining', notes: '', status: 'Posted' }
+    {
+      id: '1',
+      date: '01/01/2026',
+      amount: -10,
+      description: 'WAL-MART #1200',
+      category: 'Groceries',
+      notes: '',
+      status: 'Posted',
+    },
+    {
+      id: '2',
+      date: '01/02/2026',
+      amount: -20,
+      description: 'TARGET T-123',
+      category: 'Groceries',
+      notes: '',
+      status: 'Posted',
+    },
+    {
+      id: '3',
+      date: '01/03/2026',
+      amount: -30,
+      description: 'Random Store',
+      category: 'Dining',
+      notes: '',
+      status: 'Posted',
+    },
   ];
 
   const vendorMappings = [
     { pattern: 'wal-?mart', vendorName: 'Walmart', logoUrl: 'assets/images/walmart-logo.png' },
-    { pattern: 'target t\\-', vendorName: 'Target', logoUrl: 'assets/images/target-logo.png' }
+    { pattern: 'target t\\-', vendorName: 'Target', logoUrl: 'assets/images/target-logo.png' },
   ];
 
   it('applies vendor regex to description only', () => {

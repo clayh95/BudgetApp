@@ -1,12 +1,12 @@
 import { DataSource } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort, Sort } from '@angular/material/sort';
+import { MatSort } from '@angular/material/sort';
 import { map, startWith } from 'rxjs/operators';
 import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
 import { IVendorLogoRule } from '../core/utilities';
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -14,25 +14,25 @@ import * as _ from "lodash";
  * (including sorting, pagination, and filtering).
  */
 export class TransactionTableDataSource extends DataSource<ITransaction> {
-
-  total:number;
-  chargeCount:number;
-  lastIDs:ITransaction[] = [];
-  lastMY:string = '';
+  total: number;
+  chargeCount: number;
+  lastIDs: ITransaction[] = [];
+  lastMY: string = '';
   // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
   // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
 
-  constructor(private paginator: MatPaginator, 
-              private sort: MatSort, 
-              // private transactions: Observable<ITransaction[]>,
-              private service: DbService,
-              private filter: BehaviorSubject<string>,
-              private bShowPending: BehaviorSubject<boolean>,
-              private bShowStartingBalances: BehaviorSubject<boolean>,
-              private bOnlyUncategorized: BehaviorSubject<boolean>,
-              private categoryFilter: BehaviorSubject<string>,
-              private vendorFilter: BehaviorSubject<string>
-              ) {
+  constructor(
+    private paginator: MatPaginator,
+    private sort: MatSort,
+    // private transactions: Observable<ITransaction[]>,
+    private service: DbService,
+    private filter: BehaviorSubject<string>,
+    private bShowPending: BehaviorSubject<boolean>,
+    private bShowStartingBalances: BehaviorSubject<boolean>,
+    private bOnlyUncategorized: BehaviorSubject<boolean>,
+    private categoryFilter: BehaviorSubject<string>,
+    private vendorFilter: BehaviorSubject<string>,
+  ) {
     super();
   }
 
@@ -47,43 +47,49 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
       this.bOnlyUncategorized.asObservable(),
       this.categoryFilter.asObservable(),
       this.vendorFilter.asObservable(),
-      this.service.vendorMappings.asObservable()
-    ]).pipe(map((d) => {
-      let val = d[0] as unknown as ITransaction[];
-      if (this.lastIDs.length > 0) { val = this.highlightUpserts(val); }
-      this.lastIDs = val;
-      this.lastMY = this.service.getMonthYearValue();
-      let ret = this.getFilteredData(
-        this.getSortedData([...val]),
-        <string>d[3],
-        <boolean>d[4],
-        <boolean>d[5],
-        <boolean>d[6],
-        <string>d[7],
-        <string>d[8],
-        <IVendorLogoRule[]>d[9]
-      );
-      this.paginator.length = ret.length;
-      this.total = ret.map(tr => tr.amount).reduce((pv, v) => +pv + +v, 0);
-      ret = this.getPagedData(ret);
-      return ret;
-    }));
+      this.service.vendorMappings.asObservable(),
+    ]).pipe(
+      map((d) => {
+        let val = d[0] as unknown as ITransaction[];
+        if (this.lastIDs.length > 0) {
+          val = this.highlightUpserts(val);
+        }
+        this.lastIDs = val;
+        this.lastMY = this.service.getMonthYearValue();
+        let ret = this.getFilteredData(
+          this.getSortedData([...val]),
+          <string>d[3],
+          <boolean>d[4],
+          <boolean>d[5],
+          <boolean>d[6],
+          <string>d[7],
+          <string>d[8],
+          <IVendorLogoRule[]>d[9],
+        );
+        this.paginator.length = ret.length;
+        this.total = ret.map((tr) => tr.amount).reduce((pv, v) => +pv + +v, 0);
+        ret = this.getPagedData(ret);
+        return ret;
+      }),
+    );
   }
 
   disconnect() {}
 
   private highlightUpserts(ret: ITransaction[]): ITransaction[] {
     //start with just checking if exists
-    if (this.lastMY !== this.service.getMonthYearValue()) { return ret; }
-    return ret.map(t => {
-      const compT = this.lastIDs.find(x => x.id === t.id);
+    if (this.lastMY !== this.service.getMonthYearValue()) {
+      return ret;
+    }
+    return ret.map((t) => {
+      const compT = this.lastIDs.find((x) => x.id === t.id);
       if (compT === undefined) {
-        t.changeAction = 'added'
-      } else if ( !_.isEqual( _.omit(compT, ['changeAction']), _.omit(t, ['changeAction'])) ) {
+        t.changeAction = 'added';
+      } else if (!_.isEqual(_.omit(compT, ['changeAction']), _.omit(t, ['changeAction']))) {
         t.changeAction = 'modified';
       }
       return t;
-    })
+    });
   }
 
   private getPagedData(data: ITransaction[]) {
@@ -99,46 +105,59 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     return data.sort((a, b) => {
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
-        case 'date': return compare(a.date, b.date, isAsc);
-        case 'amount': return compare(+a.amount, +b.amount, isAsc);
-        case 'description': return compare(a.description, b.description, isAsc);
-        case 'category': return compare(a.category, b.category, isAsc);
-        case 'notes': return compare(a.notes, b.notes, isAsc);
-        default: return 0;
+        case 'date':
+          return compare(a.date, b.date, isAsc);
+        case 'amount':
+          return compare(+a.amount, +b.amount, isAsc);
+        case 'description':
+          return compare(a.description, b.description, isAsc);
+        case 'category':
+          return compare(a.category, b.category, isAsc);
+        case 'notes':
+          return compare(a.notes, b.notes, isAsc);
+        default:
+          return 0;
       }
     });
   }
 
-  private getFilteredData(data: ITransaction[], 
-                          filter:string, 
-                          bShowPending:boolean,
-                          bShowStartingBalances:boolean,
-                          bOnlyUncategorized:boolean,
-                          categoryFilter:string,
-                          vendorFilter:string,
-                          vendorMappings: IVendorLogoRule[]
-                          ) {
+  private getFilteredData(
+    data: ITransaction[],
+    filter: string,
+    bShowPending: boolean,
+    bShowStartingBalances: boolean,
+    bOnlyUncategorized: boolean,
+    categoryFilter: string,
+    vendorFilter: string,
+    vendorMappings: IVendorLogoRule[],
+  ) {
     const category = (categoryFilter || '').trim();
     const vendor = (vendorFilter || '').trim().toLowerCase();
     const vendorPatterns = this.getVendorPatternsForFilter(vendor, vendorMappings || []);
     const hasVendorFilter = vendor.length > 0;
-    return data.filter(t => {
-      return Object.values(t).map(v => `${v ?? ''}`.toLowerCase().indexOf(filter) >= 0).indexOf(true) >= 0
-        && (bShowPending || t.status == ITransactionStatus.posted)
-        && (bShowStartingBalances || !t.description.endsWith('Starting Balance'))
-        && (bOnlyUncategorized ? (t.category == '') : 1==1)
-        && (category.length > 0 ? t.category === category : true)
-        && this.matchesVendorPattern(t.description, vendorPatterns, hasVendorFilter)
-    })
+    return data.filter((t) => {
+      return (
+        Object.values(t)
+          .map((v) => `${v ?? ''}`.toLowerCase().indexOf(filter) >= 0)
+          .indexOf(true) >= 0 &&
+        (bShowPending || t.status == ITransactionStatus.posted) &&
+        (bShowStartingBalances || !t.description.endsWith('Starting Balance')) &&
+        (bOnlyUncategorized ? t.category == '' : 1 === 1) &&
+        (category.length > 0 ? t.category === category : true) &&
+        this.matchesVendorPattern(t.description, vendorPatterns, hasVendorFilter)
+      );
+    });
   }
 
   private getVendorPatternsForFilter(vendorFilter: string, vendorMappings: IVendorLogoRule[]): RegExp[] {
-    if (!vendorFilter) { return []; }
+    if (!vendorFilter) {
+      return [];
+    }
     return vendorMappings
-      .filter(mapping => (mapping?.vendorName || '').trim().toLowerCase() === vendorFilter)
-      .map(mapping => (mapping?.pattern || '').trim())
-      .filter(pattern => !!pattern && this.isSafeVendorPattern(pattern))
-      .map(pattern => {
+      .filter((mapping) => (mapping?.vendorName || '').trim().toLowerCase() === vendorFilter)
+      .map((mapping) => (mapping?.pattern || '').trim())
+      .filter((pattern) => !!pattern && this.isSafeVendorPattern(pattern))
+      .map((pattern) => {
         try {
           return new RegExp(pattern, 'i');
         } catch {
@@ -184,14 +203,19 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
     return true;
   }
   private matchesVendorPattern(description: string, vendorPatterns: RegExp[], hasVendorFilter: boolean): boolean {
-    if (!hasVendorFilter) { return true; }
-    if (!vendorPatterns.length) { return false; }
+    if (!hasVendorFilter) {
+      return true;
+    }
+    if (!vendorPatterns.length) {
+      return false;
+    }
     const normalizedDescription = `${description || ''}`.trim();
-    if (!normalizedDescription) { return false; }
-    return vendorPatterns.some(pattern => pattern.test(normalizedDescription));
+    if (!normalizedDescription) {
+      return false;
+    }
+    return vendorPatterns.some((pattern) => pattern.test(normalizedDescription));
   }
 }
-
 
 /** Simple sort comparator for example ID/Name columns (for client-side sorting). */
 function compare(a, b, isAsc) {
