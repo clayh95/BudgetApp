@@ -213,11 +213,12 @@
                 <strong [class]="getColor(view)">{{ view.category.budgeted - view.category.spent | currency }}</strong>
                 left
                 <small
-                  >{{ view.category.budgeted | currency }} budgeted · {{ view.category.spent | currency }} spent</small
+                  >{{ view.category.budgeted | currency }} budgeted · {{ (view.category.spent < 0 ? 0 : view.category.spent) | currency }} spent</small
                 >
               </div>
               <div class="pane-summary" *ngIf="view.kind === 'income'">
                 <strong [class]="getIncomeColor()">{{ actualIncome | currency }}</strong> received
+                <small>{{ view.category.budgeted | currency }} expected</small>
               </div>
               <div class="pane-summary" *ngIf="view.kind === 'pending'">
                 <strong>{{ totalPending | currency }}</strong> pending · {{ view.transactions.length }} charges
