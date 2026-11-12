@@ -170,7 +170,12 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
 
   selectView(view: SummaryView, event?: MouseEvent) {
     event?.preventDefault();
-    if (this.openKeys.includes(view.key)) {
+    const multiple = !!(event?.ctrlKey || event?.metaKey);
+    if (!multiple) {
+      this.openKeys = [];
+      this.openedAt.clear();
+    }
+    if (multiple && this.openKeys.includes(view.key)) {
       this.closeView(view);
       return;
     }

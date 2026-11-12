@@ -6,6 +6,8 @@ import { SummaryComponent } from './summary.component';
 import { DbService } from '../core/db.service';
 import { ICategory, ITransaction } from '../core/dataTypes';
 
+const multiClick = (ctrlKey = false) => ({ preventDefault() {}, metaKey: !ctrlKey, ctrlKey }) as MouseEvent;
+
 const category = (id: string, name: string): ICategory => ({
   id,
   name,
@@ -70,17 +72,33 @@ describe('Summary browser', () => {
     component.views.forEach(view => component.selectView(view, { preventDefault() {}, metaKey: true } as MouseEvent));
     expect(component.visibleViews).toHaveLength(4);
     const keys = [...component.openKeys];
-    component.selectView(component.views[0]);
+    component.selectView(component.views[0], multiClick());
     expect(component.openKeys).toEqual(keys.filter(key => key !== component.views[0].key));
-    component.selectView(component.views[0]);
+    component.selectView(component.views[0], multiClick());
     expect(new Set(component.openKeys).size).toBe(4);
     component.maxOpenViews = 2;
     const extra = { ...component.views[0], key: 'extra' };
     component.views.push(extra);
-    component.selectView(extra);
+    component.selectView(extra, multiClick());
     expect(component.openKeys).toEqual([component.views[0].key, 'extra']);
     db.monthYear.next('11/2026');
     expect(component.openKeys).toEqual([]);
+  });
+
+  it('uses a regular click for one category and Ctrl/Cmd-click to add or remove categories', () => {
+    component.maxOpenViews = 4;
+    const [first, second, third] = component.views;
+    component.selectView(first);
+    component.selectView(second, multiClick(true));
+    expect(component.openKeys).toEqual([first.key, second.key]);
+    component.selectView(third, multiClick());
+    expect(component.openKeys).toEqual([first.key, second.key, third.key]);
+    component.selectView(first, multiClick());
+    expect(component.openKeys).toEqual([second.key, third.key]);
+    component.selectView(second);
+    expect(component.openKeys).toEqual([second.key]);
+    component.selectView(second);
+    expect(component.openKeys).toEqual([second.key]);
   });
 
   it('opens Uncategorized on desktop initially, but leaves phones at the list', () => {
@@ -101,7 +119,7 @@ describe('Summary browser', () => {
   it('previews pane reordering without committing and cancels inside the starting threshold', () => {
     component.openKeys = [];
     component.maxOpenViews = 4;
-    component.views.forEach(view => component.selectView(view));
+    component.views.forEach(view => component.selectView(view, multiClick()));
     fixture.detectChanges();
     component.workspaceRoot = { nativeElement: fixture.nativeElement.querySelector('.summary-root') };
     component.workspaceRoot.nativeElement.querySelectorAll('[data-pane-key]').forEach((el, index) => {
@@ -136,7 +154,7 @@ describe('Summary browser', () => {
     component.openKeys = [];
     component.isMobile = false;
     component.maxOpenViews = 4;
-    component.views.forEach(view => component.selectView(view));
+    component.views.forEach(view => component.selectView(view, multiClick()));
     fixture.detectChanges();
     const bounds = (left: number, top: number, width = 250, height = 50) =>
       ({ left, top, right: left + width, bottom: top + height, width, height } as DOMRect);
