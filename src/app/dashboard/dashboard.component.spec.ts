@@ -118,7 +118,8 @@ describe('DashboardComponent vendor grid', () => {
       } as any,
       { open: vi.fn(), ...dialogOverrides } as any,
       {} as any,
-      { markForCheck: () => undefined } as any
+      { markForCheck: () => undefined } as any,
+      { openCategory: vi.fn() } as any
     );
   }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../core/auth.service';
-import { DomSanitizer } from '@angular/platform-browser'
+import { DomSanitizer } from '@angular/platform-browser';
 import { DbService } from '../core/db.service';
 import { User } from 'firebase/auth';
 import { SharedModule } from '../shared/shared.module';
@@ -11,39 +11,41 @@ import packageJson from '../../../package.json';
   standalone: true,
   imports: [SharedModule],
   templateUrl: './user-login.component.html',
-  styleUrls: ['./user-login.component.scss']
+  styleUrls: ['./user-login.component.scss'],
 })
 export class UserLoginComponent implements OnInit {
-
-  constructor(public authService: AuthService, private sanitized: DomSanitizer, private db: DbService) {}
+  constructor(
+    public authService: AuthService,
+    private sanitized: DomSanitizer,
+    private db: DbService,
+  ) {}
   user: User | null;
   image;
   balances;
-  nonZeroBalance:boolean = false;
+  nonZeroBalance: boolean = false;
   appVersion = packageJson.version;
 
   ngOnInit() {
     this.authService.user.subscribe(async (u) => {
-      this.user = u
+      this.user = u;
       if (u) {
-        this.image = this.sanitized.bypassSecurityTrustUrl(u.photoURL);
+        this.image = u.photoURL
+          ? this.sanitized.bypassSecurityTrustUrl(u.photoURL)
+          : 'assets/images/baseline_face_white_48dp.png';
         this.balances = await this.db.getBalances();
         try {
-          let b = this.balances.filter(k => k.key == "Credit Card")[0].value;
-          if (Number(b.replace(/[^0-9.-]+/g,"")) > 0) {
+          const b = this.balances.filter((k) => k.key == 'Credit Card')[0].value;
+          if (Number(b.replace(/[^0-9.-]+/g, '')) > 0) {
             this.nonZeroBalance = true;
           }
-        }
-        catch {}
+        } catch {}
+      } else {
+        this.image = 'assets/images/baseline_face_white_48dp.png';
       }
-      else {
-        this.image = "assets/images/baseline_face_white_48dp.png";
-      }
-    })
+    });
   }
 
-  goToLink(url: string){
-    window.open(url, "_blank");
+  goToLink(url: string) {
+    window.open(url, '_blank');
   }
-
 }

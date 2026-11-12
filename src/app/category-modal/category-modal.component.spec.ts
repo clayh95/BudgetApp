@@ -15,31 +15,34 @@ describe('CategoryModalComponent', () => {
       deleteDocument: vi.fn(),
       getQuerySnapshot: vi.fn(),
       dashboardPreferences: new BehaviorSubject({ watchedCategoryKeys: [], watchedVendorKeys: [] }),
-      saveDashboardPreferences: vi.fn().mockResolvedValue(undefined)
+      saveDashboardPreferences: vi.fn().mockResolvedValue(undefined),
     };
 
     TestBed.configureTestingModule({
-      imports: [ CategoryModalComponent ],
+      imports: [CategoryModalComponent],
       providers: [
         { provide: DbService, useValue: dbStub },
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
         { provide: MatDialog, useValue: { open: vi.fn() } },
-        { provide: MAT_DIALOG_DATA, useValue: {
-          id: 'cat-1',
-          name: 'Groceries',
-          keywords: ['food'],
-          budgeted: 10.00,
-          notes: '',
-          emoji: ''
-        }}
-      ]
-    })
-    .compileComponents();
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {
+            id: 'cat-1',
+            name: 'Groceries',
+            keywords: ['food'],
+            budgeted: 10.0,
+            notes: '',
+            emoji: '',
+          },
+        },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CategoryModalComponent);
     component = fixture.componentInstance;
+    component.initialData = TestBed.inject(MAT_DIALOG_DATA);
   });
 
   it('should create', () => {
@@ -77,4 +80,20 @@ describe('CategoryModalComponent', () => {
     expect(component.budgetedDisplay).toBe('bad-value');
   });
 
+  it('isolates draft keywords and removes only the requested keyword', () => {
+    component.data.keywords = ['first', 'second', 'third'];
+    component.removeKeyword('second');
+    expect(component.data.keywords).toEqual(['first', 'third']);
+    component.data.keywords.push('draft-only');
+    expect(TestBed.inject(MAT_DIALOG_DATA).keywords).toEqual(['food']);
+  });
+
+  it('retains a failed save and does not close the editor', async () => {
+    const db = TestBed.inject(DbService);
+    vi.mocked(db.updateDocument).mockResolvedValue(false);
+    const saved = vi.spyOn(component.saved, 'emit');
+    await component.update();
+    expect(component.error).toContain('could not be saved');
+    expect(saved).not.toHaveBeenCalled();
+  });
 });

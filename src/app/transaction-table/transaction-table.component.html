@@ -1,110 +1,141 @@
 <div class="transactionTableComponent">
-
-<mat-card class="transactionTableCard">
-  <mat-card-content>
-    <table mat-table #table [dataSource]="dataSource" [trackBy]="trackById" class="transactionTable" matSort aria-label="Elements">
-      <!-- id Column -->
-      <ng-container matColumnDef="id">
+  <mat-card class="transactionTableCard">
+    <mat-card-content>
+      <table
+        mat-table
+        #table
+        [dataSource]="dataSource"
+        [trackBy]="trackById"
+        class="transactionTable"
+        matSort
+        aria-label="Elements"
+      >
+        <!-- id Column -->
+        <ng-container matColumnDef="id">
           <th mat-header-cell class="actions" *matHeaderCellDef mat-sort-header></th>
           <td mat-cell class="actions desktop" *matCellDef="let row">
-              <span class="icons">
-                <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
-                <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.4em">check_circle_outline</mat-icon>
+            <span class="icons">
+              <mat-icon *ngIf="row.status == 'Pending'" style="color: orange; font-size: 1.4em">error_outline</mat-icon>
+              <mat-icon *ngIf="row.status != 'Pending'" style="color: green; font-size: 1.4em"
+                >check_circle_outline</mat-icon
+              >
+            </span>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <div>
+          <!-- date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
+            <td mat-cell class="date" *matCellDef="let row">
+              {{ row.date }}
+              <span class="mobile infoBusinessMobile">
+                <img src="{{ getIconFromUtils(row.description) }}" />
+                <mat-icon *ngIf="row.status == 'Pending'" style="color: orange; font-size: 1.2em"
+                  >error_outline</mat-icon
+                >
+                <mat-icon *ngIf="row.status != 'Pending'" style="color: green; font-size: 1.2em"
+                  >check_circle_outline</mat-icon
+                >
+                <mat-icon *ngIf="row.xId != null" class="split-icon" style="color: purple; font-size: 1.2em"
+                  >call_split</mat-icon
+                >
+                {{ row.amount | currency }}
               </span>
-          </td>
-          <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
-      
-      <div>
-        <!-- date Column -->
-        <ng-container matColumnDef="date">
-          <th mat-header-cell class="date" *matHeaderCellDef mat-sort-header>Date</th>
-          <td mat-cell class="date" *matCellDef="let row">
-            {{row.date}}
-            <span class="mobile infoBusinessMobile">
-              <img src="{{getIconFromUtils(row.description)}}"/>
-              <mat-icon *ngIf="row.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
-              <mat-icon *ngIf="row.status != 'Pending'" style="color:green;font-size: 1.2em">check_circle_outline</mat-icon>
-              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-              {{row.amount | currency}}
-            </span>
+            </td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-container>
+
+          <!-- amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell class="amount" *matHeaderCellDef mat-sort-header>Amount</th>
+            <td mat-cell class="amount desktop" *matCellDef="let row">
+              <span class="infoBusiness desktop">
+                {{ row.amount | currency }}
+                <mat-icon *ngIf="row.xId != null" class="split-icon" style="color: purple; font-size: 1.2em"
+                  >call_split</mat-icon
+                >
+              </span>
+            </td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-container>
+        </div>
+
+        <!-- description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell class="description-header" *matHeaderCellDef mat-sort-header>Description</th>
+          <td mat-cell (click)="editTransaction(row)" *matCellDef="let row">
+            <div class="description-content">
+              <img class="info-image desktop" src="{{ getIconFromUtils(row.description) }}" />
+              <span class="content">{{ row.description }}</span>
+            </div>
           </td>
           <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
-        <!-- amount Column -->
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell class="amount" *matHeaderCellDef mat-sort-header>Amount</th>
-          <td mat-cell class="amount desktop" *matCellDef="let row">
-            <span class="infoBusiness desktop">
-              {{row.amount | currency}}
-              <mat-icon *ngIf="row.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-            </span>
+        <!-- info Column -->
+        <ng-container matColumnDef="info">
+          <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header></th>
+          <td mat-cell class="info" *matCellDef="let row">
+            <!-- Also the transaction status? (Split, etc) -->
           </td>
-          <td mat-footer-cell *matFooterCellDef></td> 
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
-      </div>
 
-      <!-- description Column -->
-      <ng-container matColumnDef="description">
-        <th mat-header-cell class="description-header" *matHeaderCellDef mat-sort-header>Description</th>
-        <td mat-cell (click)="editTransaction(row)" *matCellDef="let row">
-          <div class="description-content">
-            <img class="info-image desktop" src="{{getIconFromUtils(row.description)}}"/>
-            <span class="content">{{row.description}}</span>
-          </div>
-        </td>
-        <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
-      
-      <!-- info Column -->
-      <ng-container matColumnDef="info">
-        <th mat-header-cell class="info" *matHeaderCellDef mat-sort-header></th>
-        <td mat-cell class="info" *matCellDef="let row">
-          <!-- Also the transaction status? (Split, etc) -->
-        </td>
-        <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
+        <!-- notes Column -->
+        <ng-container matColumnDef="notes">
+          <th mat-header-cell class="notes" *matHeaderCellDef mat-sort-header>Notes</th>
+          <td mat-cell class="notes desktop" *matCellDef="let row">
+            <mat-form-field class="example-full-width">
+              <input
+                matInput
+                placeholder="Notes"
+                value="{{ row.notes }}"
+                (change)="updateValueOnChange($event.target.value, row.id, 'notes')"
+              />
+            </mat-form-field>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
 
-      <!-- notes Column -->
-      <ng-container matColumnDef="notes">
-        <th mat-header-cell class="notes" *matHeaderCellDef mat-sort-header>Notes</th>
-        <td mat-cell class="notes desktop" *matCellDef="let row">
-          <mat-form-field class="example-full-width">
-            <input matInput placeholder="Notes" value="{{row.notes}}" (change)="updateValueOnChange($event.target.value, row.id, 'notes')"/>
-          </mat-form-field>
-        </td>
-        <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
+        <!-- category Column -->
+        <ng-container matColumnDef="category">
+          <th mat-header-cell class="category" *matHeaderCellDef mat-sort-header>Category</th>
+          <td mat-cell class="category" *matCellDef="let row">
+            <mat-form-field>
+              <mat-select placeholder="Category" [value]="row.category">
+                <mat-option
+                  [value]="''"
+                  (onSelectionChange)="$event.source.selected && onCategoryOptionSelection($event, row.id, '')"
+                ></mat-option>
+                <mat-option
+                  *ngFor="let category of Tsvc.categories | async"
+                  [value]="category.name"
+                  (onSelectionChange)="
+                    $event.source.selected && onCategoryOptionSelection($event, row.id, category.name)
+                  "
+                >
+                  {{ category.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
 
-      <!-- category Column -->
-      <ng-container matColumnDef="category">
-        <th mat-header-cell class="category" *matHeaderCellDef mat-sort-header>Category</th>
-        <td mat-cell class="category" *matCellDef="let row">
-          <mat-form-field>
-            <mat-select placeholder="Category" [value]="row.category">
-              <mat-option [value]="''" (onSelectionChange)="$event.source.selected && onCategoryOptionSelection($event, row.id, '')"></mat-option>
-              <mat-option *ngFor="let category of Tsvc.categories | async" [value]="category.name" (onSelectionChange)="$event.source.selected && onCategoryOptionSelection($event, row.id, category.name)">
-                {{category.name}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field> 
-        </td>
-        <td mat-footer-cell *matFooterCellDef></td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row 
-        [@rowsEnterLeave] 
-        [@rowsColor]="row.changeAction" 
-        (@rowsColor.done)="rowsColorDone(row)" 
-        *matRowDef="let row; columns: displayedColumns;">
-      </tr>
-    </table>
-  </mat-card-content>
-</mat-card>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          [@rowsEnterLeave]
+          [@rowsColor]="row.changeAction"
+          (@rowsColor.done)="rowsColorDone(row)"
+          *matRowDef="let row; columns: displayedColumns"
+        ></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
 </div>
-
 
 <div class="paginator">
   <mat-form-field class="controlsFilter" (click)="focusSearchInput()">
@@ -131,10 +162,10 @@
         </button>
       </mat-chip-row>
       <mat-chip-row *ngIf="activeCategory" class="search-filter-chip">
-        <span class="category-chip-emoji" *ngIf="activeCategory?.emoji">{{activeCategory?.emoji}}</span>
+        <span class="category-chip-emoji" *ngIf="activeCategory?.emoji">{{ activeCategory?.emoji }}</span>
         <mat-icon *ngIf="!activeCategory?.emoji">category</mat-icon>
         <span class="chip-text-container">
-          <span>{{activeCategory?.name}}</span>
+          <span>{{ activeCategory?.name }}</span>
           <span class="chip-type-label">Category</span>
         </span>
         <button matChipRemove (click)="clearCategoryFilter(); $event.stopPropagation()">
@@ -142,10 +173,10 @@
         </button>
       </mat-chip-row>
       <mat-chip-row *ngIf="activeVendor" class="search-filter-chip">
-        <img *ngIf="activeVendor?.logoUrl" class="vendor-chip-logo" [src]="activeVendor?.logoUrl" alt="Vendor icon"/>
+        <img *ngIf="activeVendor?.logoUrl" class="vendor-chip-logo" [src]="activeVendor?.logoUrl" alt="Vendor icon" />
         <mat-icon *ngIf="!activeVendor?.logoUrl">storefront</mat-icon>
         <span class="chip-text-container">
-          <span>{{activeVendor?.name}}</span>
+          <span>{{ activeVendor?.name }}</span>
           <span class="chip-type-label">Vendor</span>
         </span>
         <button matChipRemove (click)="clearVendorFilter(); $event.stopPropagation()">
@@ -154,68 +185,102 @@
       </mat-chip-row>
     </mat-chip-grid>
 
-    <input #searchInput matInput placeholder="Search"
+    <input
+      #searchInput
+      matInput
+      placeholder="Search"
       [matChipInputFor]="searchChipGrid"
-      (input)="onSearchInput(($any($event.target).value))"
+      (input)="onSearchInput($any($event.target).value)"
       (focus)="onSearchFocus()"
       (blur)="onSearchBlur()"
       [value]="searchValue"
-      [matAutocomplete]="transactionSearchAutocomplete">
+      [matAutocomplete]="transactionSearchAutocomplete"
+    />
 
     <button *ngIf="searchValue != ''" matSuffix mat-icon-button aria-label="Clear" (click)="onClearSearch()">
       <mat-icon>close</mat-icon>
     </button>
   </mat-form-field>
 
-  <mat-autocomplete #transactionSearchAutocomplete="matAutocomplete"
+  <mat-autocomplete
+    #transactionSearchAutocomplete="matAutocomplete"
     (opened)="onSearchPanelOpened()"
     (closed)="onSearchPanelClosed()"
-    panelClass="transaction-search-panel">
-
+    panelClass="transaction-search-panel"
+  >
     <mat-option class="search-filter-options-row">
-      <button type="button" mat-icon-button (click)="togglePendingVisibility(); $event.stopPropagation();"
-        [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'" matTooltipPosition="after">
+      <button
+        type="button"
+        mat-icon-button
+        (click)="togglePendingVisibility(); $event.stopPropagation()"
+        [matTooltip]="(bShowPending.getValue() ? 'Hide' : 'Show') + ' pending'"
+        matTooltipPosition="after"
+      >
         <mat-icon [style.color]="bShowPending.getValue() ? 'darkorange' : 'gray'">error_outline</mat-icon>
       </button>
-      <button type="button" mat-icon-button (click)="toggleStartingBalanceVisibility(); $event.stopPropagation();"
-        [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'" matTooltipPosition="after">
-        <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange': 'gray'">account_balance_wallet</mat-icon>
+      <button
+        type="button"
+        mat-icon-button
+        (click)="toggleStartingBalanceVisibility(); $event.stopPropagation()"
+        [matTooltip]="(bShowStartingBalances.getValue() ? 'Hide' : 'Show') + ' starting balances'"
+        matTooltipPosition="after"
+      >
+        <mat-icon [style.color]="bShowStartingBalances.getValue() ? 'darkorange' : 'gray'"
+          >account_balance_wallet</mat-icon
+        >
       </button>
-      <button type="button" mat-icon-button (click)="toggleUncategorizedFilter(); $event.stopPropagation();"
-        [matTooltip]="(bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized')" matTooltipPosition="after">
-        <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange': 'gray'">scatter_plot</mat-icon>
+      <button
+        type="button"
+        mat-icon-button
+        (click)="toggleUncategorizedFilter(); $event.stopPropagation()"
+        [matTooltip]="bOnlyUncategorized.getValue() ? 'Remove filter' : 'Show only uncategorized'"
+        matTooltipPosition="after"
+      >
+        <mat-icon [style.color]="bOnlyUncategorized.getValue() ? 'darkorange' : 'gray'">scatter_plot</mat-icon>
       </button>
     </mat-option>
 
     <mat-option *ngIf="showSearchHints" disabled>Search transactions, categories, or vendors...</mat-option>
 
     <ng-container *ngIf="!showSearchHints">
-      <mat-option *ngIf="searchSuggestions.length === 0" disabled>
-        No matches found
-      </mat-option>
-      <mat-option *ngFor="let suggestion of searchSuggestions; trackBy: trackBySearchSuggestion"
+      <mat-option *ngIf="searchSuggestions.length === 0" disabled> No matches found </mat-option>
+      <mat-option
+        *ngFor="let suggestion of searchSuggestions; trackBy: trackBySearchSuggestion"
         [value]="suggestion.type === 'category' ? suggestion.category.name : suggestion.vendor.name"
-        (onSelectionChange)="$event.isUserInput && (suggestion.type === 'category' ? onCategoryOptionSelected(suggestion.category) : onVendorOptionSelected(suggestion.vendor))">
+        (onSelectionChange)="
+          $event.isUserInput &&
+            (suggestion.type === 'category'
+              ? onCategoryOptionSelected(suggestion.category)
+              : onVendorOptionSelected(suggestion.vendor))
+        "
+      >
         <ng-container *ngIf="suggestion.type === 'category'">
           <span class="suggestion-row">
-            <span class="category-option-emoji suggestion-leading-icon" *ngIf="suggestion.category.emoji">{{suggestion.category.emoji}}</span>
+            <span class="category-option-emoji suggestion-leading-icon" *ngIf="suggestion.category.emoji">{{
+              suggestion.category.emoji
+            }}</span>
             <span class="category-option-no-emoji suggestion-leading-icon" *ngIf="!suggestion.category.emoji">
               <mat-icon>category</mat-icon>
             </span>
             <span class="suggestion-text">
-              <span>{{suggestion.category.name}}</span>
+              <span>{{ suggestion.category.name }}</span>
               <span class="suggestion-type-label">Category</span>
             </span>
           </span>
         </ng-container>
         <ng-container *ngIf="suggestion.type === 'vendor'">
           <span class="suggestion-row">
-            <img *ngIf="suggestion.vendor.logoUrl" class="vendor-option-logo suggestion-leading-icon" [src]="suggestion.vendor.logoUrl" alt="Vendor icon"/>
+            <img
+              *ngIf="suggestion.vendor.logoUrl"
+              class="vendor-option-logo suggestion-leading-icon"
+              [src]="suggestion.vendor.logoUrl"
+              alt="Vendor icon"
+            />
             <span class="category-option-no-emoji suggestion-leading-icon" *ngIf="!suggestion.vendor.logoUrl">
               <mat-icon>storefront</mat-icon>
             </span>
             <span class="suggestion-text">
-              <span>{{suggestion.vendor.name}}</span>
+              <span>{{ suggestion.vendor.name }}</span>
               <span class="suggestion-type-label">Vendor</span>
             </span>
           </span>
@@ -224,18 +289,17 @@
     </ng-container>
   </mat-autocomplete>
 
-  
+  <div class="total desktop" [style.background]="this.getTotalColor()">{{ getTotal() | currency }}</div>
 
-  <div class="total desktop" [style.background]="this.getTotalColor()">{{getTotal() | currency}}</div>
+  <mat-paginator #paginator [pageIndex]="0" [pageSize]="10" [pageSizeOptions]="[10, 25, 50]"> </mat-paginator>
 
-  <mat-paginator #paginator
-    [pageIndex]="0"
-    [pageSize]="10"
-    [pageSizeOptions]="[10, 25, 50]">
-  </mat-paginator>
-
-  <button class="add-button" mat-icon-button (click)="addTransaction()" 
-  matTooltip="Add transaction" matTooltipPosition="above">
-      <mat-icon>add</mat-icon>
+  <button
+    class="add-button"
+    mat-icon-button
+    (click)="addTransaction()"
+    matTooltip="Add transaction"
+    matTooltipPosition="above"
+  >
+    <mat-icon>add</mat-icon>
   </button>
 </div>

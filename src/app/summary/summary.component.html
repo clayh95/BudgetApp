@@ -1,207 +1,296 @@
-<div class="app-summary-component">
-  
-  <div class="app-summary-categories">
-
-    <mat-card class="summary-card">
-
-      <div class="no-data" *ngIf="!totalBudgeted">
-        <mat-icon style="color:gray;font-size: 5em">segment</mat-icon>
-        <p>There are either no transactions or no categories yet for this month</p>
+<div class="summary-root" #workspaceRoot [style.height.px]="viewportHeight">
+  <mat-card class="overview">
+    <div class="overview-heading">
+      <div>
+        <h1>Summary</h1>
+        <span class="balance-message">{{ getEmoji()[0] }} {{ getEmoji()[1] }}</span>
       </div>
+      <button mat-stroked-button (click)="openNotes()"><mat-icon>notes</mat-icon> Notes</button>
+    </div>
+    <div class="overview-totals">
+      <div>
+        <span>Budgeted</span><strong>{{ totalBudgeted | currency }}</strong>
+      </div>
+      <div>
+        <span>Income</span><strong>{{ actualIncome | currency }}</strong>
+      </div>
+      <div>
+        <span>Unbudgeted</span
+        ><strong [class.red]="getUnbudgetedAmount() < 0">{{ getUnbudgetedAmount() | currency }}</strong>
+      </div>
+      <button mat-button *ngIf="totalBudgeted > 0 && totalBudgeted === actualIncome" (click)="carryAmounts()">
+        <mat-icon>fast_forward</mat-icon> Carry balances
+      </button>
+    </div>
+  </mat-card>
 
-      <div *ngIf="totalBudgeted" class="accordian-margin">
-        <mat-accordion>
-          <mat-expansion-panel class="expansion-panel-round-all">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <button mat-icon-button>
-                  <span style="font-size: 22px;">{{getEmoji()[1]}}</span>
-                </button>
-                <span style="padding-top: 5px;">Total Budgeted <br /> {{totalBudgeted | currency}}</span>
-              </mat-panel-title>
-              <mat-panel-description>
-                <p style="font-weight: bold">{{actualIncome | currency}}</p>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <div>
-              <p>{{getEmoji()[0]}} {{getEmoji()[1]}}</p>
-              <button mat-stroked-button *ngIf="totalBudgeted === actualIncome" (click)="carryAmounts()">
-                <mat-icon>fast_forward</mat-icon>
-                Carry Balances to Next Month
+  <div class="browser-section">
+    <app-section-drawer
+      [opened]="drawerKind !== null"
+      [fullWidth]="isMobile"
+      [label]="drawerTitle"
+      [accent]="drawerAccent"
+      (closeRequested)="requestCloseDrawer()"
+    >
+      <div drawer-header>
+        <h2 class="drawer-title">{{ drawerTitle }}</h2>
+      </div>
+      <div drawer-header-actions>
+        <ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate || categoryActions()?.actionsTemplate"></ng-container>
+      </div>
+      <div drawer-body>
+        <app-category-modal
+          *ngIf="drawerKind === 'category'"
+          [initialData]="categoryDraft"
+          (saved)="editorFinished()"
+          (dismiss)="requestCloseDrawer()"
+        ></app-category-modal>
+        <app-add-transaction
+          *ngIf="drawerKind === 'transaction'"
+          [initialData]="transactionDraft"
+          (saved)="editorFinished()"
+          (dismiss)="requestCloseDrawer()"
+        ></app-add-transaction>
+        <div *ngIf="drawerKind === 'notes'" class="month-notes">
+          <label for="summary-month-notes">Notes for {{ service.monthYear | async }}</label>
+          <textarea
+            id="summary-month-notes"
+            matInput
+            [(ngModel)]="notesDraft"
+            (ngModelChange)="notesDirty = true"
+            (blur)="saveNotes()"
+            rows="12"
+          ></textarea>
+          <p class="red" role="alert" *ngIf="notesError">{{ notesError }}</p>
+          <button mat-button *ngIf="notesError" (click)="saveNotes()">Retry</button>
+        </div>
+      </div>
+      <div
+        class="workspace"
+        [class.mobile-detail]="isMobile && mobileDetail"
+        [class.mobile-list]="isMobile && !mobileDetail"
+      >
+        <svg
+          [class.preview-connections]="panePreviewKeys !== null"
+          class="connections"
+          aria-hidden="true"
+          [attr.viewBox]="connectionViewBox"
+        >
+          <g *ngFor="let line of connectors" [style.color]="line.color">
+            <path
+              [attr.d]="line.path"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              fill="none"
+            ></path>
+            <circle [attr.cx]="line.x1" [attr.cy]="line.y1" r="3" fill="currentColor"></circle>
+            <circle [attr.cx]="line.x2" [attr.cy]="line.y2" r="3" fill="currentColor"></circle>
+          </g>
+        </svg>
+        <mat-card class="category-list" [class.mobile-hidden]="isMobile && mobileDetail">
+          <h2>Categories</h2>
+          <div class="category-scroll" data-scroll-key="__categories" (scroll)="rememberScroll('__categories', $event)">
+            <button
+              type="button"
+              class="category-item"
+              *ngFor="let view of views; trackBy: trackView"
+              [attr.data-category-key]="view.key"
+              [class.is-active]="isSelected(view)"
+              [class.queue-divider]="view.kind === 'uncategorized'"
+              [style.--summary-accent]="viewAccent(view.key)"
+              [class.drop-target]="dropKey === view.key"
+              [attr.aria-pressed]="isSelected(view)"
+              (click)="selectView(view, $event)"
+              (dragover)="allowPaneDrop($event); allowDrop($event, view)"
+              (dragleave)="dropKey = null"
+              (drop)="dropPane($event, view) || dropTransaction($event, view)"
+            >
+              <span class="category-emoji" *ngIf="view.kind !== 'pending'">{{ view.category.emoji }}</span>
+              <mat-icon class="pending-icon" *ngIf="view.kind === 'pending'">schedule</mat-icon>
+              <span class="category-label"
+                ><span class="category-name">{{ view.category.name }}</span>
+                <small class="category-budget" *ngIf="view.kind === 'category'">{{
+                  view.category.budgeted | currency
+                }}</small>
+                <small *ngIf="view.kind === 'uncategorized'">Needs a category</small>
+                <small *ngIf="view.kind === 'pending'">Awaiting posting</small>
+                <small class="category-budget" *ngIf="view.kind === 'income'">{{
+                  view.category.budgeted | currency
+                }}</small>
+              </span>
+              <span class="category-value">
+                <span *ngIf="view.kind === 'pending' || view.kind === 'uncategorized'">{{
+                  view.transactions.length
+                }}</span>
+                <span
+                  class="category-amount"
+                  *ngIf="view.kind === 'category'"
+                  [class.red]="view.category.budgeted - view.category.spent < 0"
+                  [class.green]="view.category.budgeted - view.category.spent >= 0"
+                  >{{ view.category.budgeted - view.category.spent | currency }}</span
+                >
+                <span
+                  class="category-amount"
+                  *ngIf="view.kind === 'income'"
+                  [class.red]="actualIncome < 0"
+                  [class.green]="actualIncome >= 0"
+                  >{{ actualIncome | currency }}</span
+                >
+              </span>
+            </button>
+          </div>
+        </mat-card>
+        <div
+          class="panes"
+          [style.grid-template-columns]="'repeat(' + (visibleViews.length || 1) + ', minmax(0, 1fr))'"
+          [class.mobile-hidden]="isMobile && !mobileDetail"
+        >
+          <mat-card class="empty-selection" *ngIf="!visibleViews.length"
+            ><mat-icon>view_sidebar</mat-icon>
+            <h2>Select a category</h2>
+            <p>Choose a category to view its transactions.</p></mat-card
+          >
+          <mat-card
+            class="transaction-pane"
+            *ngFor="let view of visibleViews; trackBy: trackView"
+            [attr.data-pane-key]="view.key"
+            [style.transform]="panePreviewOffset(view.key)"
+            [class.pane-drop-settling]="paneDropSettling"
+            [class.pane-swap-preview]="
+              panePreviewKeys && panePreviewKeys.indexOf(view.key) !== openKeys.indexOf(view.key)
+            "
+            [style.--summary-accent]="viewAccent(view.key)"
+            [class.drop-target]="dropKey === view.key"
+            (dragover)="allowPaneDrop($event); allowDrop($event, view)"
+            (dragleave)="dropKey = null"
+            (drop)="dropPane($event, view) || dropTransaction($event, view)"
+          >
+            <div class="pane-header">
+              <button
+                mat-icon-button
+                class="pane-drag-handle"
+                *ngIf="!isMobile && visibleViews.length > 1"
+                draggable="true"
+                [attr.aria-label]="'Reorder ' + view.category.name"
+                (dragstart)="startPaneDrag($event, view)"
+                (dragend)="endPaneDrag()"
+              >
+                <mat-icon class="rotateIcon">drag_indicator</mat-icon>
               </button>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </div>
-
-      <div *ngIf="incomeData" class="accordian-margin">
-        <mat-accordion>
-          <mat-expansion-panel class="expansion-panel-round-all">
-            <mat-expansion-panel-header>
-              <mat-panel-title>                    
-                <button mat-icon-button>
-                  <mat-icon style="color:green">attach_money</mat-icon>
-                </button>
-                <span style="padding-top: 5px;">Income <br /> {{incomeData.category.budgeted | currency}}</span>
-              </mat-panel-title>
-              <mat-panel-description>
-                <p style="font-weight: bold" [class]="getIncomeColor()">{{actualIncome | currency}}</p>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <mat-list dense>
-              <mat-list-item class="transaction-list-item" *ngFor="let trans of incomeData.transactions" (click)="editTransaction(trans)">
-                <p matLine>
-                  <span>{{trans.date}}</span>
-                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
-                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
-                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.2em">error_outline</mat-icon>
-                    <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.2em">
-                      check_circle_outline
-                    </mat-icon>
-                    {{trans.amount | currency}}
-                  </span>
-                </p>
-                <p matLine>{{trans.description}} &nbsp;</p>
-                <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
-              </mat-list-item>
-              <mat-divider style="margin-top:10px"></mat-divider>
-                <div class="category-footer">
-                  <div class="footer-title-line">
-                    <div class="title">Income</div>
-                    <button 
-                      mat-button
-                      class="edit-button"
-                      (click)="editCategory($event, incomeData.category);">
-                      Edit Category
-                    </button>
-                  </div>
-                  <div *ngIf="incomeData.category.notes && incomeData.category.notes.length > 0" class="category-info">
-                    <p class="category-notes">{{incomeData.category.notes}}</p>
-                  </div>
-                </div>
-            </mat-list>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </div>
-
-          <div *ngIf="pendingTransactions" class="accordian-margin">
-        <mat-accordion>
-          <mat-expansion-panel
-            class="expansion-panel-round-all"
-            [id]="summaryPendingPanelId"
-            [expanded]="expandedPanel === summaryPendingPanelId">
-            <mat-expansion-panel-header>
-              <mat-panel-title>                    
-                <button mat-icon-button>
-                  <mat-icon style="color:orange">error_outline</mat-icon>
-                </button>
-                <span style="padding-top: 5px;">Pending Transactions ({{pendingTransactions.length}})
-                  <br />
-                  {{totalPending | currency}}
-                </span>
-              </mat-panel-title>
-              <mat-panel-description>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <mat-list dense>
-              <mat-list-item class="transaction-list-item" *ngFor="let trans of pendingTransactions" (click)="editTransaction(trans)">
-                <p matLine>
-                  <span>{{trans.date}}</span>
-                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
-                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
-                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
-                    <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.4em">
-                      check_circle_outline
-                    </mat-icon>
-                    <mat-icon *ngIf="trans.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-                    {{trans.amount | currency}}
-                  </span>
-                </p>
-                <p matLine>{{trans.description}} &nbsp;</p>
-                <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
-              </mat-list-item>
-            </mat-list>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </div>
-
-      <div *ngIf="reportCats" class="accordian-margin">
-            <mat-accordion>
-          <mat-expansion-panel *ngFor="let item of reportCats; trackBy: trackByID"
-            [attr.id]="getSummaryPanelId(item)"
-            [expanded]="expandedPanel === getSummaryPanelId(item)" (opened)="SetExpandedPanel(getSummaryPanelId(item))"
-            class="expansion-panel-round-ends">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <button mat-icon-button>
-                  <span style="font-size: 22px;">{{item.category.emoji}}</span>
-                </button>
-                <span style="padding-top: 5px;line-height:22px">{{item.category.name}} <br />
-                  {{item.category.budgeted | currency}}</span>
-              </mat-panel-title>
-              <mat-panel-description>
-                <p style="font-weight: bold" [class]="getColor(item)">
-                  {{item.category.budgeted - item.category.spent | currency}}</p>
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            <div class="category-meta" *ngIf="item.category.name !== 'Uncategorized'">
-              <div class="meta-line">
-                <div class="title">
-                  <b>{{getPercentage(+item.category.budgeted) | percent:'1.0-2'}}</b> of total budgeted
-                </div>
-                <div class="meta-actions">
-                  <button mat-icon-button matTooltip="Balance from unbudgeted"
-                    [disabled]="!canBalanceCategory(item)"
-                    (click)="balanceFromUnbudgeted($event, item);">
-                    <mat-icon>balance</mat-icon>
-                  </button>
-                  <button mat-icon-button matTooltip="Edit category" (click)="editCategory($event, item.category);">
+              <button mat-button class="back-button" *ngIf="isMobile" (click)="backToCategories()">
+                <mat-icon>arrow_back</mat-icon> Categories
+              </button>
+              <div class="pane-title-row">
+                <h2 class="pane-heading" tabindex="-1">
+                  <span>{{ view.category.emoji }}</span> {{ view.category.name }}
+                </h2>
+                <ng-container *ngIf="view.kind === 'category' || view.kind === 'income'">
+                  <button
+                    mat-icon-button
+                    aria-label="Edit category"
+                    matTooltip="Edit category"
+                    (click)="editCategory($event, view.category)"
+                  >
                     <mat-icon>edit</mat-icon>
                   </button>
-                </div>
+                  <button
+                    mat-icon-button
+                    *ngIf="view.kind === 'category'"
+                    matTooltip="Balance from unbudgeted"
+                    aria-label="Balance from unbudgeted"
+                    [disabled]="!canBalanceCategory(view)"
+                    (click)="balanceFromUnbudgeted($event, view)"
+                  >
+                    <mat-icon>balance</mat-icon>
+                  </button>
+                </ng-container>
+                <button mat-icon-button [attr.aria-label]="'Close ' + view.category.name" (click)="closeView(view)">
+                  <mat-icon>close</mat-icon>
+                </button>
               </div>
-              <div *ngIf="item.category.notes && item.category.notes.length > 0" class="category-info">
-                <p class="category-notes">{{item.category.notes}}</p>
+              <div class="pane-summary" *ngIf="view.kind === 'category'">
+                <strong [class]="getColor(view)">{{ view.category.budgeted - view.category.spent | currency }}</strong>
+                left
+                <small
+                  >{{ view.category.budgeted | currency }} budgeted · {{ (view.category.spent < 0 ? 0 : view.category.spent) | currency }} spent</small
+                >
               </div>
-              <mat-divider></mat-divider>
+              <div class="pane-summary" *ngIf="view.kind === 'income'">
+                <strong [class]="getIncomeColor()">{{ actualIncome | currency }}</strong> received
+                <small>{{ view.category.budgeted | currency }} expected</small>
+              </div>
+              <div class="pane-summary" *ngIf="view.kind === 'pending'">
+                <strong>{{ totalPending | currency }}</strong> pending · {{ view.transactions.length }} charges
+              </div>
+              <div class="pane-summary" *ngIf="view.kind === 'uncategorized'">
+                {{ view.transactions.length }} transactions to categorize
+              </div>
+
+              <p
+                class="category-notes"
+                *ngIf="view.kind !== 'uncategorized' && view.kind !== 'pending' && view.category.notes"
+              >
+                {{ view.category.notes }}
+              </p>
             </div>
-            <mat-list dense>
-              <mat-list-item class="transaction-list-item" *ngFor="let trans of item.transactions" (click)="editTransaction(trans)">
-                <p matLine>
-                  <span>{{trans.date}}</span>
-                  <span style="float:right;font-weight: bold;display: inline-flex;align-items: center;">
-                    <img class="infoBusiness" src="{{getIconFromUtils(trans.description)}}"/>
-                    <mat-icon *ngIf="trans.status == 'Pending'" style="color:orange;font-size: 1.4em">error_outline</mat-icon>
-                    <mat-icon *ngIf="trans.status != 'Pending'" style="color:green;font-size: 1.4em">
-                      check_circle_outline
-                    </mat-icon>
-                    <mat-icon *ngIf="trans.xId != null" class="split-icon" style="color:purple;font-size: 1.2em">call_split</mat-icon>
-                    {{trans.amount | currency}}
-                  </span>
-                </p>
-                <p matLine>{{trans.description}} &nbsp;</p>
-                <p matLine *ngIf="trans.notes.length > 0" style="font-style: italic">{{trans.notes}} &nbsp;</p>
-              </mat-list-item>
-            </mat-list>
-          </mat-expansion-panel>
-        </mat-accordion>
+            <div
+              class="transaction-scroll"
+              [attr.data-scroll-key]="view.key"
+              (scroll)="rememberScroll(view.key, $event)"
+            >
+              <button
+                type="button"
+                class="transaction-row"
+                [class.has-drag-handle]="showTransactionHandle(view, trans)"
+                *ngFor="let trans of view.transactions; trackBy: trackTransaction"
+                [attr.draggable]="canDragTransaction(view, trans)"
+                (dragstart)="startDrag($event, view, trans)"
+                (dragend)="endDrag()"
+                (click)="editTransaction(trans, view)"
+                [attr.aria-label]="'Edit ' + trans.description"
+              >
+                <mat-icon
+                  class="drag-handle"
+                  *ngIf="showTransactionHandle(view, trans)"
+                  [class.drag-disabled]="service.getSaveState() === 'saving'"
+                  >drag_indicator</mat-icon
+                >
+                <span class="transaction-date">{{ trans.date | date: 'MMM d' }}</span>
+                <span
+                  class="transaction-description"
+                  [matTooltip]="trans.description"
+                  [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
+                  >{{ trans.description }}</span
+                >
+                <span class="transaction-indicators">
+                  <img *ngIf="getIconFromUtils(trans.description)" [src]="getIconFromUtils(trans.description)" alt="" />
+                  <mat-icon
+                    *ngIf="trans.xId != null"
+                    class="split-icon rotateIcon"
+                    matTooltip="Split transaction"
+                    [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
+                    aria-label="Split transaction"
+                    >call_split</mat-icon
+                  >
+                  <mat-icon
+                    [class.pending-icon]="isPendingTransaction(trans)"
+                    [class.posted-icon]="!isPendingTransaction(trans)"
+                    [attr.aria-label]="trans.status || 'Posted'"
+                    >{{ isPendingTransaction(trans) ? 'schedule' : 'check_circle_outline' }}</mat-icon
+                  >
+                </span>
+                <strong class="transaction-amount">{{ trans.amount | currency }}</strong>
+                <small class="transaction-notes" *ngIf="trans.notes">{{ trans.notes }}</small>
+              </button>
+              <div class="empty-transactions" *ngIf="!view.transactions.length">
+                <mat-icon>{{ view.kind === 'uncategorized' ? 'task_alt' : 'receipt_long' }}</mat-icon>
+                <h3>{{ view.kind === 'uncategorized' ? 'All transactions categorized' : 'No transactions yet' }}</h3>
+              </div>
+            </div>
+          </mat-card>
+        </div>
       </div>
-
-    </mat-card>
-
+    </app-section-drawer>
   </div>
-
-  <div class="app-summary-notes">
-    <mat-card class="summary-card">
-        <mat-card-title>Notes</mat-card-title>
-        <mat-form-field class="summaryField">
-            <textarea 
-            matInput 
-            cdkTextareaAutosize
-            value="{{service.monthSummary | async}}" 
-            (change)="updateSummaryNotes($event.target.value)"></textarea>
-          </mat-form-field>
-    </mat-card>
-  </div>
-
 </div>

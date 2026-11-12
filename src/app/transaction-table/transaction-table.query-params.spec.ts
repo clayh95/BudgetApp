@@ -9,17 +9,19 @@ class FakeParamMap {
 
 describe('parseTransactionRouteInitState', () => {
   it('parses full valid query-param set', () => {
-    const state = parseTransactionRouteInitState(new FakeParamMap({
-      pending: 'true',
-      startingBalances: 'false',
-      uncategorized: 'true',
-      category: 'Groceries',
-      vendor: 'Walmart',
-      search: 'walmart',
-      page: '2',
-      sort: 'amount',
-      dir: 'asc'
-    }));
+    const state = parseTransactionRouteInitState(
+      new FakeParamMap({
+        pending: 'true',
+        startingBalances: 'false',
+        uncategorized: 'true',
+        category: 'Groceries',
+        vendor: 'Walmart',
+        search: 'walmart',
+        page: '2',
+        sort: 'amount',
+        dir: 'asc',
+      }),
+    );
 
     expect(state).toEqual({
       pending: true,
@@ -30,27 +32,31 @@ describe('parseTransactionRouteInitState', () => {
       search: 'walmart',
       page: 2,
       sort: 'amount',
-      dir: 'asc'
+      dir: 'asc',
     });
   });
 
   it('ignores invalid values', () => {
-    const state = parseTransactionRouteInitState(new FakeParamMap({
-      pending: 'yes',
-      startingBalances: '1',
-      uncategorized: 'nah',
-      page: '-1',
-      sort: 'invalid',
-      dir: 'sideways'
-    }));
+    const state = parseTransactionRouteInitState(
+      new FakeParamMap({
+        pending: 'yes',
+        startingBalances: '1',
+        uncategorized: 'nah',
+        page: '-1',
+        sort: 'invalid',
+        dir: 'sideways',
+      }),
+    );
 
     expect(state).toEqual({});
   });
 
   it('ignores blank vendor values', () => {
-    const state = parseTransactionRouteInitState(new FakeParamMap({
-      vendor: '   '
-    }));
+    const state = parseTransactionRouteInitState(
+      new FakeParamMap({
+        vendor: '   ',
+      }),
+    );
 
     expect(state).toEqual({});
   });

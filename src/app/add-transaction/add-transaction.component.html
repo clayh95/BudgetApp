@@ -1,30 +1,67 @@
-<mat-dialog-actions class="actions">
-  <button mat-icon-button *ngIf="isAdd()" (click)="add()"><mat-icon>save</mat-icon></button>
-  <button mat-icon-button id="updateButton" *ngIf="!isAdd()" [disabled]="origTotal !== newTotal" (click)="checkDeletesThenUpdate()"><mat-icon>save</mat-icon></button>
-  <button mat-icon-button class="rotateIcon" *ngIf="!isAdd()" (click)="split()"><mat-icon>call_split</mat-icon></button>
-  <div class="spacer"></div>
-  <div class="splitTotal" *ngIf="isSplit()">
-    <div class="total">{{this.origTotal.toFixed(2)}}</div>
-  </div>
-  <button mat-icon-button matTooltip="Totals do not Match!" [matTooltipPosition]="'right'" style="color:red;" *ngIf="origTotal != newTotal"><mat-icon>error</mat-icon></button>
-  <button mat-icon-button (click)="close()"><mat-icon>close</mat-icon></button>
-</mat-dialog-actions>
-<h2 class="title" mat-dialog-title>{{getTitle()}}</h2>
-<br />
-<mat-dialog-content>
-    <div [@deleteEnterLeave] [@.disabled]="disableDeleteAnimations" class="transactionFields" *ngFor="let t of data; index as i">
-      <button 
-        mat-icon-button 
+<ng-template #editorActions
+  ><div class="actions">
+    <button mat-icon-button aria-label="Save transaction" [disabled]="saving" *ngIf="isAdd()" (click)="add()">
+      <mat-icon>save</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      aria-label="Save transaction"
+      id="updateButton"
+      *ngIf="!isAdd()"
+      [disabled]="saving || !totalsMatch"
+      (click)="checkDeletesThenUpdate()"
+    >
+      <mat-icon>save</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      aria-label="Add split line"
+      [disabled]="saving || !data.length"
+      class="rotateIcon"
+      *ngIf="!isAdd()"
+      (click)="split()"
+    >
+      <mat-icon>call_split</mat-icon>
+    </button>
+    <div class="totals-badge" aria-label="Transaction total">{{ newTotal | currency }}</div>
+    <button
+      mat-icon-button
+      matTooltip="Totals do not Match!"
+      [matTooltipPosition]="'right'"
+      style="color: red"
+      *ngIf="!totalsMatch"
+    >
+      <mat-icon>error</mat-icon>
+    </button>
+  </div></ng-template
+>
+<ng-template #editorBody
+  ><div [attr.inert]="saving ? '' : null">
+    <p class="editor-error" role="alert" *ngIf="error">{{ error }}</p>
+    <h2 class="title">{{ getTitle() }}</h2>
+
+
+    <div
+      [@deleteEnterLeave]
+      [@.disabled]="disableDeleteAnimations"
+      class="transactionFields"
+      *ngFor="let t of data; index as i"
+    >
+      <span class="title-span">
+      <button
+        mat-icon-button
         class="delete-controls"
+        [attr.aria-label]="'Delete transaction line ' + (i + 1)"
         (click)="deleteTransaction(t, i)"
-        [disabled]="(i == 0 && data.length > 1)">
+        [disabled]="saving || (i == 0 && data.length > 1)"
+      >
         <mat-icon>delete</mat-icon>
       </button>
-      <span class="title-span">
-        <p class="item-index" *ngIf="t.xIndex != null">{{t.xIndex + 1}}</p>
+
+        <p class="item-index" *ngIf="t.xIndex != null">{{ t.xIndex + 1 }}</p>
         <mat-form-field class="addTransactionFieldHeader">
           <mat-label>Date</mat-label>
-          <input matInput [matDatepicker]="picker" [(ngModel)]="tmpDate[i]">
+          <input matInput [matDatepicker]="picker" [(ngModel)]="tmpDate[i]" />
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
@@ -32,13 +69,21 @@
       <mat-form-field class="addTransactionField amount">
         <mat-label>Amount</mat-label>
         <span matPrefix class="money-prefix">$&nbsp;</span>
-        <input matInput type="text" inputmode="decimal" (blur)="commitAmount(i)" [ngModel]="amountDisplay[i]" (ngModelChange)="onAmountInput($event, i)"/>
+        <input
+          matInput
+          type="text"
+          inputmode="decimal"
+          (blur)="commitAmount(i)"
+          [ngModel]="amountDisplay[i]"
+          (ngModelChange)="onAmountInput($event, i)"
+        />
         <mat-button-toggle-group
           matSuffix
           class="neg-toggle-group"
           hideSingleSelectionIndicator
           [value]="amountNegative[i] ? 'neg' : 'pos'"
-          (change)="onAmountSignChange(i, $event.value)">
+          (change)="onAmountSignChange(i, $event.value)"
+        >
           <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
           <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
         </mat-button-toggle-group>
@@ -52,33 +97,44 @@
         <textarea matInput [(ngModel)]="t.notes"></textarea>
       </mat-form-field>
       <mat-form-field class="addTransactionField">
-          <mat-label>Category</mat-label>
-          <mat-select [(ngModel)]="t.category">
-              <mat-option value=''></mat-option>
-              <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
-                {{category.name}}
-              </mat-option>
-            </mat-select>
+        <mat-label>Category</mat-label>
+        <mat-select [(ngModel)]="t.category">
+          <mat-option value=""></mat-option>
+          <mat-option *ngFor="let category of ATsvc.categories | async" [value]="category.name">
+            {{ category.name }}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
     </div>
 
     <div class="pending-delete-section" *ngIf="pendingDeletes.length > 0">
-      <hr class="hr"  />
+      <hr class="hr" />
       <h3>Pending Deletes</h3>
-      <div [@deleteEnterLeave] [@.disabled]="disableDeleteAnimations" class="pending-deletes" *ngFor="let t of pendingDeletes; index as i">
-        <button 
-            mat-icon-button 
-            class="delete-controls"
-            (click)="undoDelete(t, i)">
-            <mat-icon>undo</mat-icon>
+      <div
+        [@deleteEnterLeave]
+        [@.disabled]="disableDeleteAnimations"
+        class="pending-deletes"
+        *ngFor="let t of pendingDeletes; index as i"
+      >
+        <button
+          mat-icon-button
+          class="delete-controls"
+          [attr.aria-label]="'Restore deleted line ' + (i + 1)"
+          (click)="undoDelete(t, i)"
+        >
+          <mat-icon>undo</mat-icon>
         </button>
         <div class="pending-delete-fields">
-          <div>{{t.date}}</div>
-          <div>{{t.amount | currency}}</div>
-          <div>{{t.description}}</div>
-          <div>{{t.notes}}</div>
-          <div>{{t.category}}</div>
+          <div>{{ t.date }}</div>
+          <div>{{ t.amount | currency }}</div>
+          <div>{{ t.description }}</div>
+          <div>{{ t.notes }}</div>
+          <div>{{ t.category }}</div>
         </div>
       </div>
     </div>
-</mat-dialog-content>
+  </div></ng-template
+>
+<div class="editor-layout">
+  <div class="editor-content"><ng-container *ngTemplateOutlet="editorBody"></ng-container></div>
+</div>

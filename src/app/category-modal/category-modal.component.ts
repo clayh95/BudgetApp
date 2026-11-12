@@ -1,7 +1,7 @@
-import { Component, Inject, ViewChild, ElementRef, HostListener, inject } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { MatDialog, MatDialogConfig, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { collectionType, ConfirmModalButtons, ConfirmModalConfig, ICategory } from '../core/dataTypes';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
@@ -17,12 +17,13 @@ interface ICategoryModalData extends ICategory {
   standalone: true,
   imports: [SharedModule],
   templateUrl: './category-modal.component.html',
-  styleUrls: ['./category-modal.component.scss']
+  styleUrls: ['./category-modal.component.scss'],
 })
 export class CategoryModalComponent {
-  //Store the original cat name so we can update the 
+  @ViewChild('editorActions', { static: true }) actionsTemplate: TemplateRef<unknown>;
+  //Store the original cat name so we can update the
   //name for transactions tied to this category if we change it
-  origName: string = ''; 
+  origName: string = '';
 
   //CHIPS
   visible = true;
@@ -30,102 +31,146 @@ export class CategoryModalComponent {
   removable = true;
   addOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
-  @ViewChild("chipInput") chipInput: ElementRef;
+  @ViewChild('chipInput') chipInput: ElementRef;
 
   showPicker: boolean;
-  data = inject<ICategoryModalData>(MAT_DIALOG_DATA);
+  data = { name: '', keywords: [], notes: '', budgeted: 0 } as ICategoryModalData;
+  @Input() set initialData(value: ICategoryModalData) {
+    if (value) {
+      this.data = structuredClone(value);
+      this.initialize();
+    }
+  }
+  @Output() saved = new EventEmitter<void>();
+  @Output() dismiss = new EventEmitter<void>();
+  saving = false;
+  error = '';
+  private baseline = '';
+  private sourceMonth = '';
+  private signature() {
+    return JSON.stringify([this.data, this.budgetedDisplay, this.watched]);
+  }
+  get dirty() {
+    return this.signature() !== this.baseline;
+  }
+  private initialize() {
+    this.data = structuredClone(this.data);
+    this.data.keywords ||= [];
+    this.origName = this.data.name;
+    this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
+    this.budgetedNegative = (parseMoney(this.data.budgeted) ?? 0) < 0;
+    this.watched =
+      typeof this.data.watched === 'boolean'
+        ? this.data.watched
+        : this.getCurrentWatchedKeys().includes(this.normalizeCategoryKey(this.data.name || ''));
+    this.sourceMonth = this.CATsvc.getMonthPKValue?.() || '';
+    this.baseline = this.signature();
+  }
+  private finish() {
+    this.baseline = this.signature();
+    this.saved.emit();
+  }
+  private async persist(operation: () => Promise<void>) {
+    if (this.saving) return;
+    if (!this.commitBudgeted()) return;
+    this.saving = true;
+    this.error = '';
+    try {
+      await operation();
+      this.finish();
+    } catch {
+      this.error = 'Changes could not be saved. Your edits are still here. Please try again.';
+    } finally {
+      this.saving = false;
+    }
+  }
+  private requireSaved(result: boolean | void) {
+    if (result === false) throw new Error('Save failed');
+  }
   budgetedDisplay: string = '';
   budgetedNegative: boolean = false;
   watched = false;
 
-  constructor(public CATsvc: DbService, 
-              public dialogRef: MatDialogRef<CategoryModalComponent>,
-              public dialog: MatDialog) {
-                this.origName = this.data.name;
-                this.budgetedDisplay = this.formatMoneyDisplay(this.data.budgeted);
-                this.budgetedNegative = (parseMoney(this.data.budgeted) ?? 0) < 0;
-                this.watched = typeof this.data?.watched === 'boolean'
-                  ? this.data.watched
-                  : this.getCurrentWatchedKeys().includes(this.normalizeCategoryKey(this.data?.name || ''));
-                history.pushState(null, null, location.href);
-               }
+  constructor(
+    public CATsvc: DbService,
+    public dialog: MatDialog,
+  ) {
+    this.initialize();
+  }
 
   async add() {
-    const budgeted = parseMoney(this.data.budgeted);
-    if (budgeted === null) {
-      window.alert('Please enter a valid budgeted amount.');
-      return;
-    }
-    let doc = {
-      name: this.data.name, 
-      notes: this.data.notes ?? '',
-      keywords: this.data.keywords, 
-      budgeted: budgeted,
-      emoji: this.data.emoji ?? ''
-    }
-    await this.CATsvc.addDocument(doc, collectionType.categories);
-    await this.persistWatchedState('', this.data.name, this.watched);
-    this.dialogRef.close();
+    return this.persist(async () => {
+      const { name, notes = '', keywords = [], budgeted, emoji = '' } = this.data;
+      this.requireSaved(
+        await this.CATsvc.addDocument(
+          { name, notes, keywords, budgeted, emoji },
+          collectionType.categories,
+          this.sourceMonth,
+        ),
+      );
+      await this.persistWatchedState('', name, this.watched);
+    });
   }
 
   async update() {
-    const budgeted = parseMoney(this.data.budgeted);
-    if (budgeted === null) {
-      window.alert('Please enter a valid budgeted amount.');
-      return;
-    }
-    let doc = {
-      name: this.data.name, 
-      notes: this.data.notes ?? '',
-      keywords: this.data.keywords ?? [], 
-      budgeted: budgeted,
-      emoji: this.data.emoji ?? ''
-    }
-    await this.CATsvc.updateDocument(this.data.id, collectionType.categories, doc);
-    this.updateRelatedTransactions(this.data.name);
-    await this.persistWatchedState(this.origName, this.data.name, this.watched);
-    this.dialogRef.close();
+    return this.persist(async () => {
+      const { name, notes = '', keywords = [], budgeted, emoji = '' } = this.data;
+      this.requireSaved(
+        await this.CATsvc.updateDocument(
+          this.data.id,
+          collectionType.categories,
+          { name, notes, keywords, budgeted, emoji },
+          this.sourceMonth,
+        ),
+      );
+      if (name !== this.origName) await this.updateRelatedTransactions(name);
+      await this.persistWatchedState(this.origName, name, this.watched);
+    });
   }
 
   delete() {
-    const elem = document.getElementById("deleteButton");
-    const rect = elem.getBoundingClientRect();
-    const x:number = rect.right;
-    const y:number = rect.top;
-    let controlConfig: ConfirmModalConfig = {
-      title: "Delete Category?",
-      matIconName: "chevron_left",
-      message: "Delete this category?", 
-      buttons:[ConfirmModalButtons.yes, ConfirmModalButtons.no]
+    const controlConfig: ConfirmModalConfig = {
+      title: 'Delete Category?',
+      matIconName: 'chevron_left',
+      message: 'Delete this category?',
+      buttons: [ConfirmModalButtons.yes, ConfirmModalButtons.no],
     };
-    let dialogConfig: MatDialogConfig = {
-      position: {
-        left: `${x.toString()}px`,
-        top: `${y.toString()}px`,
-      },
+    const dialogConfig: MatDialogConfig = {
+      maxWidth: '90vw',
       data: controlConfig,
       autoFocus: false,
-      disableClose: true
-    }
-    let dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
-    dialogRef.afterClosed().subscribe(async result => {
+      disableClose: true,
+    };
+    const dialogRef = this.dialog.open(ConfirmModalComponent, dialogConfig);
+    dialogRef.afterClosed().subscribe(async (result) => {
       if (result) {
-        await this.CATsvc.deleteDocument(this.data, collectionType.categories);
-        await this.persistWatchedState(this.origName, '', false);
-        this.updateRelatedTransactions('');
-        this.dialogRef.close();
+        await this.persist(async () => {
+          this.requireSaved(await this.CATsvc.deleteDocument(this.data, collectionType.categories, this.sourceMonth));
+          await this.persistWatchedState(this.origName, '', false);
+          await this.updateRelatedTransactions('');
+        });
       }
     });
   }
 
-  async updateRelatedTransactions(newName:string) {
-    if (this.origName == "") { return }
-    var querySnap = await this.CATsvc.getQuerySnapshot(collectionType.transactions, "category", "==", this.origName);
-    querySnap.docs?.forEach(doc => {
-      this.CATsvc.updateDocument(doc.id, collectionType.transactions, {category: newName});
-    });
+  async updateRelatedTransactions(newName: string) {
+    if (this.origName == '') {
+      return;
+    }
+    const querySnap = await this.CATsvc.getQuerySnapshot(
+      collectionType.transactions,
+      'category',
+      '==',
+      this.origName,
+      this.sourceMonth,
+    );
+    for (const doc of querySnap.docs || []) {
+      this.requireSaved(
+        await this.CATsvc.updateDocument(doc.id, collectionType.transactions, { category: newName }, this.sourceMonth),
+      );
+    }
   }
-  
+
   addKeyword(event: MatChipInputEvent): void {
     const input = event.input;
     const value = event.value;
@@ -133,9 +178,9 @@ export class CategoryModalComponent {
     if (input) input.value = '';
     this.chipInput.nativeElement.focus();
   }
-  
+
   removeKeyword(kw: string): void {
-    this.data.keywords.splice(this.data.keywords.indexOf(kw));
+    this.data.keywords.splice(this.data.keywords.indexOf(kw), 1);
   }
 
   addEmoji(event) {
@@ -146,7 +191,7 @@ export class CategoryModalComponent {
     event.stopPropagation();
     this.showPicker = !this.showPicker;
   }
-  
+
   @HostListener('document:click', ['$event']) onDocumentClick(event) {
     this.showPicker = false;
   }
@@ -154,14 +199,13 @@ export class CategoryModalComponent {
   getPickerFieldClass() {
     if (this.showPicker) {
       return 'image-picker-selected';
-    }
-    else {
+    } else {
       return 'image-picker-unselected';
     }
   }
 
   close() {
-    this.dialogRef.close();
+    this.dismiss.emit();
   }
 
   toggleWatched() {
@@ -176,17 +220,20 @@ export class CategoryModalComponent {
     const parsed = parseMoney(this.budgetedDisplay);
     if (parsed === null) {
       window.alert('Please enter a valid budgeted amount.');
-      return;
+      return false;
     }
     const signed = this.budgetedNegative ? -Math.abs(parsed) : Math.abs(parsed);
     this.data.budgeted = signed;
     const abs = Math.abs(parsed).toFixed(2);
     this.budgetedDisplay = this.budgetedNegative ? `-${abs}` : abs;
+    return true;
   }
 
   private formatMoneyDisplay(value: unknown): string {
     const parsed = parseMoney(value);
-    if (parsed === null) { return ''; }
+    if (parsed === null) {
+      return '';
+    }
     const abs = Math.abs(parsed).toFixed(2);
     return parsed < 0 ? `-${abs}` : abs;
   }
@@ -214,9 +261,13 @@ export class CategoryModalComponent {
   private async persistWatchedState(previousName: string, currentName: string, watched: boolean) {
     const previousKey = this.normalizeCategoryKey(previousName);
     const currentKey = this.normalizeCategoryKey(currentName);
-    const currentPreferences = this.CATsvc.dashboardPreferences.getValue() || { watchedCategoryKeys: [], watchedVendorKeys: [] };
-    const nextWatchedKeys = currentPreferences.watchedCategoryKeys
-      .filter(key => key !== previousKey && key !== currentKey);
+    const currentPreferences = this.CATsvc.dashboardPreferences.getValue() || {
+      watchedCategoryKeys: [],
+      watchedVendorKeys: [],
+    };
+    const nextWatchedKeys = currentPreferences.watchedCategoryKeys.filter(
+      (key) => key !== previousKey && key !== currentKey,
+    );
 
     if (watched && currentKey) {
       nextWatchedKeys.push(currentKey);
@@ -224,9 +275,7 @@ export class CategoryModalComponent {
 
     await this.CATsvc.saveDashboardPreferences({
       watchedCategoryKeys: Array.from(new Set(nextWatchedKeys)),
-      watchedVendorKeys: currentPreferences.watchedVendorKeys || []
+      watchedVendorKeys: currentPreferences.watchedVendorKeys || [],
     });
   }
-
-
 }

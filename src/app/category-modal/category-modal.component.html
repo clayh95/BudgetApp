@@ -1,67 +1,112 @@
-<mat-dialog-actions class="actions">
-  <button mat-icon-button *ngIf="data.id === undefined" (click)="add()"><mat-icon>save</mat-icon></button>
-  <button mat-icon-button *ngIf="data.id !== undefined" (click)="update()"><mat-icon>save</mat-icon></button>
-  <button id="deleteButton" mat-icon-button *ngIf="data.id !== undefined" (click)="delete(data.id)"><mat-icon>delete</mat-icon></button>
-  <div class="spacer"></div>
-  <button mat-icon-button (click)="close()"><mat-icon>close</mat-icon></button>
-</mat-dialog-actions>
-<div style="display:flex;align-items: center;">
-  <div
-    (click)="$event.stopPropagation();"
-    class="emoji-picker-wrapper"
-    *ngIf="this.showPicker">
-    <emoji-mart 
-      title="Pick your emoji…" 
-      (emojiClick)="addEmoji($event)"
-      emoji="point_up">
-    </emoji-mart>
-  </div>
-  <div [class]="getPickerFieldClass()" (click)="toggleEmojiPicker($event)">
-    <button style="color: gray;" matSuffix mat-icon-button  *ngIf="data.emoji !== undefined"> 
-      <span style="font-size:24px">{{data.emoji}}</span>
+<ng-template #editorActions
+  ><div class="actions">
+    <button
+      mat-icon-button
+      aria-label="Save category"
+      [disabled]="saving"
+      *ngIf="data.id === undefined"
+      (click)="add()"
+    >
+      <mat-icon>save</mat-icon>
     </button>
-    <button style="color: gray;" *ngIf="data.emoji == undefined" matSuffix mat-icon-button > 
-      <mat-icon>insert_photo</mat-icon>
+    <button
+      mat-icon-button
+      aria-label="Save category"
+      [disabled]="saving"
+      *ngIf="data.id !== undefined"
+      (click)="update()"
+    >
+      <mat-icon>save</mat-icon>
     </button>
-  </div>
-  <h2 mat-dialog-title>{{data.name}}</h2>
+    <button
+      id="deleteButton"
+      mat-icon-button
+      aria-label="Delete category"
+      [disabled]="saving"
+      *ngIf="data.id !== undefined"
+      (click)="delete()"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+    <div class="spacer"></div>
+  </div></ng-template
+>
+<ng-template #editorBody
+  ><div [attr.inert]="saving ? '' : null">
+    <p class="editor-error" role="alert" *ngIf="error">{{ error }}</p>
+    <div style="display: flex; align-items: center">
+      <div (click)="$event.stopPropagation()" class="emoji-picker-wrapper" *ngIf="this.showPicker">
+        <emoji-mart title="Pick your emoji…" (emojiClick)="addEmoji($event)" emoji="point_up"> </emoji-mart>
+      </div>
+      <div [class]="getPickerFieldClass()" (click)="toggleEmojiPicker($event)">
+        <button style="color: gray" matSuffix mat-icon-button *ngIf="data.emoji !== undefined">
+          <span style="font-size: 24px">{{ data.emoji }}</span>
+        </button>
+        <button style="color: gray" *ngIf="data.emoji == undefined" matSuffix mat-icon-button>
+          <mat-icon>insert_photo</mat-icon>
+        </button>
+      </div>
+      <h2>{{ data.name }}</h2>
+    </div>
+
+    <div class="categoryFields">
+      <mat-form-field class="categoryModalField">
+        <mat-label>Name</mat-label>
+        <input matInput placeholder="Name" [(ngModel)]="data.name" />
+      </mat-form-field>
+      <mat-form-field class="categoryModalField">
+        <mat-label>Category notes</mat-label>
+        <input matInput placeholder="Notes" [(ngModel)]="data.notes" />
+      </mat-form-field>
+      <mat-form-field class="categoryModalField amount">
+        <mat-label>Budgeted</mat-label>
+        <span matPrefix class="money-prefix">$&nbsp;</span>
+        <input
+          matInput
+          type="text"
+          inputmode="decimal"
+          (blur)="commitBudgeted()"
+          [ngModel]="budgetedDisplay"
+          (ngModelChange)="onBudgetedInput($event)"
+        />
+        <mat-button-toggle-group
+          matSuffix
+          class="neg-toggle-group"
+          hideSingleSelectionIndicator
+          [value]="budgetedNegative ? 'neg' : 'pos'"
+          (change)="onBudgetedSignChange($event.value)"
+        >
+          <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
+          <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
+        </mat-button-toggle-group>
+      </mat-form-field>
+      <mat-form-field class="categoryModalChips">
+        <mat-label>Keywords</mat-label>
+        <mat-chip-grid #chipList>
+          <mat-chip-row
+            *ngFor="let keyword of data.keywords"
+            [selectable]="selectable"
+            [removable]="removable"
+            (removed)="removeKeyword(keyword)"
+          >
+            {{ keyword }}
+            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+          </mat-chip-row>
+          <input
+            #chipInput
+            placeholder="Keywords"
+            [matChipInputFor]="chipList"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            [matChipInputAddOnBlur]="addOnBlur"
+            (matChipInputTokenEnd)="addKeyword($event)"
+          />
+        </mat-chip-grid>
+      </mat-form-field>
+      <mat-slide-toggle *ngIf="false" [(ngModel)]="watched">Watch this category</mat-slide-toggle>
+    </div>
+  </div></ng-template
+>
+<div class="editor-layout">
+  <div class="editor-content"><ng-container *ngTemplateOutlet="editorBody"></ng-container></div>
+
 </div>
-<mat-dialog-content>
-<div class="categoryFields">
-  <mat-form-field class="categoryModalField">
-      <input matInput placeholder="Name" [(ngModel)]="data.name"/>
-    </mat-form-field>
-    <mat-form-field class="categoryModalField">
-      <input matInput placeholder="Notes" [(ngModel)]="data.notes"/>
-    </mat-form-field>
-    <mat-form-field class="categoryModalField amount">
-      <mat-label>Budgeted</mat-label>
-      <span matPrefix class="money-prefix">$&nbsp;</span>
-      <input matInput type="text" inputmode="decimal" (blur)="commitBudgeted()" [ngModel]="budgetedDisplay" (ngModelChange)="onBudgetedInput($event)" />
-      <mat-button-toggle-group
-        matSuffix
-        class="neg-toggle-group"
-        hideSingleSelectionIndicator
-        [value]="budgetedNegative ? 'neg' : 'pos'"
-        (change)="onBudgetedSignChange($event.value)">
-        <mat-button-toggle value="neg"><mat-icon>remove</mat-icon></mat-button-toggle>
-        <mat-button-toggle value="pos"><mat-icon>add</mat-icon></mat-button-toggle>
-      </mat-button-toggle-group>
-    </mat-form-field>
-    <mat-form-field class="categoryModalChips">
-      <mat-chip-grid #chipList>
-        <mat-chip-row *ngFor="let keyword of data.keywords" [selectable]="selectable"
-                [removable]="removable" (removed)="removeKeyword(keyword)">
-          {{keyword}}
-          <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
-        </mat-chip-row>
-        <input #chipInput placeholder="Keywords"
-              [matChipInputFor]="chipList"
-              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-              [matChipInputAddOnBlur]="addOnBlur"
-              (matChipInputTokenEnd)="addKeyword($event)" />
-      </mat-chip-grid>
-  </mat-form-field>
-  <mat-slide-toggle [(ngModel)]="watched">Watch this category</mat-slide-toggle>
-  </div>
-</mat-dialog-content>

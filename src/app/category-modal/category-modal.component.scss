@@ -1,88 +1,111 @@
 .categoryModalField {
-    padding: 10px;
+  padding: 10px;
 }
 
 .categoryModalChips {
-    width: 50%;
-    padding: 10px;
+  width: 50%;
+  padding: 10px;
 }
 
 .money-prefix {
-    color: rgba(0, 0, 0, 0.54);
+  color: rgba(0, 0, 0, 0.54);
 }
 
 .neg-toggle-group {
-    height: 28px;
+  height: 28px;
 }
 ::ng-deep .neg-toggle-group .mat-button-toggle-label-content {
-    line-height: unset !important;
+  line-height: unset !important;
 }
-
 
 .amount {
-    ::ng-deep .mat-mdc-form-field-icon-suffix {
-        padding-left: 4px;
-        padding-right: 16px;
-    }
-}
-
-.mat-dialog-title {
-    margin: 0px;
-}
-
-::ng-deep .mat-dialog-container {
-    padding: 0px 24px 24px 24px;
-}
-
-::ng-deep .mat-dialog-actions {
-    padding: 0px 0px 32px 0px;
+  ::ng-deep .mat-mdc-form-field-icon-suffix {
+    padding-left: 4px;
+    padding-right: 16px;
+  }
 }
 
 // button {
 //     margin-right: 5px;
-// }  
+// }
 
 .categoryFields {
-    flex-direction: column;
-    overflow: auto;
-    mat-form-field {
-        width: 90% !important;
-    }
- }
-
-.actions {
-    .spacer {
-        flex: 1;
-    }
+  flex-direction: column;
+  overflow: auto;
+  mat-form-field {
+    width: 90% !important;
+  }
 }
 
-.emoji-picker-wrapper {    
-    transform: scale(0.75);
-    position: absolute;
-    background: white;
-    z-index: 3;
-    left: 1%;
-    top: 10%;
+.actions {
+  .spacer {
+    flex: 1;
+  }
+}
+
+.emoji-picker-wrapper {
+  transform: scale(0.75);
+  position: absolute;
+  background: white;
+  z-index: 3;
+  left: 1%;
+  top: 10%;
 }
 
 .image-picker-selected {
-    border: 3px solid dodgerblue;
-    border-radius: 25px;
-    margin-right: 10px;
+  border: 3px solid dodgerblue;
+  border-radius: 25px;
+  margin-right: 10px;
 }
 
 .image-picker-unselected {
-    border: 3px solid transparent;
-    border-radius: 25px;
-    margin-right: 10px;
+  border: 3px solid transparent;
+  border-radius: 25px;
+  margin-right: 10px;
 }
 
-@media(max-width: 1000px) {
-    .categoryFields {
-       flex-direction: column;
-       overflow: auto;
-       mat-form-field {
-           width: 90% !important;
-       }
+@media (max-width: 1000px) {
+  .categoryFields {
+    flex-direction: column;
+    overflow: auto;
+    mat-form-field {
+      width: 90% !important;
     }
+  }
 }
+
+:host {
+  display: block;
+  height: 100%;
+}
+.editor-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.editor-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+.actions {
+  display: flex;
+  align-items: center;
+}
+.editor-error {
+  color: #c62828;
+  font-size: 13px;
+}
+:host .categoryFields mat-form-field {
+  width: 100% !important;
+  padding: 0;
+}
+:host .categoryModalChips {
+  width: 100%;
+  padding: 0;
+}
+
+
+:host .categoryFields { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }

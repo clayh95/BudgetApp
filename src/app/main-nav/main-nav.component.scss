@@ -175,3 +175,7 @@
     min-width: 40px;
   }
 }
+
+.route-content { height:100%; }
+// Summary manages its own independent scrolling regions within the remaining viewport.
+.route-content:has(> app-summary) { height:auto; }

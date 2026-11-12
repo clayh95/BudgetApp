@@ -1,0 +1,14 @@
+node_modules/
+dist/
+out-tsc/
+.angular/
+coverage/
+.scratch/
+functions/
+package-lock.json
+src/assets/
+# Local Firebase configuration and credentials
+src/environments/environment.ts
+src/environments/environment.prod.ts
+# Prettier does not support indented Sass syntax.
+**/*.sass

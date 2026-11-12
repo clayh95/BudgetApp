@@ -8,7 +8,7 @@
     [opened]="!(isHandset$ | async)">
     <div class="sidenav-body">
       <mat-nav-list>
-      <a mat-list-item routerLink="/dashboard" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Dashboard" [matTooltipPosition]="'right'"><mat-icon>space_dashboard</mat-icon></button></a>
+      <a *ngIf="false" mat-list-item routerLink="/dashboard" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Dashboard" [matTooltipPosition]="'right'"><mat-icon>space_dashboard</mat-icon></button></a>
       <a mat-list-item routerLink="/transactions" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Transaction List" [matTooltipPosition]="'right'"><mat-icon>view_list</mat-icon></button></a>
       <a mat-list-item routerLink="/categories" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Categories" [matTooltipPosition]="'right'"><mat-icon>cards</mat-icon></button></a>
       <a mat-list-item routerLink="/csv" routerLinkActive="active"><button mat-icon-button [disableRipple]="true" matTooltip="Import From CSV" [matTooltipPosition]="'right'"><mat-icon>csv</mat-icon></button></a>
@@ -18,16 +18,18 @@
       <button 
         mat-icon-button 
         class="action"
+        aria-label="Undo last action"
         matTooltip="Undo last action" [matTooltipPosition]="'right'" 
-        [disabled] = "service.actionStack.length == 0 || service.actionStackIndex == service.actionStack.length"
+        [disabled] = "service.getSaveState() === 'saving' || service.actionStack.length == 0 || service.actionStackIndex == service.actionStack.length"
         (click)="undo()" >
         <mat-icon>undo</mat-icon>
       </button>
       <button 
         mat-icon-button 
         class="action" 
+        aria-label="Redo last action"
         matTooltip="Redo last action" [matTooltipPosition]="'right'" 
-        [disabled] = "service.actionStackIndex == 0"
+        [disabled] = "service.getSaveState() === 'saving' || service.actionStackIndex == 0"
         (click)="redo()" >
         <mat-icon>redo</mat-icon>
       </button>
@@ -53,8 +55,9 @@
       </div>
       <span class="spacer-small"></span>
     </mat-toolbar>
-    <div style="height:100%">
+    <div class="route-content">
       <router-outlet></router-outlet>
     </div>
+    <app-editor-drawer></app-editor-drawer>
   </mat-sidenav-content>
 </mat-sidenav-container>
