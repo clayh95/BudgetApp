@@ -62,11 +62,8 @@
             rows="12"
           ></textarea>
           <p class="red" role="alert" *ngIf="notesError">{{ notesError }}</p>
+          <button mat-button *ngIf="notesError" (click)="saveNotes()">Retry</button>
         </div>
-      </div>
-      <div drawer-actions *ngIf="drawerKind === 'notes'" class="notes-status" role="status">
-        {{ notesSaving ? 'Saving…' : notesDirty ? 'Unsaved changes' : 'All changes saved' }}
-        <button mat-button *ngIf="notesError" (click)="saveNotes()">Retry</button>
       </div>
       <div
         class="workspace"
@@ -113,21 +110,33 @@
               <mat-icon class="pending-icon" *ngIf="view.kind === 'pending'">schedule</mat-icon>
               <span class="category-label"
                 ><span class="category-name">{{ view.category.name }}</span>
-                <small class="category-budget" *ngIf="view.kind === 'category'">{{ view.category.budgeted | currency }}</small>
+                <small class="category-budget" *ngIf="view.kind === 'category'">{{
+                  view.category.budgeted | currency
+                }}</small>
                 <small *ngIf="view.kind === 'uncategorized'">Needs a category</small>
                 <small *ngIf="view.kind === 'pending'">Awaiting posting</small>
-                <small class="category-budget" *ngIf="view.kind === 'income'">{{ view.category.budgeted | currency }}</small>
+                <small class="category-budget" *ngIf="view.kind === 'income'">{{
+                  view.category.budgeted | currency
+                }}</small>
               </span>
               <span class="category-value">
                 <span *ngIf="view.kind === 'pending' || view.kind === 'uncategorized'">{{
                   view.transactions.length
                 }}</span>
-                <span class="category-amount" *ngIf="view.kind === 'category'"
+                <span
+                  class="category-amount"
+                  *ngIf="view.kind === 'category'"
                   [class.red]="view.category.budgeted - view.category.spent < 0"
                   [class.green]="view.category.budgeted - view.category.spent >= 0"
                   >{{ view.category.budgeted - view.category.spent | currency }}</span
                 >
-                <span class="category-amount" *ngIf="view.kind === 'income'" [class.red]="actualIncome < 0" [class.green]="actualIncome >= 0">{{ actualIncome | currency }}</span>
+                <span
+                  class="category-amount"
+                  *ngIf="view.kind === 'income'"
+                  [class.red]="actualIncome < 0"
+                  [class.green]="actualIncome >= 0"
+                  >{{ actualIncome | currency }}</span
+                >
               </span>
             </button>
           </div>
@@ -239,7 +248,10 @@
                 (click)="editTransaction(trans, view)"
                 [attr.aria-label]="'Edit ' + trans.description"
               >
-                <mat-icon class="drag-handle" *ngIf="showTransactionHandle(view, trans)" [class.drag-disabled]="service.getSaveState() === 'saving'"
+                <mat-icon
+                  class="drag-handle"
+                  *ngIf="showTransactionHandle(view, trans)"
+                  [class.drag-disabled]="service.getSaveState() === 'saving'"
                   >drag_indicator</mat-icon
                 >
                 <span class="transaction-date">{{ trans.date | date: 'MMM d' }}</span>
@@ -253,7 +265,7 @@
                   <img *ngIf="getIconFromUtils(trans.description)" [src]="getIconFromUtils(trans.description)" alt="" />
                   <mat-icon
                     *ngIf="trans.xId != null"
-                    class="split-icon"
+                    class="split-icon rotateIcon"
                     matTooltip="Split transaction"
                     [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
                     aria-label="Split transaction"
