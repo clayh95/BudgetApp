@@ -90,11 +90,6 @@
   overflow: auto;
   position: relative;
 }
-.editor-footer {
-  flex-shrink: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  padding-top: 8px;
-}
 .actions {
   display: flex;
   align-items: center;
@@ -112,4 +107,5 @@
   padding: 0;
 }
 
-.editor-toolbar { flex-shrink: 0; border-bottom: 1px solid rgba(0, 0, 0, .12); padding-bottom: 8px; }
+
+:host .categoryFields { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }

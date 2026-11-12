@@ -294,6 +294,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     return true;
   }
   transactionActions = viewChild(AddTransactionComponent);
+  categoryActions = viewChild(CategoryModalComponent);
 
   closeView(view: SummaryView) {
     this.openedAt.delete(view.key);

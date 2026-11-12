@@ -36,7 +36,7 @@
         <h2 class="drawer-title">{{ drawerTitle }}</h2>
       </div>
       <div drawer-header-actions>
-        <ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate"></ng-container>
+        <ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate || categoryActions()?.actionsTemplate"></ng-container>
       </div>
       <div drawer-body>
         <app-category-modal

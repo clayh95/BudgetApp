@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, HostListener, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
 import { DbService } from '../core/db.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -20,6 +20,7 @@ interface ICategoryModalData extends ICategory {
   styleUrls: ['./category-modal.component.scss'],
 })
 export class CategoryModalComponent {
+  @ViewChild('editorActions', { static: true }) actionsTemplate: TemplateRef<unknown>;
   //Store the original cat name so we can update the
   //name for transactions tied to this category if we change it
   origName: string = '';

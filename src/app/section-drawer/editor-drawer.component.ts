@@ -25,7 +25,7 @@ import { DbService } from '../core/db.service';
       (closeRequested)="close()"
     >
       <h2 drawer-header>{{ title }}</h2>
-      <div drawer-header-actions><ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate"></ng-container></div>
+      <div drawer-header-actions><ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate || categoryActions()?.actionsTemplate"></ng-container></div>
       <div drawer-body>
         <app-category-modal
           *ngIf="editors.category"
@@ -78,6 +78,7 @@ import { DbService } from '../core/db.service';
 })
 export class EditorDrawerComponent implements OnDestroy {
   transactionActions = viewChild(AddTransactionComponent);
+  categoryActions = viewChild(CategoryModalComponent);
   @ViewChild(CategoryModalComponent) categoryEditor?: CategoryModalComponent;
   @ViewChild(AddTransactionComponent) transactionEditor?: AddTransactionComponent;
   private previousMonthGuard: DbService['beforeEditorMonthChange'];
