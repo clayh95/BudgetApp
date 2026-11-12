@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { EditorDrawerComponent } from './editor-drawer.component';
 import { EditorDrawerService } from './editor-drawer.service';
@@ -8,7 +9,7 @@ describe('Shared editor drawer', () => {
     const previous = vi.fn().mockResolvedValue(true);
     const db = { beforeEditorMonthChange: previous };
     const dialog = { open: vi.fn(() => ({ afterClosed: () => of(false) })) };
-    const host = new EditorDrawerComponent(service, dialog as any, db as any);
+    const host = TestBed.runInInjectionContext(() => new EditorDrawerComponent(service, dialog as any, db as any));
     await service.openCategory({ id: 'cat', name: 'Groceries', budgeted: 10, keywords: [] } as any);
     host.categoryEditor = { dirty: true, saving: false } as any;
     expect(await db.beforeEditorMonthChange()).toBe(false);
@@ -25,7 +26,7 @@ describe('Shared editor drawer', () => {
 
   it('isolates drawer drafts and prevents dismissal during a save', async () => {
     const service = new EditorDrawerService();
-    const host = new EditorDrawerComponent(service, {} as any, { beforeEditorMonthChange: null } as any);
+    const host = TestBed.runInInjectionContext(() => new EditorDrawerComponent(service, {} as any, { beforeEditorMonthChange: null } as any));
     const data = [{ id: 't', description: 'Shop', amount: -20 }];
     await service.openTransactions(data as any);
     service.transactions[0].amount = -30;

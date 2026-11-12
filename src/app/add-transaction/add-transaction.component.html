@@ -23,8 +23,7 @@
     >
       <mat-icon>call_split</mat-icon>
     </button>
-    <div class="spacer"></div>
-
+    <div class="totals-badge" aria-label="Transaction total">{{ newTotal | currency }}</div>
     <button
       mat-icon-button
       matTooltip="Totals do not Match!"
@@ -34,16 +33,13 @@
     >
       <mat-icon>error</mat-icon>
     </button>
-    <button mat-icon-button aria-label="Cancel transaction editing" [disabled]="saving" (click)="close()">
-      <mat-icon>close</mat-icon>
-    </button>
   </div></ng-template
 >
 <ng-template #editorBody
   ><div [attr.inert]="saving ? '' : null">
     <p class="editor-error" role="alert" *ngIf="error">{{ error }}</p>
     <h2 class="title">{{ getTitle() }}</h2>
-    <br />
+
 
     <div
       [@deleteEnterLeave]
@@ -51,6 +47,7 @@
       class="transactionFields"
       *ngFor="let t of data; index as i"
     >
+      <span class="title-span">
       <button
         mat-icon-button
         class="delete-controls"
@@ -60,7 +57,7 @@
       >
         <mat-icon>delete</mat-icon>
       </button>
-      <span class="title-span">
+
         <p class="item-index" *ngIf="t.xIndex != null">{{ t.xIndex + 1 }}</p>
         <mat-form-field class="addTransactionFieldHeader">
           <mat-label>Date</mat-label>
@@ -140,12 +137,4 @@
 >
 <div class="editor-layout">
   <div class="editor-content"><ng-container *ngTemplateOutlet="editorBody"></ng-container></div>
-  <div class="editor-footer">
-    <div class="editor-totals">
-      <span>Original {{ origTotal | currency }}</span
-      ><span>Current {{ newTotal | currency }}</span
-      ><span class="editor-error" *ngIf="!totalsMatch">Totals must match</span>
-    </div>
-    <ng-container *ngTemplateOutlet="editorActions"></ng-container><span *ngIf="saving" role="status">Saving…</span>
-  </div>
 </div>

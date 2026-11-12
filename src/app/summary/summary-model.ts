@@ -64,7 +64,7 @@ export function buildSummary(categories: ICategory[], transactions: ITransaction
     transactions: pendingTransactions,
   };
   return {
-    views: [uncategorized, pending, ...(income ? [income] : []), ...regular],
+    views: [pending, uncategorized, ...(income ? [income] : []), ...regular],
     reportCats,
     income,
     actualIncome: money((income?.transactions || []).reduce((s, t) => s + Number(t.amount), 0)),

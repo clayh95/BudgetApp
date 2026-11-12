@@ -34,7 +34,9 @@
     >
       <div drawer-header>
         <h2 class="drawer-title">{{ drawerTitle }}</h2>
-        <span class="drawer-origin" *ngIf="drawerOrigin">From {{ drawerOrigin.category.name }}</span>
+      </div>
+      <div drawer-header-actions>
+        <ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate"></ng-container>
       </div>
       <div drawer-body>
         <app-category-modal
@@ -71,7 +73,12 @@
         [class.mobile-detail]="isMobile && mobileDetail"
         [class.mobile-list]="isMobile && !mobileDetail"
       >
-        <svg class="connections" aria-hidden="true" [attr.viewBox]="connectionViewBox">
+        <svg
+          [class.preview-connections]="panePreviewKeys !== null"
+          class="connections"
+          aria-hidden="true"
+          [attr.viewBox]="connectionViewBox"
+        >
           <g *ngFor="let line of connectors" [style.color]="line.color">
             <path
               [attr.d]="line.path"
@@ -93,39 +100,41 @@
               *ngFor="let view of views; trackBy: trackView"
               [attr.data-category-key]="view.key"
               [class.is-active]="isSelected(view)"
-              [class.is-pinned]="pinnedKey === view.key"
+              [class.queue-divider]="view.kind === 'uncategorized'"
+              [style.--summary-accent]="viewAccent(view.key)"
               [class.drop-target]="dropKey === view.key"
               [attr.aria-pressed]="isSelected(view)"
-              (click)="selectView(view)"
-              (dragover)="allowDrop($event, view)"
+              (click)="selectView(view, $event)"
+              (dragover)="allowPaneDrop($event); allowDrop($event, view)"
               (dragleave)="dropKey = null"
-              (drop)="dropTransaction($event, view)"
+              (drop)="dropPane($event, view) || dropTransaction($event, view)"
             >
               <span class="category-emoji" *ngIf="view.kind !== 'pending'">{{ view.category.emoji }}</span>
               <mat-icon class="pending-icon" *ngIf="view.kind === 'pending'">schedule</mat-icon>
               <span class="category-label"
                 ><span class="category-name">{{ view.category.name }}</span>
-                <small *ngIf="view.kind === 'category'">{{ view.category.budgeted | currency }} budgeted</small>
+                <small class="category-budget" *ngIf="view.kind === 'category'">{{ view.category.budgeted | currency }}</small>
                 <small *ngIf="view.kind === 'uncategorized'">Needs a category</small>
                 <small *ngIf="view.kind === 'pending'">Awaiting posting</small>
-                <small *ngIf="view.kind === 'income'">{{ view.category.budgeted | currency }} budgeted</small>
+                <small class="category-budget" *ngIf="view.kind === 'income'">{{ view.category.budgeted | currency }}</small>
               </span>
               <span class="category-value">
                 <span *ngIf="view.kind === 'pending' || view.kind === 'uncategorized'">{{
                   view.transactions.length
                 }}</span>
-                <span *ngIf="view.kind === 'category'" [class]="getColor(view)"
-                  >{{ view.category.budgeted - view.category.spent | currency }}<small>left</small></span
+                <span class="category-amount" *ngIf="view.kind === 'category'"
+                  [class.red]="view.category.budgeted - view.category.spent < 0"
+                  [class.green]="view.category.budgeted - view.category.spent >= 0"
+                  >{{ view.category.budgeted - view.category.spent | currency }}</span
                 >
-                <span *ngIf="view.kind === 'income'">{{ actualIncome | currency }}<small>received</small></span>
-                <mat-icon *ngIf="pinnedKey === view.key" class="pin-indicator" aria-label="Pinned">push_pin</mat-icon>
+                <span class="category-amount" *ngIf="view.kind === 'income'" [class.red]="actualIncome < 0" [class.green]="actualIncome >= 0">{{ actualIncome | currency }}</span>
               </span>
             </button>
           </div>
         </mat-card>
         <div
           class="panes"
-          [class.two-panes]="visibleViews.length === 2"
+          [style.grid-template-columns]="'repeat(' + (visibleViews.length || 1) + ', minmax(0, 1fr))'"
           [class.mobile-hidden]="isMobile && !mobileDetail"
         >
           <mat-card class="empty-selection" *ngIf="!visibleViews.length"
@@ -137,13 +146,29 @@
             class="transaction-pane"
             *ngFor="let view of visibleViews; trackBy: trackView"
             [attr.data-pane-key]="view.key"
-            [class.pinned-pane]="pinnedKey === view.key"
+            [style.transform]="panePreviewOffset(view.key)"
+            [class.pane-drop-settling]="paneDropSettling"
+            [class.pane-swap-preview]="
+              panePreviewKeys && panePreviewKeys.indexOf(view.key) !== openKeys.indexOf(view.key)
+            "
+            [style.--summary-accent]="viewAccent(view.key)"
             [class.drop-target]="dropKey === view.key"
-            (dragover)="allowDrop($event, view)"
+            (dragover)="allowPaneDrop($event); allowDrop($event, view)"
             (dragleave)="dropKey = null"
-            (drop)="dropTransaction($event, view)"
+            (drop)="dropPane($event, view) || dropTransaction($event, view)"
           >
             <div class="pane-header">
+              <button
+                mat-icon-button
+                class="pane-drag-handle"
+                *ngIf="!isMobile && visibleViews.length > 1"
+                draggable="true"
+                [attr.aria-label]="'Reorder ' + view.category.name"
+                (dragstart)="startPaneDrag($event, view)"
+                (dragend)="endPaneDrag()"
+              >
+                <mat-icon class="rotateIcon">drag_indicator</mat-icon>
+              </button>
               <button mat-button class="back-button" *ngIf="isMobile" (click)="backToCategories()">
                 <mat-icon>arrow_back</mat-icon> Categories
               </button>
@@ -151,19 +176,30 @@
                 <h2 class="pane-heading" tabindex="-1">
                   <span>{{ view.category.emoji }}</span> {{ view.category.name }}
                 </h2>
-                <button
-                  mat-icon-button
-                  *ngIf="!isMobile"
-                  [attr.aria-label]="
-                    pinnedKey === view.key ? 'Unpin ' + view.category.name : 'Pin ' + view.category.name
-                  "
-                  [matTooltip]="pinnedKey === view.key ? 'Unpin' : 'Pin for comparison'"
-                  (click)="pinView(view)"
-                >
-                  <mat-icon>{{ pinnedKey === view.key ? 'keep_off' : 'push_pin' }}</mat-icon>
+                <ng-container *ngIf="view.kind === 'category' || view.kind === 'income'">
+                  <button
+                    mat-icon-button
+                    aria-label="Edit category"
+                    matTooltip="Edit category"
+                    (click)="editCategory($event, view.category)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    *ngIf="view.kind === 'category'"
+                    matTooltip="Balance from unbudgeted"
+                    aria-label="Balance from unbudgeted"
+                    [disabled]="!canBalanceCategory(view)"
+                    (click)="balanceFromUnbudgeted($event, view)"
+                  >
+                    <mat-icon>balance</mat-icon>
+                  </button>
+                </ng-container>
+                <button mat-icon-button [attr.aria-label]="'Close ' + view.category.name" (click)="closeView(view)">
+                  <mat-icon>close</mat-icon>
                 </button>
               </div>
-              <small class="pinned-label" *ngIf="pinnedKey === view.key">Pinned for comparison</small>
               <div class="pane-summary" *ngIf="view.kind === 'category'">
                 <strong [class]="getColor(view)">{{ view.category.budgeted - view.category.spent | currency }}</strong>
                 left
@@ -180,21 +216,7 @@
               <div class="pane-summary" *ngIf="view.kind === 'uncategorized'">
                 {{ view.transactions.length }} transactions to categorize
               </div>
-              <div class="category-actions" *ngIf="view.kind === 'category' || view.kind === 'income'">
-                <button mat-button (click)="editCategory($event, view.category)">
-                  <mat-icon>edit</mat-icon> Edit category
-                </button>
-                <button
-                  mat-icon-button
-                  *ngIf="view.kind === 'category'"
-                  matTooltip="Balance from unbudgeted"
-                  aria-label="Balance from unbudgeted"
-                  [disabled]="!canBalanceCategory(view)"
-                  (click)="balanceFromUnbudgeted($event, view)"
-                >
-                  <mat-icon>balance</mat-icon>
-                </button>
-              </div>
+
               <p
                 class="category-notes"
                 *ngIf="view.kind !== 'uncategorized' && view.kind !== 'pending' && view.category.notes"
@@ -217,15 +239,23 @@
                 (click)="editTransaction(trans, view)"
                 [attr.aria-label]="'Edit ' + trans.description"
               >
-                <mat-icon class="drag-handle" *ngIf="canDragTransaction(view, trans)">drag_indicator</mat-icon>
+                <mat-icon class="drag-handle" *ngIf="showTransactionHandle(view, trans)" [class.drag-disabled]="service.getSaveState() === 'saving'"
+                  >drag_indicator</mat-icon
+                >
                 <span class="transaction-date">{{ trans.date | date: 'MMM d' }}</span>
-                <span class="transaction-description" [matTooltip]="trans.description">{{ trans.description }}</span>
+                <span
+                  class="transaction-description"
+                  [matTooltip]="trans.description"
+                  [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
+                  >{{ trans.description }}</span
+                >
                 <span class="transaction-indicators">
                   <img *ngIf="getIconFromUtils(trans.description)" [src]="getIconFromUtils(trans.description)" alt="" />
                   <mat-icon
                     *ngIf="trans.xId != null"
                     class="split-icon"
                     matTooltip="Split transaction"
+                    [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
                     aria-label="Split transaction"
                     >call_split</mat-icon
                   >
@@ -249,5 +279,4 @@
       </div>
     </app-section-drawer>
   </div>
-  <div class="summary-notice" role="status" aria-live="polite">{{ moving ? 'Moving transaction…' : notice }}</div>
 </div>

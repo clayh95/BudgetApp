@@ -50,7 +50,8 @@ export default [
                   blankLine: 'always',
                   prev: 'function', next: '*'
                 },
-              ]
+              ],
+              '@stylistic/lines-between-class-members': ['error', 'always'],
         },
     },
     prettier,

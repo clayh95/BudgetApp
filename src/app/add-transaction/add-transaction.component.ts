@@ -1,3 +1,4 @@
+import { TemplateRef, ViewChild } from '@angular/core';
 import { Component, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import { collectionType, ConfirmModalButtons, ITransaction } from '../core/dataTypes';
 import { MatDialog } from '@angular/material/dialog';
@@ -40,6 +41,7 @@ export interface addEditTrans {
   animations: [deleteEnterLeave],
 })
 export class AddTransactionComponent implements AfterViewInit {
+  @ViewChild('editorActions', { static: true }) actionsTemplate: TemplateRef<unknown>;
   tmpDate: Moment[];
   origTotal: number;
   newTotal: number;

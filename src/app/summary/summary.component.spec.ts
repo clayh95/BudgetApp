@@ -35,6 +35,7 @@ describe('Summary browser', () => {
       monthYear: new BehaviorSubject('10/2026'),
       monthSummary: new BehaviorSubject('Original notes'),
       vendorMappings: new BehaviorSubject([]),
+      getSaveState: vi.fn().mockReturnValue('done'),
       getMonthPKValue: () => db.monthYear.value.replace('/', ''),
       updateDocument: vi.fn().mockResolvedValue(true),
       getTransactionsForEdit: vi.fn().mockResolvedValue([transaction]),
@@ -64,43 +65,117 @@ describe('Summary browser', () => {
     expect(fixture.nativeElement.querySelector('.category-scroll').textContent).not.toContain('Test shop');
   });
 
-  it('keeps a pin without duplicate panes, collapses on narrow screens and resets on month change', () => {
-    const queue = component.views[0],
-      groceries = component.views.find((v) => v.category.id === 'g');
-    component.canCompare = true;
-    component.selectView(queue);
-    component.pinView(queue);
-    component.selectView(groceries);
-    expect(component.visibleViews.map((v) => v.key)).toEqual(['category:g', 'uncategorized']);
-    component.selectView(queue);
-    expect(component.visibleViews).toHaveLength(2);
-    component.canCompare = false;
-    expect(component.visibleViews.map((v) => v.key)).toEqual(['uncategorized']);
-    component.canCompare = true;
-    expect(component.visibleViews).toHaveLength(2);
+  it('opens up to four views in opening order, evicts the oldest and never duplicates a view', () => {
+    component.maxOpenViews = 4;
+    component.views.forEach(view => component.selectView(view, { preventDefault() {}, metaKey: true } as MouseEvent));
+    expect(component.visibleViews).toHaveLength(4);
+    const keys = [...component.openKeys];
+    component.selectView(component.views[0]);
+    expect(component.openKeys).toEqual(keys.filter(key => key !== component.views[0].key));
+    component.selectView(component.views[0]);
+    expect(new Set(component.openKeys).size).toBe(4);
+    component.maxOpenViews = 2;
+    const extra = { ...component.views[0], key: 'extra' };
+    component.views.push(extra);
+    component.selectView(extra);
+    expect(component.openKeys).toEqual([component.views[0].key, 'extra']);
     db.monthYear.next('11/2026');
-    expect(component.pinnedKey).toBeNull();
-    expect(component.visibleViews).toHaveLength(0);
+    expect(component.openKeys).toEqual([]);
+  });
+
+  it('opens Uncategorized on desktop initially, but leaves phones at the list', () => {
+    component.updateLayout();
+    expect(component.visibleViews[0]?.kind).toBe('uncategorized');
+    expect(component.views.slice(0, 2).map(view => view.kind)).toEqual(['pending', 'uncategorized']);
+  });
+
+  it('keeps disabled transaction handles present during saves', () => {
+    component.dragEnabled = true;
+    db.getSaveState.mockReturnValue('saving');
+    const queue = component.views.find(view => view.kind === 'uncategorized');
+    expect(component.showTransactionHandle(queue, transaction)).toBe(true);
+    expect(component.canDragTransaction(queue, transaction)).toBe(false);
+    expect(db.updateDocument).not.toHaveBeenCalled();
+  });
+
+  it('previews pane reordering without committing and cancels inside the starting threshold', () => {
+    component.openKeys = [];
+    component.maxOpenViews = 4;
+    component.views.forEach(view => component.selectView(view));
+    fixture.detectChanges();
+    component.workspaceRoot = { nativeElement: fixture.nativeElement.querySelector('.summary-root') };
+    component.workspaceRoot.nativeElement.querySelectorAll('[data-pane-key]').forEach((el, index) => {
+      vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ left: index * 120, right: index * 120 + 100 } as DOMRect);
+    });
+    const original = [...component.openKeys];
+    const event = (x: number) => ({ clientX: x, preventDefault: vi.fn(), stopPropagation: vi.fn(), dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }) as any;
+    const dragStart = event(25);
+    component.startPaneDrag(dragStart, component.visibleViews[0]);
+    expect(dragStart.dataTransfer.setDragImage).toHaveBeenCalledWith(
+      component.workspaceRoot.nativeElement.querySelector('[data-pane-key]'), expect.any(Number), expect.any(Number));
+    component.allowPaneDrop(event(160));
+    expect(component.openKeys).toEqual(original);
+    expect(component.panePreviewKeys.slice(0, 2)).toEqual([original[1], original[0]]);
+    expect(component.panePreviewOffset(original[0])).toBe('translateX(120px)');
+    component.allowPaneDrop(event(30));
+    expect(component.panePreviewKeys).toBeNull();
+    component.dropPane(event(30), component.visibleViews[0]);
+    expect(component.openKeys).toEqual(original);
+    component.startPaneDrag(event(25), component.visibleViews[0]);
+    component.allowPaneDrop(event(160));
+    component.dropPane(event(160), component.visibleViews[1]);
+    expect(component.openKeys.slice(0, 2)).toEqual([original[1], original[0]]);
+    expect(component.panePreviewKeys).toBeNull();
+    expect(component.paneDropSettling).toBe(true);
+    component.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach(pane => {
+      expect(pane.style.transition).toBe('none');
+    });
+  });
+
+  it('routes four connectors in separate lanes and at separate heights', () => {
+    component.openKeys = [];
+    component.isMobile = false;
+    component.maxOpenViews = 4;
+    component.views.forEach(view => component.selectView(view));
+    fixture.detectChanges();
+    const bounds = (left: number, top: number, width = 250, height = 50) =>
+      ({ left, top, right: left + width, bottom: top + height, width, height } as DOMRect);
+    const root = fixture.nativeElement;
+    vi.spyOn(root.querySelector('.workspace'), 'getBoundingClientRect').mockReturnValue(bounds(0, 0, 1800, 800));
+    vi.spyOn(root.querySelector('.category-list'), 'getBoundingClientRect').mockReturnValue(bounds(0, 0, 250, 800));
+    vi.spyOn(root.querySelector('.category-scroll'), 'getBoundingClientRect').mockReturnValue(bounds(0, 0, 250, 800));
+    root.querySelectorAll('[data-category-key]').forEach((el: HTMLElement, index: number) => {
+      vi.spyOn(el, 'getBoundingClientRect').mockReturnValue(bounds(0, 150 + index * 60));
+    });
+    root.querySelectorAll('[data-pane-key]').forEach((el: HTMLElement, index: number) => {
+      vi.spyOn(el, 'getBoundingClientRect').mockReturnValue(bounds(280 + index * 350, 12, 330, 780));
+    });
+    component.workspaceRoot = { nativeElement: root.querySelector('.summary-root') };
+    component.drawConnections();
+    expect(component.connectors).toHaveLength(4);
+    expect(new Set(component.connectors.map(line => line.y2)).size).toBe(4);
+    expect(new Set(component.connectors.map(line => line.path.match(/H ([\d.]+)/)[1])).size).toBe(4);
+    component.isMobile = true;
+    component.drawConnections();
+    expect(component.connectors).toEqual([]);
   });
 
   it('writes only the dragged line category through the existing update engine and preserves a failed source', async () => {
     component.dragEnabled = true;
     const event = { preventDefault: vi.fn(), dataTransfer: { setData: vi.fn() } } as any;
-    component.startDrag(event, component.views[0], transaction);
+    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
     await component.dropTransaction(
       event,
       component.views.find((v) => v.category.id === 'g'),
     );
     expect(db.updateDocument).toHaveBeenCalledWith('t', 'transactions', { category: 'Groceries' }, '102026');
     expect(transaction.category).toBe('');
-    expect(component.notice).toContain('Moved');
     db.updateDocument.mockResolvedValue(false);
-    component.startDrag(event, component.views[0], transaction);
+    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
     await component.dropTransaction(
       event,
       component.views.find((v) => v.category.id === 'h'),
     );
-    expect(component.notice).toContain('Could not move');
     expect(transaction.category).toBe('');
   });
 
@@ -109,7 +184,7 @@ describe('Summary browser', () => {
     const event = { preventDefault: vi.fn(), dataTransfer: { setData: vi.fn() } } as any;
     const pending = { ...transaction, status: 'Pending' };
     expect(component.canDragTransaction(component.views[0], pending)).toBe(false);
-    component.startDrag(event, component.views[0], transaction);
+    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
     await component.dropTransaction(
       event,
       component.views.find((v) => v.kind === 'pending'),

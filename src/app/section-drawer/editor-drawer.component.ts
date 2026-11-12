@@ -1,3 +1,4 @@
+import { viewChild } from '@angular/core';
 import { Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -24,6 +25,7 @@ import { DbService } from '../core/db.service';
       (closeRequested)="close()"
     >
       <h2 drawer-header>{{ title }}</h2>
+      <div drawer-header-actions><ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate"></ng-container></div>
       <div drawer-body>
         <app-category-modal
           *ngIf="editors.category"
@@ -75,6 +77,7 @@ import { DbService } from '../core/db.service';
   ],
 })
 export class EditorDrawerComponent implements OnDestroy {
+  transactionActions = viewChild(AddTransactionComponent);
   @ViewChild(CategoryModalComponent) categoryEditor?: CategoryModalComponent;
   @ViewChild(AddTransactionComponent) transactionEditor?: AddTransactionComponent;
   private previousMonthGuard: DbService['beforeEditorMonthChange'];

@@ -48,7 +48,7 @@ describe('Summary calculation compatibility', () => {
     const result = buildSummary([cat('g', 'Groceries', 200)], []);
     expect(result.totalBudgeted).toBe(200);
     expect(result.actualIncome).toBe(0);
-    expect(result.views.map((v) => v.key)).toEqual(['uncategorized', 'pending', 'category:g']);
+    expect(result.views.map((v) => v.key)).toEqual(['pending', 'uncategorized', 'category:g']);
     expect(buildSummary([], []).views).toHaveLength(2);
   });
 });

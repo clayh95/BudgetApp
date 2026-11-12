@@ -255,3 +255,16 @@ button {
 :host .title {
   font-size: 17px;
 }
+
+.editor-toolbar { flex-shrink: 0; border-bottom: 1px solid rgba(0, 0, 0, .12); padding-bottom: 8px; }
+
+:host .title { margin: 0 0 12px; }
+:host .transactionFields { border: 0; padding: 4px 0 16px; margin: 0 0 12px; gap: 12px; }
+:host .transactionFields .title-span { display: flex; align-items: center; gap: 8px; }
+:host .transactionFields .title-span .addTransactionFieldHeader { min-width: 0; flex: 1; padding: 0; }
+:host .transactionFields .title-span .item-index { margin: 0; flex-shrink: 0; }
+:host .transactionFields .delete-controls { align-self: center; flex-shrink: 0; margin: 0 !important; }
+:host .transactionFields textarea { min-height: 24px; }
+.totals-badge { display: flex; flex-direction: column; border-radius: 18px; padding: 5px 10px; background: #3b8d5f; color: white; font-size: 13px; line-height: 1.4; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.actions { gap: 0; } .actions button { margin: 0; }

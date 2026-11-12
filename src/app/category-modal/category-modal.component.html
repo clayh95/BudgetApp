@@ -29,9 +29,6 @@
       <mat-icon>delete</mat-icon>
     </button>
     <div class="spacer"></div>
-    <button mat-icon-button [disabled]="saving" aria-label="Cancel category editing" (click)="close()">
-      <mat-icon>close</mat-icon>
-    </button>
   </div></ng-template
 >
 <ng-template #editorBody
@@ -110,8 +107,7 @@
   </div></ng-template
 >
 <div class="editor-layout">
+  <div class="editor-toolbar"><ng-container *ngTemplateOutlet="editorActions"></ng-container><span *ngIf="saving" role="status">Saving…</span></div>
   <div class="editor-content"><ng-container *ngTemplateOutlet="editorBody"></ng-container></div>
-  <div class="editor-footer">
-    <ng-container *ngTemplateOutlet="editorActions"></ng-container><span *ngIf="saving" role="status">Saving…</span>
-  </div>
+
 </div>
