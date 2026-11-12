@@ -6,11 +6,9 @@ import { TransactionTableComponent } from './transaction-table/transaction-table
 import { EditCategoriesComponent } from './edit-categories/edit-categories.component';
 import { ReportsComponent } from './reports/reports.component';
 import { SummaryComponent } from './summary/summary.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
+  { path: '', redirectTo: 'summary', pathMatch: 'full' },
   { path: 'transactions', component: TransactionTableComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
   { path: 'csv', component: CsvImportComponent},
   { path: 'categories', component: EditCategoriesComponent, canDeactivate: [() => inject(EditorDrawerService).requestClose()] },
