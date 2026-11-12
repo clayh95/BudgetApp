@@ -241,6 +241,7 @@
               <button
                 type="button"
                 class="transaction-row"
+                [class.has-drag-handle]="showTransactionHandle(view, trans)"
                 *ngFor="let trans of view.transactions; trackBy: trackTransaction"
                 [attr.draggable]="canDragTransaction(view, trans)"
                 (dragstart)="startDrag($event, view, trans)"

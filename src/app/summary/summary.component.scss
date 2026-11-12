@@ -245,7 +245,7 @@ h2 {
   cursor: grab;
 }
 .transaction-date {
-  font-size: 11px;
+  font-size: 13px;
   width: 42px;
   flex-shrink: 0;
   color: #666;
@@ -463,3 +463,5 @@ h2 {
 }
 .category-value .category-amount.green { background: rgba(58, 141, 95, .1); }
 .category-value .category-amount.red { background: rgba(198, 40, 40, .1); }
+
+.transaction-row.has-drag-handle .transaction-notes { margin-left: 64px; }

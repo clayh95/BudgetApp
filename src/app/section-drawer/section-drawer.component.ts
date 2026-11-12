@@ -43,6 +43,7 @@ import { SharedModule } from '../shared/shared.module';
   styles: [
     `
       :host {
+        font-family: Roboto, 'Helvetica Neue', sans-serif;
         display: block;
         height: 100%;
         min-height: 0;
