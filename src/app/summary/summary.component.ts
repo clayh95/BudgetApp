@@ -29,11 +29,28 @@ import { SharedModule } from '../shared/shared.module';
 import { ActivatedRoute } from '@angular/router';
 import { SectionDrawerComponent } from '../section-drawer/section-drawer.component';
 import { buildSummary, SummaryView, isPending } from './summary-model';
+import { SummarySearchComponent } from './summary-search.component';
+import { SearchHighlightPipe } from './search-highlight.pipe';
+import {
+  SummarySearch,
+  SummaryTransactionResult,
+  emptySummarySearch,
+  hasSummarySearch,
+  searchSummary,
+} from './summary-search';
+import { IVendorLogoRule } from '../core/utilities';
 
 @Component({
   selector: 'app-summary',
   standalone: true,
-  imports: [SharedModule, SectionDrawerComponent, CategoryModalComponent, AddTransactionComponent],
+  imports: [
+    SharedModule,
+    SectionDrawerComponent,
+    CategoryModalComponent,
+    AddTransactionComponent,
+    SummarySearchComponent,
+    SearchHighlightPipe,
+  ],
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
 })
@@ -47,39 +64,174 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {}
 
   catsTrans: Subscription;
+
   actualIncome: number;
+
   spent: number;
+
   totalBudgeted: number;
+
   reportCats: IReportCategory[];
+
   incomeData: IReportCategory;
+
   pendingTransactions: ITransaction[];
+
   totalPending: number;
+
   private focusCategoryId: string | null = null;
+
   private focusCategoryName: string | null = null;
+
   private focusSection: 'pending' | 'uncategorized' | null = null;
+
   private focusApplied = false;
+
   private initialSelectionApplied = false;
 
   views: SummaryView[] = [];
+
+  search: SummarySearch = emptySummarySearch();
+
+  searchViews: SummaryView[] = [];
+
+  vendorMappings: IVendorLogoRule[] = [];
+
+  private preSearch: { keys: string[]; mobileDetail: boolean; scroll: Map<string, number> } | null = null;
+
+  locatedTransaction: ITransaction | null = null;
+
+  private locateTimer: ReturnType<typeof setTimeout>;
+
+  private emphasizeTimer: ReturnType<typeof setTimeout>;
+
+  get searchActive() {
+    return hasSummarySearch(this.search);
+  }
+
+  get categoryViews() {
+    return this.searchActive ? this.searchViews : this.views;
+  }
+
+  get matchCount() {
+    return this.searchViews.reduce((count, view) => count + view.transactions.length, 0);
+  }
+
+  get uncategorizedCount() {
+    return this.views.find((view) => view.kind === 'uncategorized')?.transactions.length || 0;
+  }
+
+  changeSearch(search: SummarySearch) {
+    const wasActive = this.searchActive;
+    if (!wasActive && hasSummarySearch(search)) {
+      this.preSearch = {
+        keys: [...this.openKeys],
+        mobileDetail: this.mobileDetail,
+        scroll: new Map(this.scrollPositions),
+      };
+    }
+    this.search = search;
+    this.locatedTransaction = null;
+    this.scrollPositions.clear();
+    if (wasActive && !this.searchActive && this.preSearch) {
+      this.openKeys = this.preSearch.keys.filter((key) => this.views.some((view) => view.key === key));
+      this.mobileDetail = this.preSearch.mobileDetail && this.openKeys.length > 0;
+      this.scrollPositions = this.preSearch.scroll;
+      this.openedAt.clear();
+      this.openKeys.forEach((key) => this.openedAt.set(key, ++this.openingSequence));
+      this.trimOpenViews();
+      this.preSearch = null;
+    }
+    this.refreshSearch();
+    this.queueLayout();
+    this.cdr.markForCheck();
+  }
+
+  private refreshSearch() {
+    this.searchViews = searchSummary(this.views, this.search, this.vendorMappings);
+    if (!this.searchActive) return;
+    this.openKeys = this.openKeys.filter((key) => this.searchViews.some((view) => view.key === key));
+    if (!this.openKeys.length && this.searchViews.length) {
+      const first = this.searchViews[0];
+      this.openKeys = [first.key];
+      this.openedAt.set(first.key, ++this.openingSequence);
+    }
+    if (!this.searchViews.length) this.mobileDetail = false;
+  }
+
+  showSearchResults() {
+    this.backToCategories();
+  }
+
+  selectSearchCategory(view: SummaryView) {
+    const match = this.categoryViews.find((item) => item.key === view.key);
+    if (match) this.selectView(match);
+    else this.backToCategories();
+  }
+
+  locateTransaction(result: SummaryTransactionResult) {
+    const view = this.categoryViews.find((item) => item.key === result.view.key);
+    if (!view) return;
+    this.selectView(view);
+    this.locatedTransaction = result.transaction;
+    clearTimeout(this.locateTimer);
+    clearTimeout(this.emphasizeTimer);
+    this.locateTimer = setTimeout(() => {
+      this.cdr.detectChanges();
+      const pane = Array.from(this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]')).find(
+        (item) => item.dataset.paneKey === view.key,
+      );
+      const row = Array.from(pane?.querySelectorAll<HTMLElement>('[data-transaction-id]') || []).find(
+        (item) => item.dataset.transactionId === result.transaction.id,
+      );
+      row?.scrollIntoView?.({ block: 'nearest' });
+      row?.focus({ preventScroll: true });
+      const scroll = pane?.querySelector<HTMLElement>('.transaction-scroll');
+      if (scroll) this.scrollPositions.set(view.key, scroll.scrollTop);
+    });
+    this.emphasizeTimer = setTimeout(() => {
+      this.locatedTransaction = null;
+      this.cdr.markForCheck();
+    }, 2000);
+  }
+
   openKeys: string[] = [];
+
   private openedAt = new Map<string, number>();
+
   private openingSequence = 0;
+
   maxOpenViews = 1;
+
   mobileDetail = false;
+
   isMobile = false;
+
   dragEnabled = false;
+
   viewportHeight: number | null = null;
+
   dropKey: string | null = null;
+
   private dragged: ITransaction | null = null;
+
   private draggedMonth = '';
+
   private dragEnded = 0;
+
   private currentMonth = '';
+
   private subscriptions = new Subscription();
+
   private resizeObserver?: ResizeObserver;
+
   private initialLayoutTimer: ReturnType<typeof setTimeout>;
+
   private layoutTimer: ReturnType<typeof setTimeout>;
+
   private scrollPositions = new Map<string, number>();
-  @ViewChild('workspaceRoot', { static: true }) workspaceRoot: ElementRef<HTMLElement>;
+
+  @ViewChild('workspaceRoot', { static: true, read: ElementRef }) workspaceRoot: ElementRef<HTMLElement>;
 
   private monthGuard = () => this.canDeactivate();
 
@@ -102,6 +254,9 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
           this.openedAt.clear();
           this.mobileDetail = false;
           this.scrollPositions.clear();
+          this.preSearch = this.searchActive ? { keys: [], mobileDetail: false, scroll: new Map() } : null;
+          this.locatedTransaction = null;
+          clearTimeout(this.locateTimer);
           this.focusApplied = true;
         }
         this.currentMonth = month;
@@ -112,10 +267,15 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.drawerKind === 'notes' && !this.notesDirty && !this.notesSaving) this.notesDraft = value || '';
       }),
     );
-    this.catsTrans = combineLatest([this.service.categories, this.service.transactions]).subscribe(([cats, trans]) => {
+    this.catsTrans = combineLatest([
+      this.service.categories,
+      this.service.transactions,
+      this.service.vendorMappings,
+    ]).subscribe(([cats, trans, mappings]) => {
       this.zone.run(() => {
         const model = buildSummary(cats, trans);
         this.views = model.views;
+        this.vendorMappings = mappings || [];
         this.reportCats = model.reportCats;
         this.incomeData = model.income;
         this.pendingTransactions = model.views.find((v) => v.kind === 'pending').transactions;
@@ -125,6 +285,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         this.totalPending = model.totalPending;
         this.openKeys = this.openKeys.filter((key) => this.views.some((view) => view.key === key));
         this.applyFocusCategoryIfNeeded();
+        this.refreshSearch();
         this.queueLayout();
         this.cdr.markForCheck();
       });
@@ -140,8 +301,8 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @HostListener('window:resize') updateLayout() {
-    const width = this.workspaceRoot?.nativeElement.clientWidth || window.innerWidth;
-    const top = this.workspaceRoot?.nativeElement.getBoundingClientRect().top || 0;
+    const width = this.workspaceRoot?.nativeElement?.clientWidth || window.innerWidth;
+    const top = this.workspaceRoot?.nativeElement?.getBoundingClientRect().top || 0;
     this.viewportHeight = Math.max(320, window.innerHeight - top - (width < 700 ? 44 : 24));
     this.isMobile = width < 700;
     this.maxOpenViews = Math.max(1, Math.min(4, Math.floor((width - 280) / 340)));
@@ -154,6 +315,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         !this.focusCategoryId &&
         !this.focusCategoryName &&
         !this.focusSection &&
+        !this.searchActive &&
         !this.openKeys.length
       ) {
         const queue = this.views.find((view) => view.kind === 'uncategorized');
@@ -165,7 +327,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   get visibleViews(): SummaryView[] {
-    return this.openKeys.map((key) => this.views.find((view) => view.key === key)).filter(Boolean);
+    return this.openKeys.map((key) => this.categoryViews.find((view) => view.key === key)).filter(Boolean);
   }
 
   selectView(view: SummaryView, event?: MouseEvent) {
@@ -191,36 +353,56 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private trimOpenViews() {
     while (this.openKeys.length > this.maxOpenViews) {
-      const oldest = this.openKeys.reduce((a, b) => (this.openedAt.get(a) || 0) <= (this.openedAt.get(b) || 0) ? a : b);
-      this.openKeys = this.openKeys.filter(key => key !== oldest);
+      const oldest = this.openKeys.reduce((a, b) =>
+        (this.openedAt.get(a) || 0) <= (this.openedAt.get(b) || 0) ? a : b,
+      );
+      this.openKeys = this.openKeys.filter((key) => key !== oldest);
       this.openedAt.delete(oldest);
     }
   }
-  private draggedPane: string | null = null;
-  paneDropSettling = false;
-  private paneSettleFrame: number | null = null;
-  panePreviewKeys: string[] | null = null;
-  private paneDragStartX = 0;
-  private paneDragSlots: { key: string; left: number; right: number }[] = [];
-  private connectionFrame: number | null = null;
-  private connectionAnimationUntil = 0;
-  private transactionGhost: HTMLElement | null = null;
-  private dragTooltips = viewChildren(MatTooltip);
-  get transactionDragging() { return this.dragged !== null; }
 
+  private draggedPane: string | null = null;
+
+  paneDropSettling = false;
+
+  private paneSettleFrame: number | null = null;
+
+  panePreviewKeys: string[] | null = null;
+
+  private paneDragStartX = 0;
+
+  private paneDragSlots: { key: string; left: number; right: number }[] = [];
+
+  private connectionFrame: number | null = null;
+
+  private connectionAnimationUntil = 0;
+
+  private transactionGhost: HTMLElement | null = null;
+
+  private dragTooltips = viewChildren(MatTooltip);
+
+  get transactionDragging() {
+    return this.dragged !== null;
+  }
 
   startPaneDrag(event: DragEvent, view: SummaryView) {
     event.stopPropagation();
     this.draggedPane = view.key;
     this.paneDragStartX = event.clientX;
-    this.paneDragSlots = Array.from(this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]'))
-      .map(pane => ({ key: pane.dataset.paneKey, left: pane.getBoundingClientRect().left, right: pane.getBoundingClientRect().right }));
+    this.paneDragSlots = Array.from(
+      this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]'),
+    ).map((pane) => ({
+      key: pane.dataset.paneKey,
+      left: pane.getBoundingClientRect().left,
+      right: pane.getBoundingClientRect().right,
+    }));
     this.panePreviewKeys = null;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', view.key);
-    this.dragTooltips().forEach(tooltip => tooltip.hide(0));
-    const pane = Array.from(this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]'))
-      .find(element => element.dataset.paneKey === view.key);
+    this.dragTooltips().forEach((tooltip) => tooltip.hide(0));
+    const pane = Array.from(this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]')).find(
+      (element) => element.dataset.paneKey === view.key,
+    );
     if (pane) {
       const bounds = pane.getBoundingClientRect();
       event.dataTransfer.setDragImage?.(pane, event.clientX - bounds.left, event.clientY - bounds.top);
@@ -233,14 +415,16 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.connectionFrame !== null || typeof requestAnimationFrame === 'undefined') return;
     const frame = () => {
       this.drawConnections();
-      this.connectionFrame = this.draggedPane || performance.now() < this.connectionAnimationUntil ? requestAnimationFrame(frame) : null;
+      this.connectionFrame =
+        this.draggedPane || performance.now() < this.connectionAnimationUntil ? requestAnimationFrame(frame) : null;
     };
     this.connectionFrame = requestAnimationFrame(frame);
   }
 
   panePreviewOffset(key: string): string {
     if (!this.panePreviewKeys) return 'translateX(0)';
-    const from = this.openKeys.indexOf(key), to = this.panePreviewKeys.indexOf(key);
+    const from = this.openKeys.indexOf(key),
+      to = this.panePreviewKeys.indexOf(key);
     const slots = this.paneDragSlots;
     return `translateX(${(slots[to]?.left || 0) - (slots[from]?.left || 0)}px)`;
   }
@@ -257,16 +441,22 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.draggedPane) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    const original = this.paneDragSlots.find(slot => slot.key === this.draggedPane);
-    if (Math.abs(event.clientX - this.paneDragStartX) < 24 ||
-        (original && event.clientX > original.left + 20 && event.clientX < original.right - 20)) {
+    const original = this.paneDragSlots.find((slot) => slot.key === this.draggedPane);
+    if (
+      Math.abs(event.clientX - this.paneDragStartX) < 24 ||
+      (original && event.clientX > original.left + 20 && event.clientX < original.right - 20)
+    ) {
       this.panePreviewKeys = null;
       return;
     }
-    const target = this.paneDragSlots.find(slot => event.clientX >= slot.left && event.clientX <= slot.right);
-    if (!target || target.key === this.draggedPane) { this.panePreviewKeys = null; return; }
+    const target = this.paneDragSlots.find((slot) => event.clientX >= slot.left && event.clientX <= slot.right);
+    if (!target || target.key === this.draggedPane) {
+      this.panePreviewKeys = null;
+      return;
+    }
     const keys = [...this.openKeys];
-    const from = keys.indexOf(this.draggedPane), to = keys.indexOf(target.key);
+    const from = keys.indexOf(this.draggedPane),
+      to = keys.indexOf(target.key);
     keys.splice(from, 1);
     keys.splice(to, 0, this.draggedPane);
     this.panePreviewKeys = keys;
@@ -279,7 +469,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.panePreviewKeys) {
       // The preview already occupies the destination slots. Rebase transforms without a second transition.
       this.paneDropSettling = true;
-      this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach(pane => {
+      this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach((pane) => {
         pane.style.transition = 'none';
       });
       this.openKeys = [...this.panePreviewKeys];
@@ -288,7 +478,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         this.paneSettleFrame = requestAnimationFrame(() => {
           this.paneDropSettling = false;
           this.paneSettleFrame = null;
-          this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach(pane => {
+          this.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach((pane) => {
             pane.style.removeProperty('transition');
           });
           this.cdr.markForCheck();
@@ -298,7 +488,9 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.endPaneDrag();
     return true;
   }
+
   transactionActions = viewChild(AddTransactionComponent);
+
   categoryActions = viewChild(CategoryModalComponent);
 
   closeView(view: SummaryView) {
@@ -306,6 +498,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.openKeys = this.openKeys.filter((key) => key !== view.key);
     if (!this.openKeys.length) this.mobileDetail = false;
     this.queueLayout();
+    this.cdr.markForCheck();
   }
 
   viewAccent(key: string): string {
@@ -347,18 +540,31 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @ViewChild(CategoryModalComponent) categoryEditor?: CategoryModalComponent;
+
   @ViewChild(AddTransactionComponent) transactionEditor?: AddTransactionComponent;
+
   categoryDraft: ICategory | null = null;
+
   transactionDraft: ITransaction[] | null = null;
+
   private drawerTrigger: HTMLElement | null = null;
+
   drawerKind: 'notes' | 'category' | 'transaction' | null = null;
+
   drawerOrigin: SummaryView | null = null;
+
   notesDraft = '';
+
   notesDirty = false;
+
   notesSaving = false;
+
   notesError = '';
+
   private notesMonth = '';
+
   private notesSave: Promise<boolean> | null = null;
+
   get drawerTitle() {
     return this.drawerKind === 'notes'
       ? 'Month notes'
@@ -366,9 +572,11 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         ? 'Edit category'
         : 'Edit transaction';
   }
+
   get drawerAccent() {
     return this.drawerOrigin ? this.viewAccent(this.drawerOrigin.key) : '#bdbdbd';
   }
+
   async openNotes() {
     if (!(await this.requestCloseDrawer())) return;
     this.drawerTrigger = document.activeElement as HTMLElement;
@@ -379,6 +587,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.drawerOrigin = null;
     this.drawerKind = 'notes';
   }
+
   async saveNotes(): Promise<boolean> {
     if (this.notesSave) {
       if (!(await this.notesSave)) return false;
@@ -406,6 +615,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     })();
     return this.notesSave;
   }
+
   async requestCloseDrawer(): Promise<boolean> {
     if (!this.drawerKind) return true;
     const editor =
@@ -433,6 +643,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editorFinished();
     return true;
   }
+
   editorFinished() {
     this.drawerKind = null;
     this.drawerOrigin = null;
@@ -446,9 +657,11 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
         this.workspaceRoot?.nativeElement.querySelector<HTMLElement>('.pane-heading')?.focus({ preventScroll: true });
     });
   }
+
   async canDeactivate(): Promise<boolean> {
     return this.requestCloseDrawer();
   }
+
   @HostListener('window:beforeunload', ['$event']) guardBrowserExit(event: BeforeUnloadEvent) {
     if (
       this.notesDirty ||
@@ -463,7 +676,9 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   connectors: { path: string; color: string; x1: number; y1: number; x2: number; y2: number }[] = [];
+
   connectionViewBox = '0 0 1 1';
+
   drawConnections() {
     const root = this.workspaceRoot?.nativeElement;
     const workspace = root?.querySelector<HTMLElement>('.workspace');
@@ -513,22 +728,29 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
   trackTransaction(index: number, transaction: ITransaction) {
     return transaction.id;
   }
+
   isSelected(view: SummaryView) {
     return this.visibleViews.some((v) => v.key === view.key);
   }
+
   isPendingTransaction = isPending;
+
   showTransactionHandle(view: SummaryView, transaction: ITransaction) {
     return this.dragEnabled && view.kind !== 'pending' && !isPending(transaction);
   }
+
   canDragTransaction(view: SummaryView, transaction: ITransaction) {
-    return this.dragEnabled && this.service.getSaveState() !== 'saving' && view.kind !== 'pending' && !isPending(transaction);
+    return (
+      this.dragEnabled && this.service.getSaveState() !== 'saving' && view.kind !== 'pending' && !isPending(transaction)
+    );
   }
+
   startDrag(event: DragEvent, view: SummaryView, transaction: ITransaction) {
     if (!this.canDragTransaction(view, transaction)) {
       event.preventDefault();
       return;
     }
-    this.dragTooltips().forEach(tooltip => tooltip.hide(0));
+    this.dragTooltips().forEach((tooltip) => tooltip.hide(0));
     this.dragged = transaction;
     this.draggedMonth = this.service.getMonthPKValue();
     event.dataTransfer.effectAllowed = 'move';
@@ -537,12 +759,16 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     const ghost = document.createElement('div');
     ghost.className = 'transaction-drag-preview';
     ghost.setAttribute('aria-hidden', 'true');
-    ghost.style.cssText = 'position:fixed;left:-1000px;top:0;width:100px;box-sizing:border-box;padding:8px;border:1px solid #b9d4c2;border-radius:7px;background:white;color:#222;box-shadow:0 3px 10px #0003;font-family:Roboto,sans-serif;line-height:1.25;';
+    ghost.style.cssText =
+      'position:fixed;left:-1000px;top:0;width:100px;box-sizing:border-box;padding:8px;border:1px solid #b9d4c2;border-radius:7px;background:white;color:#222;box-shadow:0 3px 10px #0003;font-family:Roboto,sans-serif;line-height:1.25;';
     for (const [text, style] of [
       [transaction.date.slice(0, 5), 'font-size:10px;color:#666;'],
       [transaction.status || 'Posted', 'font-size:10px;color:#3b8d5f;margin:3px 0;'],
       [formatCurrency(transaction.amount, 'en-US', '$', 'USD'), 'font-size:12px;font-weight:600;white-space:nowrap;'],
-      [transaction.description, 'font-size:10px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;'],
+      [
+        transaction.description,
+        'font-size:10px;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;',
+      ],
     ]) {
       const line = document.createElement('div');
       line.textContent = text;
@@ -552,8 +778,8 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     document.body.appendChild(ghost);
     this.transactionGhost = ghost;
     event.dataTransfer.setDragImage?.(ghost, 50, 16);
-
   }
+
   endDrag() {
     this.transactionGhost?.remove();
     this.transactionGhost = null;
@@ -561,6 +787,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dropKey = null;
     this.dragEnded = Date.now();
   }
+
   allowDrop(event: DragEvent, view: SummaryView) {
     if (!this.validDrop(view)) return;
     event.preventDefault();
@@ -574,6 +801,7 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
       if (event.clientY > bounds.bottom - 40) list.scrollTop += 12;
     }
   }
+
   private validDrop(view: SummaryView) {
     const latest = this.dragged && this.service.transactions.getValue().find((t) => t.id === this.dragged.id);
     return (
@@ -773,6 +1001,8 @@ export class SummaryComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resizeObserver?.disconnect();
     clearTimeout(this.layoutTimer);
     clearTimeout(this.initialLayoutTimer);
+    clearTimeout(this.locateTimer);
+    clearTimeout(this.emphasizeTimer);
   }
 }
 

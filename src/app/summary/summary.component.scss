@@ -450,10 +450,17 @@ h2 {
   }
 }
 
-.transaction-pane.pane-drop-settling { transition: none !important; }
+.transaction-pane.pane-drop-settling {
+  transition: none !important;
+}
 
-.category-item small.category-budget { font-size: 13px; color: #000; }
-.category-value .category-amount { font-size: 14px; }
+.category-item small.category-budget {
+  font-size: 13px;
+  color: #000;
+}
+.category-value .category-amount {
+  font-size: 14px;
+}
 
 .category-value .category-amount {
   display: inline-block;
@@ -461,7 +468,176 @@ h2 {
   border-radius: 999px;
   white-space: nowrap;
 }
-.category-value .category-amount.green { background: rgba(58, 141, 95, .1); }
-.category-value .category-amount.red { background: rgba(198, 40, 40, .1); }
+.category-value .category-amount.green {
+  background: rgba(58, 141, 95, 0.1);
+}
+.category-value .category-amount.red {
+  background: rgba(198, 40, 40, 0.1);
+}
 
-.transaction-row.has-drag-handle .transaction-notes { margin-left: 64px; }
+.transaction-row.has-drag-handle .transaction-notes {
+  margin-left: 64px;
+}
+
+// Search occupies the former totals row; financial figures move into the heading.
+.overview-heading {
+  min-height: 40px;
+}
+.overview-title {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+.balance-message {
+  white-space: nowrap;
+}
+.overview-totals {
+  flex: 1;
+  justify-content: center;
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+.overview-bottom {
+  display: grid;
+  grid-template-columns: minmax(220px, 420px) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  height: 40px;
+}
+.overview-bottom app-summary-search {
+  grid-column: 1;
+}
+.carry-button {
+  grid-column: 2;
+  justify-self: end;
+  white-space: nowrap;
+}
+.category-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 36px;
+}
+.search-match-count {
+  color: #666;
+  font-size: 12px;
+  margin: 4px 0 8px;
+}
+.no-search-results {
+  color: #666;
+  padding: 16px 8px;
+}
+.transaction-row.search-located {
+  outline: 2px solid #3b8d5f;
+  outline-offset: -2px;
+  background: #edf6f0;
+}
+@media (min-width: 701px) and (max-width: 1100px) {
+  .overview-title {
+    flex-basis: 240px;
+  }
+  .overview-bottom {
+    grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
+  }
+  .carry-button {
+    min-width: 40px;
+    padding: 0 8px;
+  }
+  .carry-button span {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .overview {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: 36px auto;
+    gap: 8px 4px;
+  }
+  .overview-heading,
+  .overview-bottom {
+    display: contents;
+  }
+  .overview-title {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .notes-button {
+    grid-row: 1;
+    grid-column: 3;
+  }
+  .overview-bottom app-summary-search {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .overview-totals {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    gap: 18px;
+    margin: 0;
+  }
+  .overview-totals strong {
+    font-size: clamp(14px, 4.6vw, 18px);
+  }
+  .overview.has-carry {
+    grid-template-columns: minmax(0, 1fr) auto 36px 40px;
+  }
+  .has-carry .notes-button {
+    grid-column: 4;
+  }
+  .carry-button {
+    grid-row: 1;
+    grid-column: 3;
+    min-width: 40px;
+    padding: 0;
+  }
+  .carry-button span {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .has-carry .notes-label {
+    display: none;
+  }
+  .has-carry .notes-button {
+    min-width: 40px;
+    padding: 0 8px;
+  }
+  .has-carry .notes-button mat-icon {
+    margin: 0;
+  }
+  .carry-button {
+    min-width: 36px;
+  }
+}
+@media (max-width: 380px) {
+  .notes-label {
+    display: none;
+  }
+  .notes-button {
+    min-width: 40px;
+    padding: 0 8px;
+  }
+  .notes-button mat-icon {
+    margin: 0;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  .overview.has-carry {
+    grid-template-columns: minmax(0, 1fr) auto 40px;
+  }
+  .has-carry .notes-button {
+    grid-column: 3;
+  }
+  .has-carry .carry-button {
+    grid-row: 2;
+    grid-column: 3;
+  }
+  .has-carry .overview-totals {
+    padding-right: 40px;
+    gap: 8px;
+  }
+}
