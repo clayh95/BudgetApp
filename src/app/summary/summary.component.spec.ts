@@ -69,11 +69,11 @@ describe('Summary browser', () => {
 
   it('opens up to four views in opening order, evicts the oldest and never duplicates a view', () => {
     component.maxOpenViews = 4;
-    component.views.forEach(view => component.selectView(view, { preventDefault() {}, metaKey: true } as MouseEvent));
+    component.views.forEach((view) => component.selectView(view, { preventDefault() {}, metaKey: true } as MouseEvent));
     expect(component.visibleViews).toHaveLength(4);
     const keys = [...component.openKeys];
     component.selectView(component.views[0], multiClick());
-    expect(component.openKeys).toEqual(keys.filter(key => key !== component.views[0].key));
+    expect(component.openKeys).toEqual(keys.filter((key) => key !== component.views[0].key));
     component.selectView(component.views[0], multiClick());
     expect(new Set(component.openKeys).size).toBe(4);
     component.maxOpenViews = 2;
@@ -104,33 +104,96 @@ describe('Summary browser', () => {
   it('opens Uncategorized on desktop initially, but leaves phones at the list', () => {
     component.updateLayout();
     expect(component.visibleViews[0]?.kind).toBe('uncategorized');
-    expect(component.views.slice(0, 2).map(view => view.kind)).toEqual(['pending', 'uncategorized']);
+    expect(component.views.slice(0, 2).map((view) => view.kind)).toEqual(['pending', 'uncategorized']);
   });
 
   it('keeps disabled transaction handles present during saves', () => {
     component.dragEnabled = true;
     db.getSaveState.mockReturnValue('saving');
-    const queue = component.views.find(view => view.kind === 'uncategorized');
+    const queue = component.views.find((view) => view.kind === 'uncategorized');
     expect(component.showTransactionHandle(queue, transaction)).toBe(true);
     expect(component.canDragTransaction(queue, transaction)).toBe(false);
     expect(db.updateDocument).not.toHaveBeenCalled();
   });
 
+  it('filters panes, restores pre-search selections, and preserves budget figures', () => {
+    component.maxOpenViews = 4;
+    const groceries = component.views.find((view) => view.category.id === 'g');
+    const household = component.views.find((view) => view.category.id === 'h');
+    component.selectView(groceries);
+    component.selectView(household, multiClick());
+    const previous = [...component.openKeys];
+    const budget = component.totalBudgeted;
+    component.changeSearch({ query: 'shop', category: null, vendor: null });
+    expect(component.categoryViews.map((view) => view.kind)).toEqual(['uncategorized']);
+    expect(component.visibleViews[0].kind).toBe('uncategorized');
+    expect(component.totalBudgeted).toBe(budget);
+    component.closeView(component.visibleViews[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Select a category');
+    expect(fixture.nativeElement.textContent).not.toContain('No matching transactions');
+    component.changeSearch({ query: 'no such shop', category: null, vendor: null });
+    expect(component.visibleViews).toEqual([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No matching transactions');
+    component.changeSearch({ query: '', category: null, vendor: null });
+    expect(component.openKeys).toEqual(previous);
+  });
+
+  it('retains search across months but discards old selection snapshots and responds to live edits', () => {
+    component.selectView(component.views.find((view) => view.category.id === 'h'));
+    component.changeSearch({ query: 'shop', category: null, vendor: null });
+    db.monthYear.next('11/2026');
+    db.transactions.next([{ ...transaction, category: 'Groceries' }]);
+    expect(component.search.query).toBe('shop');
+    expect(component.visibleViews[0].category.name).toBe('Groceries');
+    db.transactions.next([{ ...transaction, description: 'Different description' }]);
+    expect(component.categoryViews).toEqual([]);
+    component.changeSearch({ query: '', category: null, vendor: null });
+    expect(component.openKeys).toEqual([]);
+  });
+
+  it('reapplies vendor mappings and locates a pending result without opening the editor', () => {
+    db.transactions.next([{ ...transaction, description: 'Mapped shop', category: 'Groceries', status: 'Pending' }]);
+    component.changeSearch({ query: '', category: null, vendor: 'Vendor' });
+    expect(component.categoryViews).toEqual([]);
+    db.vendorMappings.next([{ vendorName: 'Vendor', pattern: 'mapped', logoUrl: '' }]);
+    const view = component.categoryViews[0];
+    expect(view.kind).toBe('pending');
+    component.workspaceRoot = { nativeElement: fixture.nativeElement.querySelector('.summary-root') };
+    vi.spyOn(component, 'updateLayout').mockImplementation(() => {});
+    component.isMobile = true;
+    component.locateTransaction({ view, transaction: view.transactions[0] });
+    fixture.detectChanges();
+    expect(component.mobileDetail).toBe(true);
+    expect(fixture.nativeElement.querySelector('.search-located')).not.toBeNull();
+    expect(db.getTransactionsForEdit).not.toHaveBeenCalled();
+  });
+
   it('previews pane reordering without committing and cancels inside the starting threshold', () => {
     component.openKeys = [];
     component.maxOpenViews = 4;
-    component.views.forEach(view => component.selectView(view, multiClick()));
+    component.views.forEach((view) => component.selectView(view, multiClick()));
     fixture.detectChanges();
     component.workspaceRoot = { nativeElement: fixture.nativeElement.querySelector('.summary-root') };
     component.workspaceRoot.nativeElement.querySelectorAll('[data-pane-key]').forEach((el, index) => {
       vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ left: index * 120, right: index * 120 + 100 } as DOMRect);
     });
     const original = [...component.openKeys];
-    const event = (x: number) => ({ clientX: x, preventDefault: vi.fn(), stopPropagation: vi.fn(), dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }) as any;
+    const event = (x: number) =>
+      ({
+        clientX: x,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+        dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() },
+      }) as any;
     const dragStart = event(25);
     component.startPaneDrag(dragStart, component.visibleViews[0]);
     expect(dragStart.dataTransfer.setDragImage).toHaveBeenCalledWith(
-      component.workspaceRoot.nativeElement.querySelector('[data-pane-key]'), expect.any(Number), expect.any(Number));
+      component.workspaceRoot.nativeElement.querySelector('[data-pane-key]'),
+      expect.any(Number),
+      expect.any(Number),
+    );
     component.allowPaneDrop(event(160));
     expect(component.openKeys).toEqual(original);
     expect(component.panePreviewKeys.slice(0, 2)).toEqual([original[1], original[0]]);
@@ -145,7 +208,7 @@ describe('Summary browser', () => {
     expect(component.openKeys.slice(0, 2)).toEqual([original[1], original[0]]);
     expect(component.panePreviewKeys).toBeNull();
     expect(component.paneDropSettling).toBe(true);
-    component.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach(pane => {
+    component.workspaceRoot.nativeElement.querySelectorAll<HTMLElement>('[data-pane-key]').forEach((pane) => {
       expect(pane.style.transition).toBe('none');
     });
   });
@@ -154,10 +217,10 @@ describe('Summary browser', () => {
     component.openKeys = [];
     component.isMobile = false;
     component.maxOpenViews = 4;
-    component.views.forEach(view => component.selectView(view, multiClick()));
+    component.views.forEach((view) => component.selectView(view, multiClick()));
     fixture.detectChanges();
     const bounds = (left: number, top: number, width = 250, height = 50) =>
-      ({ left, top, right: left + width, bottom: top + height, width, height } as DOMRect);
+      ({ left, top, right: left + width, bottom: top + height, width, height }) as DOMRect;
     const root = fixture.nativeElement;
     vi.spyOn(root.querySelector('.workspace'), 'getBoundingClientRect').mockReturnValue(bounds(0, 0, 1800, 800));
     vi.spyOn(root.querySelector('.category-list'), 'getBoundingClientRect').mockReturnValue(bounds(0, 0, 250, 800));
@@ -171,8 +234,8 @@ describe('Summary browser', () => {
     component.workspaceRoot = { nativeElement: root.querySelector('.summary-root') };
     component.drawConnections();
     expect(component.connectors).toHaveLength(4);
-    expect(new Set(component.connectors.map(line => line.y2)).size).toBe(4);
-    expect(new Set(component.connectors.map(line => line.path.match(/H ([\d.]+)/)[1])).size).toBe(4);
+    expect(new Set(component.connectors.map((line) => line.y2)).size).toBe(4);
+    expect(new Set(component.connectors.map((line) => line.path.match(/H ([\d.]+)/)[1])).size).toBe(4);
     component.isMobile = true;
     component.drawConnections();
     expect(component.connectors).toEqual([]);
@@ -181,7 +244,11 @@ describe('Summary browser', () => {
   it('writes only the dragged line category through the existing update engine and preserves a failed source', async () => {
     component.dragEnabled = true;
     const event = { preventDefault: vi.fn(), dataTransfer: { setData: vi.fn() } } as any;
-    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
+    component.startDrag(
+      event,
+      component.views.find((view) => view.kind === 'uncategorized'),
+      transaction,
+    );
     await component.dropTransaction(
       event,
       component.views.find((v) => v.category.id === 'g'),
@@ -189,7 +256,11 @@ describe('Summary browser', () => {
     expect(db.updateDocument).toHaveBeenCalledWith('t', 'transactions', { category: 'Groceries' }, '102026');
     expect(transaction.category).toBe('');
     db.updateDocument.mockResolvedValue(false);
-    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
+    component.startDrag(
+      event,
+      component.views.find((view) => view.kind === 'uncategorized'),
+      transaction,
+    );
     await component.dropTransaction(
       event,
       component.views.find((v) => v.category.id === 'h'),
@@ -202,7 +273,11 @@ describe('Summary browser', () => {
     const event = { preventDefault: vi.fn(), dataTransfer: { setData: vi.fn() } } as any;
     const pending = { ...transaction, status: 'Pending' };
     expect(component.canDragTransaction(component.views[0], pending)).toBe(false);
-    component.startDrag(event, component.views.find(view => view.kind === 'uncategorized'), transaction);
+    component.startDrag(
+      event,
+      component.views.find((view) => view.kind === 'uncategorized'),
+      transaction,
+    );
     await component.dropTransaction(
       event,
       component.views.find((v) => v.kind === 'pending'),

@@ -1,0 +1,151 @@
+<div cdkOverlayOrigin #origin="cdkOverlayOrigin" class="search-origin" [class.mobile]="mobile">
+  <button
+    *ngIf="mobile"
+    #mobileTrigger
+    mat-stroked-button
+    class="mobile-search-button"
+    aria-label="Search Summary"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="open"
+    (click)="open = !open"
+  >
+    <mat-icon>search</mat-icon>Search<span
+      class="filter-count mobile-filter-count"
+      *ngIf="active"
+      [attr.aria-label]="activeFilterCount + ' active search filters'"
+      >{{ activeFilterCount }}</span
+    >
+  </button>
+  <div *ngIf="!mobile" class="search-field">
+    <mat-icon>search</mat-icon>
+    <input
+      #desktopInput
+      aria-label="Search transactions, categories, or vendors"
+      placeholder="Search transactions…"
+      [value]="search.query"
+      (input)="change($any($event.target).value); open = true"
+      (click)="open = true"
+      (keydown)="inputKey($event)"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="open"
+    />
+    <button *ngIf="active" mat-icon-button aria-label="Clear all search" (click)="clearAll()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <span
+      *ngIf="search.category !== null || search.vendor"
+      class="filter-count"
+      [matTooltip]="
+        'Filters: ' +
+        (search.category === '' ? 'Uncategorized' : search.category || '') +
+        (search.vendor ? ' ' + search.vendor : '')
+      "
+      >{{ (search.category !== null ? 1 : 0) + (search.vendor ? 1 : 0) }}</span
+    >
+  </div>
+</div>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open && !mobile"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  [cdkConnectedOverlayUsePopover]="false"
+  [cdkConnectedOverlayWidth]="origin.elementRef.nativeElement.offsetWidth + 16"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayViewportMargin]="12"
+  (backdropClick)="close()"
+  (detach)="open = false"
+>
+  <ng-container *ngTemplateOutlet="searchPanel"></ng-container>
+</ng-template>
+<ng-template #searchPanel>
+  <div
+    #panel
+    class="search-popover"
+    [class.mobile-popover]="mobile"
+    role="dialog"
+    aria-label="Search Summary"
+    [cdkTrapFocus]="mobile"
+    [cdkTrapFocusAutoCapture]="mobile"
+    (keydown)="panelKey($event)"
+  >
+    <div class="popover-heading">
+      <strong>Search Summary</strong
+      ><button mat-icon-button aria-label="Close search" (click)="close()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="search-field popover-input" *ngIf="mobile">
+      <mat-icon>search</mat-icon
+      ><input
+        cdkFocusInitial
+        aria-label="Search transactions, categories, or vendors"
+        placeholder="Search transactions…"
+        [value]="search.query"
+        (input)="change($any($event.target).value)"
+        (keydown)="inputKey($event)"
+      />
+      <button *ngIf="search.query" mat-icon-button aria-label="Clear search text" (click)="change('')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="active-filters" *ngIf="search.category !== null || search.vendor">
+      <button
+        *ngIf="search.category !== null"
+        class="filter-chip"
+        (click)="remove('category')"
+        [attr.aria-label]="'Remove category filter ' + (search.category || 'Uncategorized')"
+      >
+        Category: {{ search.category || 'Uncategorized' }} <mat-icon>close</mat-icon>
+      </button>
+      <button
+        *ngIf="search.vendor"
+        class="filter-chip"
+        (click)="remove('vendor')"
+        [attr.aria-label]="'Remove vendor filter ' + search.vendor"
+      >
+        Vendor: {{ search.vendor }} <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="suggestions">
+      <p class="hint" *ngIf="!active">Type to search transactions or choose a category or vendor.</p>
+      <section *ngIf="categories.length" aria-label="Category suggestions">
+        <h3>Categories</h3>
+        <button class="suggestion" *ngFor="let view of categories" (click)="selectCategory(view)">
+          <span>{{ view.category.emoji || '📁' }}</span
+          ><span class="suggestion-copy" [innerHTML]="view.category.name | searchHighlight: search.query"></span
+          ><small>Category</small>
+        </button>
+      </section>
+      <section *ngIf="vendors.length" aria-label="Vendor suggestions">
+        <h3>Vendors</h3>
+        <button class="suggestion" *ngFor="let vendor of vendors" (click)="selectVendor(vendor.name)">
+          <img *ngIf="vendor.logo" [src]="vendor.logo" alt="" /><mat-icon *ngIf="!vendor.logo">store</mat-icon>
+          <span class="suggestion-copy" [innerHTML]="vendor.name | searchHighlight: search.query"></span
+          ><small>Vendor</small>
+        </button>
+      </section>
+      <section *ngIf="transactions.length" aria-label="Transaction suggestions">
+        <h3 role="status" aria-live="polite">Transactions · {{ count }} {{ count === 1 ? 'match' : 'matches' }}</h3>
+        <button class="suggestion" *ngFor="let result of transactions" (click)="selectTransaction(result)">
+          <mat-icon>{{ result.view.kind === 'pending' ? 'schedule' : 'receipt_long' }}</mat-icon>
+          <span class="suggestion-copy"
+            ><span [innerHTML]="result.transaction.description | searchHighlight: search.query"></span>
+            <small
+              ><span [innerHTML]="result.transaction.date | date: 'MMM d' | searchHighlight: search.query"></span> ·
+              <span [innerHTML]="result.transaction.category || 'Uncategorized' | searchHighlight: search.query"></span
+              >{{ result.view.kind === 'pending' ? ' · Pending' : '' }}</small
+            ></span
+          >
+          <strong [innerHTML]="result.transaction.amount | currency | searchHighlight: search.query"></strong>
+        </button>
+      </section>
+      <p class="hint" role="status" *ngIf="active && !count">No matching transactions.</p>
+    </div>
+    <div class="popover-footer">
+      <button mat-button (click)="all()">
+        View all {{ count }} {{ count === 1 ? 'match' : 'matches' }} <mat-icon>arrow_forward</mat-icon></button
+      ><button *ngIf="active" mat-button (click)="clearAll()">Clear all</button>
+    </div>
+  </div>
+</ng-template>

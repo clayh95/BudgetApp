@@ -7,6 +7,7 @@ import { ITransaction, ITransactionStatus } from '../core/dataTypes';
 import { DbService } from '../core/db.service';
 import { IVendorLogoRule } from '../core/utilities';
 import * as _ from 'lodash';
+import { getVendorPatternsForFilter, matchesVendorPattern } from '../core/vendor-filter';
 
 /**
  * Data source for the TransactionTable view. This class should
@@ -15,8 +16,11 @@ import * as _ from 'lodash';
  */
 export class TransactionTableDataSource extends DataSource<ITransaction> {
   total: number;
+
   chargeCount: number;
+
   lastIDs: ITransaction[] = [];
+
   lastMY: string = '';
   // private beginDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
   // private endDateChange = new BehaviorSubject<Date>(new Date('1/1/1900'))
@@ -133,87 +137,20 @@ export class TransactionTableDataSource extends DataSource<ITransaction> {
   ) {
     const category = (categoryFilter || '').trim();
     const vendor = (vendorFilter || '').trim().toLowerCase();
-    const vendorPatterns = this.getVendorPatternsForFilter(vendor, vendorMappings || []);
+    const vendorPatterns = getVendorPatternsForFilter(vendor, vendorMappings || []);
     const hasVendorFilter = vendor.length > 0;
     return data.filter((t) => {
       return (
         Object.values(t)
           .map((v) => `${v ?? ''}`.toLowerCase().indexOf(filter) >= 0)
           .indexOf(true) >= 0 &&
-        (bShowPending || t.status == ITransactionStatus.posted) &&
+        (bShowPending || t.status === ITransactionStatus.posted) &&
         (bShowStartingBalances || !t.description.endsWith('Starting Balance')) &&
-        (bOnlyUncategorized ? t.category == '' : 1 === 1) &&
+        (bOnlyUncategorized ? t.category === '' : 1 === 1) &&
         (category.length > 0 ? t.category === category : true) &&
-        this.matchesVendorPattern(t.description, vendorPatterns, hasVendorFilter)
+        matchesVendorPattern(t.description, vendorPatterns, hasVendorFilter)
       );
     });
-  }
-
-  private getVendorPatternsForFilter(vendorFilter: string, vendorMappings: IVendorLogoRule[]): RegExp[] {
-    if (!vendorFilter) {
-      return [];
-    }
-    return vendorMappings
-      .filter((mapping) => (mapping?.vendorName || '').trim().toLowerCase() === vendorFilter)
-      .map((mapping) => (mapping?.pattern || '').trim())
-      .filter((pattern) => !!pattern && this.isSafeVendorPattern(pattern))
-      .map((pattern) => {
-        try {
-          return new RegExp(pattern, 'i');
-        } catch {
-          // Ignore patterns that fail to compile
-          return null;
-        }
-      })
-      .filter((regex): regex is RegExp => !!regex);
-  }
-
-  /**
-   * Best-effort safety check for user-provided vendor regex patterns to avoid
-   * catastrophic backtracking and other pathological behavior.
-   */
-  private isSafeVendorPattern(pattern: string): boolean {
-    // Enforce a reasonable maximum length to limit regex complexity.
-    if (pattern.length > 256) {
-      return false;
-    }
-
-    // Disallow lookbehind assertions, which are more complex and can be costly.
-    if (/\(\?<| \(\?<=|\(\?<!/.test(pattern)) {
-      return false;
-    }
-
-    // Disallow backreferences like \1, \2, etc., which can contribute to complexity.
-    if (/\\[1-9]/.test(pattern)) {
-      return false;
-    }
-
-    // Disallow runs of multiple ".*" sequences, which are a common source of
-    // catastrophic backtracking when combined with other quantifiers.
-    if (/(\.\*){2,}/.test(pattern)) {
-      return false;
-    }
-
-    // Disallow obvious nested or adjacent quantifiers such as "++", "+*", "*+",
-    // or "{m,n}+" which are often problematic.
-    if (/(\+|\*|\{[^}]+\})\s*(\+|\*|\{[^}]+\})/.test(pattern)) {
-      return false;
-    }
-
-    return true;
-  }
-  private matchesVendorPattern(description: string, vendorPatterns: RegExp[], hasVendorFilter: boolean): boolean {
-    if (!hasVendorFilter) {
-      return true;
-    }
-    if (!vendorPatterns.length) {
-      return false;
-    }
-    const normalizedDescription = `${description || ''}`.trim();
-    if (!normalizedDescription) {
-      return false;
-    }
-    return vendorPatterns.some((pattern) => pattern.test(normalizedDescription));
   }
 }
 

@@ -1,25 +1,53 @@
 <div class="summary-root" #workspaceRoot [style.height.px]="viewportHeight">
-  <mat-card class="overview">
+  <mat-card class="overview" [class.has-carry]="totalBudgeted > 0 && totalBudgeted === actualIncome">
     <div class="overview-heading">
-      <div>
+      <div class="overview-title">
         <h1>Summary</h1>
         <span class="balance-message">{{ getEmoji()[0] }} {{ getEmoji()[1] }}</span>
       </div>
-      <button mat-stroked-button (click)="openNotes()"><mat-icon>notes</mat-icon> Notes</button>
+      <div class="overview-totals">
+        <div>
+          <span>Budgeted</span><strong>{{ totalBudgeted | currency }}</strong>
+        </div>
+        <div>
+          <span>Income</span><strong>{{ actualIncome | currency }}</strong>
+        </div>
+        <div>
+          <span>Unbudgeted</span
+          ><strong [class.red]="getUnbudgetedAmount() < 0">{{ getUnbudgetedAmount() | currency }}</strong>
+        </div>
+      </div>
+      <button
+        class="notes-button"
+        mat-stroked-button
+        aria-label="Month notes"
+        matTooltip="Month notes"
+        (click)="openNotes()"
+      >
+        <mat-icon>notes</mat-icon><span class="notes-label">Notes</span>
+      </button>
     </div>
-    <div class="overview-totals">
-      <div>
-        <span>Budgeted</span><strong>{{ totalBudgeted | currency }}</strong>
-      </div>
-      <div>
-        <span>Income</span><strong>{{ actualIncome | currency }}</strong>
-      </div>
-      <div>
-        <span>Unbudgeted</span
-        ><strong [class.red]="getUnbudgetedAmount() < 0">{{ getUnbudgetedAmount() | currency }}</strong>
-      </div>
-      <button mat-button *ngIf="totalBudgeted > 0 && totalBudgeted === actualIncome" (click)="carryAmounts()">
-        <mat-icon>fast_forward</mat-icon> Carry balances
+    <div class="overview-bottom">
+      <app-summary-search
+        [mobile]="isMobile"
+        [search]="search"
+        [views]="views"
+        [results]="searchViews"
+        [mappings]="vendorMappings"
+        (searchChange)="changeSearch($event)"
+        (showAll)="showSearchResults()"
+        (categorySelected)="selectSearchCategory($event)"
+        (transactionSelected)="locateTransaction($event)"
+      ></app-summary-search>
+      <button
+        class="carry-button"
+        mat-button
+        aria-label="Carry balances"
+        matTooltip="Carry balances"
+        *ngIf="totalBudgeted > 0 && totalBudgeted === actualIncome"
+        (click)="carryAmounts()"
+      >
+        <mat-icon>fast_forward</mat-icon><span>Carry balances</span>
       </button>
     </div>
   </mat-card>
@@ -36,7 +64,9 @@
         <h2 class="drawer-title">{{ drawerTitle }}</h2>
       </div>
       <div drawer-header-actions>
-        <ng-container *ngTemplateOutlet="transactionActions()?.actionsTemplate || categoryActions()?.actionsTemplate"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="transactionActions()?.actionsTemplate || categoryActions()?.actionsTemplate"
+        ></ng-container>
       </div>
       <div drawer-body>
         <app-category-modal
@@ -89,12 +119,25 @@
           </g>
         </svg>
         <mat-card class="category-list" [class.mobile-hidden]="isMobile && mobileDetail">
-          <h2>Categories</h2>
+          <div class="category-list-heading">
+            <h2>Categories</h2>
+            <button
+              *ngIf="searchActive"
+              mat-icon-button
+              aria-label="Clear search"
+              (click)="changeSearch({ query: '', category: null, vendor: null })"
+            >
+              <mat-icon>filter_alt_off</mat-icon>
+            </button>
+          </div>
+          <p class="search-match-count" role="status" aria-live="polite" *ngIf="searchActive">
+            {{ matchCount }} matching {{ matchCount === 1 ? 'transaction' : 'transactions' }}
+          </p>
           <div class="category-scroll" data-scroll-key="__categories" (scroll)="rememberScroll('__categories', $event)">
             <button
               type="button"
               class="category-item"
-              *ngFor="let view of views; trackBy: trackView"
+              *ngFor="let view of categoryViews; trackBy: trackView"
               [attr.data-category-key]="view.key"
               [class.is-active]="isSelected(view)"
               [class.queue-divider]="view.kind === 'uncategorized'"
@@ -109,7 +152,7 @@
               <span class="category-emoji" *ngIf="view.kind !== 'pending'">{{ view.category.emoji }}</span>
               <mat-icon class="pending-icon" *ngIf="view.kind === 'pending'">schedule</mat-icon>
               <span class="category-label"
-                ><span class="category-name">{{ view.category.name }}</span>
+                ><span class="category-name" [innerHTML]="view.category.name | searchHighlight: search.query"></span>
                 <small class="category-budget" *ngIf="view.kind === 'category'">{{
                   view.category.budgeted | currency
                 }}</small>
@@ -139,6 +182,7 @@
                 >
               </span>
             </button>
+            <p class="no-search-results" *ngIf="searchActive && !categoryViews.length">No matching categories.</p>
           </div>
         </mat-card>
         <div
@@ -148,8 +192,17 @@
         >
           <mat-card class="empty-selection" *ngIf="!visibleViews.length"
             ><mat-icon>view_sidebar</mat-icon>
-            <h2>Select a category</h2>
-            <p>Choose a category to view its transactions.</p></mat-card
+            <h2>{{ searchActive && !categoryViews.length ? 'No matching transactions' : 'Select a category' }}</h2>
+            <p>
+              {{
+                searchActive && !categoryViews.length
+                  ? 'Try another search or clear your filters.'
+                  : 'Choose a category to view its transactions.'
+              }}
+            </p>
+            <button *ngIf="searchActive" mat-button (click)="changeSearch({ query: '', category: null, vendor: null })">
+              Clear search
+            </button></mat-card
           >
           <mat-card
             class="transaction-pane"
@@ -183,7 +236,8 @@
               </button>
               <div class="pane-title-row">
                 <h2 class="pane-heading" tabindex="-1">
-                  <span>{{ view.category.emoji }}</span> {{ view.category.name }}
+                  <span>{{ view.category.emoji }}</span>
+                  <span [innerHTML]="view.category.name | searchHighlight: search.query"></span>
                 </h2>
                 <ng-container *ngIf="view.kind === 'category' || view.kind === 'income'">
                   <button
@@ -213,7 +267,8 @@
                 <strong [class]="getColor(view)">{{ view.category.budgeted - view.category.spent | currency }}</strong>
                 left
                 <small
-                  >{{ view.category.budgeted | currency }} budgeted · {{ (view.category.spent < 0 ? 0 : view.category.spent) | currency }} spent</small
+                  >{{ view.category.budgeted | currency }} budgeted ·
+                  {{ (view.category.spent < 0 ? 0 : view.category.spent) | currency }} spent</small
                 >
               </div>
               <div class="pane-summary" *ngIf="view.kind === 'income'">
@@ -221,12 +276,16 @@
                 <small>{{ view.category.budgeted | currency }} expected</small>
               </div>
               <div class="pane-summary" *ngIf="view.kind === 'pending'">
-                <strong>{{ totalPending | currency }}</strong> pending · {{ view.transactions.length }} charges
+                <strong>{{ totalPending | currency }}</strong> pending · {{ pendingTransactions.length }} charges
               </div>
               <div class="pane-summary" *ngIf="view.kind === 'uncategorized'">
-                {{ view.transactions.length }} transactions to categorize
+                {{ uncategorizedCount }} transactions to categorize
               </div>
 
+              <p class="search-match-count" *ngIf="searchActive">
+                {{ view.transactions.length }} matching
+                {{ view.transactions.length === 1 ? 'transaction' : 'transactions' }}
+              </p>
               <p
                 class="category-notes"
                 *ngIf="view.kind !== 'uncategorized' && view.kind !== 'pending' && view.category.notes"
@@ -242,6 +301,8 @@
               <button
                 type="button"
                 class="transaction-row"
+                [attr.data-transaction-id]="trans.id"
+                [class.search-located]="locatedTransaction?.id === trans.id"
                 [class.has-drag-handle]="showTransactionHandle(view, trans)"
                 *ngFor="let trans of view.transactions; trackBy: trackTransaction"
                 [attr.draggable]="canDragTransaction(view, trans)"
@@ -256,13 +317,16 @@
                   [class.drag-disabled]="service.getSaveState() === 'saving'"
                   >drag_indicator</mat-icon
                 >
-                <span class="transaction-date">{{ trans.date | date: 'MMM d' }}</span>
+                <span
+                  class="transaction-date"
+                  [innerHTML]="trans.date | date: 'MMM d' | searchHighlight: search.query"
+                ></span>
                 <span
                   class="transaction-description"
                   [matTooltip]="trans.description"
                   [matTooltipDisabled]="transactionDragging || service.getSaveState() === 'saving'"
-                  >{{ trans.description }}</span
-                >
+                  [innerHTML]="trans.description | searchHighlight: search.query"
+                ></span>
                 <span class="transaction-indicators">
                   <img *ngIf="getIconFromUtils(trans.description)" [src]="getIconFromUtils(trans.description)" alt="" />
                   <mat-icon
@@ -280,8 +344,15 @@
                     >{{ isPendingTransaction(trans) ? 'schedule' : 'check_circle_outline' }}</mat-icon
                   >
                 </span>
-                <strong class="transaction-amount">{{ trans.amount | currency }}</strong>
-                <small class="transaction-notes" *ngIf="trans.notes">{{ trans.notes }}</small>
+                <strong
+                  class="transaction-amount"
+                  [innerHTML]="trans.amount | currency | searchHighlight: search.query"
+                ></strong>
+                <small
+                  class="transaction-notes"
+                  *ngIf="trans.notes"
+                  [innerHTML]="trans.notes | searchHighlight: search.query"
+                ></small>
               </button>
               <div class="empty-transactions" *ngIf="!view.transactions.length">
                 <mat-icon>{{ view.kind === 'uncategorized' ? 'task_alt' : 'receipt_long' }}</mat-icon>
